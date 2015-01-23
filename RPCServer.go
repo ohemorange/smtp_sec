@@ -1,3 +1,7 @@
+// RPC from http://www.artima.com/weblogs/viewpost.jsp?thread=333589
+
+// Sample calls, for use with rpc_client.py
+
 package main
 
 import (
@@ -5,9 +9,25 @@ import (
   "net/rpc"
   "net"
   "log"
+  "strconv"
 )
 
-type RPCFunc struct {}
+type RPCFunc struct {} // Callable by JSON-RPC
+
+// must have key type string
+func (*RPCFunc) DictLen(arg *map[string]int, result *int) error {
+  for k, v := range *arg {
+    log.Print("Arg passed: "+string(k)+" "+strconv.Itoa(v))
+  }
+  *result = len(*arg)
+  return nil
+}
+
+func (*RPCFunc) Add(arg *int, result *int) error {
+  log.Print("Arg passed: " + strconv.Itoa(*arg))
+  *result = *arg + 1
+  return nil
+}
 
 func (*RPCFunc) Echo(arg *string, result *string) error {
   log.Print("Arg passed: " + *arg)

@@ -19,7 +19,8 @@ class JSONClient(object):
         request = dict(id=next(self.id_counter),
                     params=list(params),
                     method=name)
-        self.socket.sendall(json.dumps(request).encode())
+        to_send = json.dumps(request).encode()
+        self.socket.sendall(to_send)
 
         # This must loop if resp is bigger than 4K
         response = self.socket.recv(4096)

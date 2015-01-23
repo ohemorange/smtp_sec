@@ -1,3 +1,12 @@
+1. modify mailpile to do something when there's something.
+
+
+- understand how mailpile works
+- python hooks into pond
+
+so it's like a pond-diverting plugin in thunderbird
+
+
 - what if the client encrypts the traffic completely??? I'd have to mitm wouldn't I... so it does require being part of the client. I'm pretty sure.
 Two options:
 1. Hook into the client, before it encrypts and sends over smtp

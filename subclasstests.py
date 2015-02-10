@@ -4,6 +4,8 @@ class original():
 	def yo(self):
 		self.hi()
 		print "yo"
+	def sup(self):
+		print "namuch"
 
 class second(original):
 	pass

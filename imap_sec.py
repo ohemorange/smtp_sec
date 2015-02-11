@@ -1,4 +1,5 @@
 import imaplib, time
+import re
 
 class IMAP4(imaplib.IMAP4):
     pass
@@ -7,6 +8,54 @@ class IMAP4(imaplib.IMAP4):
         raise NotImplementedError("Do not use this class")
 
 CRLF = imaplib.CRLF
+
+# ***************************************************************
+# parsing code from mailpile
+
+IMAP_TOKEN = re.compile('("[^"]*"'
+                        '|[\\(\\)]'
+                        '|[^\\(\\)"\\s]+'
+                        '|\\s+)')
+
+def _parse_imap(reply):
+    """
+    This routine will parse common IMAP4 responses into Pythonic data
+    structures.
+
+    >>> _parse_imap(('OK', ['One (Two (Th ree)) "Four Five"']))
+    (True, ['One', ['Two', ['Th', 'ree']], 'Four Five'])
+
+    >>> _parse_imap(('BAD', ['Sorry']))
+    (False, ['Sorry'])
+    """
+    stack = []
+    pdata = []
+    for dline in reply[1]:
+        while True:
+            if isinstance(dline, (str, unicode)):
+                m = IMAP_TOKEN.match(dline)
+            else:
+                print 'WARNING: Unparsed IMAP response data: %s' % (dline,)
+                m = None
+            if m:
+                token = m.group(0)
+                dline = dline[len(token):]
+                if token[:1] == '"':
+                    pdata.append(token[1:-1])
+                elif token[:1] == '(':
+                    stack.append(pdata)
+                    pdata.append([])
+                    pdata = pdata[-1]
+                elif token[:1] == ')':
+                    pdata = stack.pop(-1)
+                elif token[:1] not in (' ', '\t', '\n', '\r'):
+                    pdata.append(token)
+            else:
+                break
+    return (reply[0].upper() == 'OK'), pdata
+
+# ***************************************************************
+# ***************************************************************
 
 # we need to keep track of imap state
 class IMAP4_SSL(imaplib.IMAP4_SSL):
@@ -38,7 +87,10 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # it can also be SORT and THREAD.
     def uid(self, command, *args):
         a = imaplib.IMAP4_SSL.uid(self, command, *args)
-        print "uid", command, a
+        print "uid", command#, _parse_imap(a)
+        # _parse_imap will only work when it's not FETCH.
+        # from mailbox import Mailbox, Message
+        Message(data)
         return a
 
     # ******************************************************** #

@@ -1,4 +1,7 @@
-class original():
+class original(object):
+	def __init__(self):
+		print "boop"
+
 	def hi(self):
 		print "hi"
 	def yo(self):
@@ -9,6 +12,10 @@ class original():
 
 class second(original):
 	pass
+	def __init__(self):
+		super(second, self).__init__()
+		print "beep"
+
 	def hi(self):
 		print "hello"
 

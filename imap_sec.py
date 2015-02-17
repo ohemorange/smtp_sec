@@ -1,5 +1,8 @@
 import imaplib, time
 import re
+from mailbox import Message
+import json
+import sys
 
 class IMAP4(imaplib.IMAP4):
     pass
@@ -57,26 +60,73 @@ def _parse_imap(reply):
 # ***************************************************************
 # ***************************************************************
 
+CRYPTOBLOBS = "CRYPTOBLOBS"
+INDEX = "INDEX"
+
 # we need to keep track of imap state
 class IMAP4_SSL(imaplib.IMAP4_SSL):
     pass
+
+    def __init__(self, host = '', port = imaplib.IMAP4_SSL_PORT, keyfile = None, certfile = None):
+        imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
+        self.mapping = None
+
+    def save_index(self):
+        self.create_cryptoblogs_or_load_index()
+        index = self.mapping
+
+
+    def create_cryptoblogs_or_load_index(self):
+        if self.mapping != None:
+            return
+        typ, data = imaplib.IMAP4_SSL.list(self)
+        names = [line.split()[-1].strip('"') for line in data]
+        # create cryptoblobs folder if one does not yet exist
+        if not CRYPTOBLOBS in names:
+            print "creating cryptoblobs"
+            imaplib.IMAP4_SSL.create(self, CRYPTOBLOBS)
+            # the first message will be the index
+            imaplib.IMAP4_SSL.select(self,mailbox=CRYPTOBLOBS)
+            message = Message()
+            table = {}
+            message['Subject'] = INDEX
+            message['From'] = "foo@bar.com"
+            message['To'] = "foo@bar.com"
+            message.set_payload(json.dumps(table)+"\n")
+            # encrypt message
+            typ, data = imaplib.IMAP4_SSL.append(self, CRYPTOBLOBS, None, None, str(message))
+        print "cryptoblobs exists"
+        # unload the index
+        imaplib.IMAP4_SSL.select(self, mailbox=CRYPTOBLOBS)
+        typ, data = imaplib.IMAP4_SSL.search(self, None, "SUBJECT", '"'+INDEX+'"')
+        index = data[0].split()[0]
+        typ, data = imaplib.IMAP4_SSL.fetch(self, index, '(BODY[TEXT])')
+        self.mapping = json.loads(data[0][1].strip())
+        print "loaded index", self.mapping
+
+    def login(self, user, password):
+        imaplib.IMAP4_SSL.login(self, user, password)
+        self.create_cryptoblogs_or_load_index()
 
     # ********************************************************** #
     # the follow methods are called by mailpile
     # ********************************************************** #
 
     def list(self, directory='""', pattern='*'):
+        self.create_cryptoblogs_or_load_index()
         typ, data = imaplib.IMAP4_SSL.list(self, directory, pattern)
         print "list", data
         return typ, data
 
     def noop(self):
+        self.create_cryptoblogs_or_load_index()
         typ, data = imaplib.IMAP4_SSL.noop(self)
         # print "noop", data
         return typ, data
 
     # switches which mailbox we're prodding for updates in
     def select(self, mailbox='INBOX', readonly=False):
+        self.create_cryptoblogs_or_load_index()
         typ, data = imaplib.IMAP4_SSL.select(self, mailbox, readonly)
         print "select", mailbox, data
         return typ, data
@@ -86,11 +136,20 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # command=FETCH fetches a specific message?
     # it can also be SORT and THREAD.
     def uid(self, command, *args):
+        #command = command.upper()
+        #if command == "FETCH":
+            # translate uid into correct uid
+            # fetch it
+            # decrypt it
+
         a = imaplib.IMAP4_SSL.uid(self, command, *args)
         print "uid", command#, _parse_imap(a)
         # _parse_imap will only work when it's not FETCH.
         # from mailbox import Mailbox, Message
-        Message(data)
+        #Message(data)
+        #if 
+
+
         return a
 
     # ******************************************************** #

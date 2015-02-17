@@ -1,2 +1,7 @@
 - assuming that all IMAP clients are running the protocol
 - input on encryption method?
+- opportunistically add messages to index
+- http://pymotw.com/2/imaplib/
+- https://docs.python.org/2/library/imaplib.html
+- https://tools.ietf.org/html/rfc3501#section-6.4.4
+- https://docs.python.org/2/library/email.message.html#email.message.Message

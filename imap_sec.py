@@ -70,6 +70,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def __init__(self, host = '', port = imaplib.IMAP4_SSL_PORT, keyfile = None, certfile = None):
         imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
         self.mapping = None
+        self.selected_mailbox = "INBOX"
 
     def find_index_id(self):
         imaplib.IMAP4_SSL.select(self, mailbox=CRYPTOBLOBS)
@@ -114,8 +115,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         # create cryptoblobs folder if one does not yet exist
         if not CRYPTOBLOBS in names:
             print "creating cryptoblobs"
-            imaplib.IMAP4_SSL.create(self, CRYPTOBLOBS
-)            self.append_index({})
+            imaplib.IMAP4_SSL.create(self, CRYPTOBLOBS)
+            self.append_index({})
         # unload the index
         index_id = self.find_index_id()
         self.mapping = self.load_index(index_id)
@@ -144,6 +145,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # switches which mailbox we're prodding for updates in
     def select(self, mailbox='INBOX', readonly=False):
         self.create_cryptoblobs_or_load_index()
+        self.selected_mailbox = mailbox
         typ, data = imaplib.IMAP4_SSL.select(self, mailbox, readonly)
         print "select", mailbox, data
         return typ, data
@@ -153,9 +155,10 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # command=FETCH fetches a specific message?
     # it can also be SORT and THREAD.
     def uid(self, command, *args):
-        #command = command.upper()
-        #if command == "FETCH":
+        command = command.upper()
+        if command == "FETCH":
             # translate uid into correct uid
+
             # fetch it
             # decrypt it
         self.create_cryptoblobs_or_load_index()

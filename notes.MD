@@ -1,0 +1,2 @@
+- assuming that all IMAP clients are running the protocol
+- input on encryption method?

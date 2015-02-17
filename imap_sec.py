@@ -114,9 +114,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         # create cryptoblobs folder if one does not yet exist
         if not CRYPTOBLOBS in names:
             print "creating cryptoblobs"
-            imaplib.IMAP4_SSL.create(self, CRYPTOBLOBS)
-            # the first message will be the index
-            self.append_index({})
+            imaplib.IMAP4_SSL.create(self, CRYPTOBLOBS
+)            self.append_index({})
         # unload the index
         index_id = self.find_index_id()
         self.mapping = self.load_index(index_id)
@@ -127,7 +126,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         self.create_cryptoblobs_or_load_index()
 
     # ********************************************************** #
-    # the follow methods are called by mailpile
+    # the following methods are called by mailpile
     # ********************************************************** #
 
     def list(self, directory='""', pattern='*'):

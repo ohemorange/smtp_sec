@@ -77,10 +77,18 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         typ, data = imaplib.IMAP4_SSL.search(self, None, "SUBJECT", '"'+INDEX+'"')
         return data[0].split()[0]
 
-    def delete_index(self, index_id):
-        imaplib.IMAP4_SSL.select(self, mailbox=CRYPTOBLOBS)
+    def delete_message_from_actual_folder(self, index_id, folder):
+        imaplib.IMAP4_SSL.select(self, mailbox=folder)
         typ, data = imaplib.IMAP4_SSL.store(self, str(index_id), "+FLAGS", r'(\Deleted)')
         typ, response = imaplib.IMAP4_SSL.expunge()
+
+    def delete_message_from_actual_folder_uid(self, index_id, folder):
+        imaplib.IMAP4_SSL.select(self, mailbox=folder)
+        typ, data = imaplib.IMAP4_SSL.uid(self, "STORE", str(index_id), "+FLAGS", r'(\Deleted)')
+        typ, response = imaplib.IMAP4_SSL.expunge()
+
+    def delete_index(self, index_id):
+        self.delete_message_from_actual_folder(index_id, CRYPTOBLOBS)
 
     def load_index(self, index_id):
         imaplib.IMAP4_SSL.select(self, mailbox=CRYPTOBLOBS)
@@ -155,14 +163,33 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # command=FETCH fetches a specific message?
     # it can also be SORT and THREAD.
     def uid(self, command, *args):
+        self.create_cryptoblobs_or_load_index()
+        typ, data = imaplib.IMAP4_SSL.uid(self, command, *args)
         command = command.upper()
         if command == "FETCH":
-            # translate uid into correct uid
+            uid = args[0]
+            folder = args[2]
+            # TODO: actually handle case where this is the index that's been
+            if folder == CRYPTOBLOBS:
+                return # ignore it for now
+            # updated by another client
 
-            # fetch it
-            # decrypt it
-        self.create_cryptoblobs_or_load_index()
-        a = imaplib.IMAP4_SSL.uid(self, command, *args)
+            # assume this is the first time we've fetched it
+            # (as in we wouldn't be fetching it unless it's changed on the server)
+            # delete it off the server
+            self.delete_message_from_actual_folder_uid(uid, folder)
+
+            # update it in the index
+            if not folder in self.mapping:
+                self.mapping[folder] = []
+            self.mapping[folder].append(uid)
+
+            # save the index
+            self.save_index(self.mapping)
+
+            # reupload message to the cryptoblobs folder
+            # TODO RIGHT HERE
+
         print "uid", command#, _parse_imap(a)
         # _parse_imap will only work when it's not FETCH.
         # from mailbox import Mailbox, Message
@@ -170,7 +197,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         #if 
 
 
-        return a
+        return typ, data
 
     # ******************************************************** #
     # these methods are like maybe called but less important? 

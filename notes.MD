@@ -1,4 +1,5 @@
 - assuming that all IMAP clients are running the protocol
+- possible TODO: figure out what it looks like when something on the server was changed by another imap client.
 - input on encryption method?
 - opportunistically add messages to index
 - http://pymotw.com/2/imaplib/

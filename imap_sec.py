@@ -62,6 +62,9 @@ def _parse_imap(reply):
 
 CRYPTOBLOBS = "CRYPTOBLOBS"
 INDEX = "INDEX"
+ENCRYPTED = "ENCRYPTED"
+
+parent = imaplib.IMAP4_SSL
 
 # we need to keep track of imap state
 class IMAP4_SSL(imaplib.IMAP4_SSL):
@@ -96,8 +99,21 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         # TODO: decrypt message
         return json.loads(data[0][1].strip())
 
+    def encrypt_and_append_message(self, message):
+        new_body = str(message)
+        print "encrypting message", message
+        # TODO: encrypt message
+        self.append_encrypted_message(new_body)
+
+    def append_encrypted_message(self, message_body):
+        message = Message()
+        message['Subject'] = ENCRYPTED
+        message['From'] = "foo@bar.com"
+        message['To'] = "foo@bar.com"
+        message.set_payload(message_body)
+        typ, data = parent.append(self, CRYPTOBLOBS, None, None, str(message))
+
     def append_index(self, table):
-        imaplib.IMAP4_SSL.select(self,mailbox=CRYPTOBLOBS)
         message = Message()
         message['Subject'] = INDEX
         message['From'] = "foo@bar.com"
@@ -166,7 +182,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         self.create_cryptoblobs_or_load_index()
         typ, data = imaplib.IMAP4_SSL.uid(self, command, *args)
         command = command.upper()
-        if command == "FETCH":
+        if command == "FETCH" and "BODY" in args[1]:
+            print args
             uid = args[0]
             folder = args[2]
             # TODO: actually handle case where this is the index that's been
@@ -188,7 +205,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             self.save_index(self.mapping)
 
             # reupload message to the cryptoblobs folder
-            # TODO RIGHT HERE
+            self.encrypt_and_append_message(Message(data[0][1].strip()))
 
         print "uid", command#, _parse_imap(a)
         # _parse_imap will only work when it's not FETCH.

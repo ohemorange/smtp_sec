@@ -7,6 +7,11 @@
 - https://tools.ietf.org/html/rfc3501#section-6.4.4
 - https://docs.python.org/2/library/email.message.html#email.message.Message
 
+## 2/25/15
+- mailpile selects folder instead of passing into uid, so make sure to
+handle both types of selection.
+- VICTORY VICTORY IT'S DELETING AND REUPLOADING INTO THE OTHER FOLDER FUCK YEAH
+
 ## notes from meeting during the second to last week in February
 ### Threats
 - "oblivious RAM"

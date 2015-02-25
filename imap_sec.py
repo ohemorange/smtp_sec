@@ -3,6 +3,7 @@ import re
 from mailbox import Message
 import json
 import sys
+import traceback
 
 class IMAP4(imaplib.IMAP4):
     pass
@@ -83,12 +84,12 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def delete_message_from_actual_folder(self, index_id, folder):
         imaplib.IMAP4_SSL.select(self, mailbox=folder)
         typ, data = imaplib.IMAP4_SSL.store(self, str(index_id), "+FLAGS", r'(\Deleted)')
-        typ, response = imaplib.IMAP4_SSL.expunge()
+        typ, response = imaplib.IMAP4_SSL.expunge(self)
 
     def delete_message_from_actual_folder_uid(self, index_id, folder):
         imaplib.IMAP4_SSL.select(self, mailbox=folder)
         typ, data = imaplib.IMAP4_SSL.uid(self, "STORE", str(index_id), "+FLAGS", r'(\Deleted)')
-        typ, response = imaplib.IMAP4_SSL.expunge()
+        typ, response = imaplib.IMAP4_SSL.expunge(self)
 
     def delete_index(self, index_id):
         self.delete_message_from_actual_folder(index_id, CRYPTOBLOBS)
@@ -101,7 +102,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
     def encrypt_and_append_message(self, message):
         new_body = str(message)
-        print "encrypting message", message
         # TODO: encrypt message
         self.append_encrypted_message(new_body)
 
@@ -185,7 +185,9 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         if command == "FETCH" and "BODY" in args[1]:
             print args
             uid = args[0]
-            folder = args[2]
+            folder = self.selected_mailbox
+            if len(args) >= 3:
+                folder = args[2]
             # TODO: actually handle case where this is the index that's been
             if folder == CRYPTOBLOBS:
                 return # ignore it for now

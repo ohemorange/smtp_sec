@@ -26,6 +26,7 @@ handle both types of selection.
   if I added it to a local folder or something, it doesn't care. so if I actually
   made it so such changes were reflected in the imap stuff, I couldn't test it
   without significantly changing mailpile as well...
+ - added rollback detection. unsure if that made it recrash or I just found an original bug??
 
 ## notes from meeting during the second to last week in February
 ### Threats

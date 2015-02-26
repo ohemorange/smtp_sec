@@ -12,6 +12,21 @@
 handle both types of selection.
 - VICTORY VICTORY IT'S DELETING AND REUPLOADING INTO THE OTHER FOLDER FUCK YEAH
 
+## to test
+- what if a filter's set up and it comes in that way?
+- you know actually with multiple clients
+
+## big remaining todo steps
+- implement workflow when coming from a secure source
+- delete from all mail, in addition to inbox
+--- no seriously deal with all mail, this is a big problem.
+
+## to bring up in meeting
+- so, mailpile doesn't actually reflect local changes on the server. like
+  if I added it to a local folder or something, it doesn't care. so if I actually
+  made it so such changes were reflected in the imap stuff, I couldn't test it
+  without significantly changing mailpile as well...
+
 ## notes from meeting during the second to last week in February
 ### Threats
 - "oblivious RAM"

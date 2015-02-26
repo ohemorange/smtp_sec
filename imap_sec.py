@@ -64,6 +64,7 @@ def _parse_imap(reply):
 CRYPTOBLOBS = "CRYPTOBLOBS"
 INDEX = "INDEX"
 ENCRYPTED = "ENCRYPTED"
+SEQUENCE_NUMBER = "SEQUENCE_NUMBER"
 
 parent = imaplib.IMAP4_SSL
 
@@ -75,6 +76,9 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
         self.mapping = None
         self.selected_mailbox = "INBOX"
+        # TODO: load locally stored index number
+        self.last_index_number = 0
+        self.rollback_detected = False
 
     def find_index_id(self):
         imaplib.IMAP4_SSL.select(self, mailbox=CRYPTOBLOBS)
@@ -94,24 +98,53 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def delete_index(self, index_id):
         self.delete_message_from_actual_folder(index_id, CRYPTOBLOBS)
 
-    def load_index(self, index_id):
+    # this method checks and sets the rollback_detected flag
+    # if rollback is detected, it returns the current index
+    def unpack_index_contents(self, decrypted_index_body_text):
+        table = json.loads(decrypted_index_body_text[0][1].strip())
+        if table[SEQUENCE_NUMBER] < self.last_index_number:
+            self.rollback_detected = True
+            return self.mapping
+        return table
+
+    def fetch_and_load_index(self, index_id):
         imaplib.IMAP4_SSL.select(self, mailbox=CRYPTOBLOBS)
+        # fetches the text of message with id index_id
         typ, data = imaplib.IMAP4_SSL.fetch(self, index_id, '(BODY[TEXT])')
         # TODO: decrypt message
-        return json.loads(data[0][1].strip())
+        return self.unpack_index_contents(data)
+
+    def decrypt_and_validate_updated_index(self, encrypted_index_body):
+        # TODO: decrypt body
+        decrypted_index_body_text = encrypted_index_body
+
+        changed_table = self.unpack_index_contents(decrypted_index_body_text)
+        if changed_table[SEQUENCE_NUMBER] < self.last_index_number:
+            return False # detect rollback
+        self.last_index_number = changed_table[SEQUENCE_NUMBER]
+        # TODO: save to some local store
+        self.mapping = changed_table
+        return True
+
 
     def encrypt_and_append_message(self, message):
+        message['ORIGINAL-FOLDER'] = self.selected_mailbox
         new_body = str(message)
         # TODO: encrypt message
         self.append_encrypted_message(new_body)
 
-    def append_encrypted_message(self, message_body):
+    def append_encrypted_message(self, encrypted_message_body):
         message = Message()
         message['Subject'] = ENCRYPTED
         message['From'] = "foo@bar.com"
         message['To'] = "foo@bar.com"
-        message.set_payload(message_body)
+        message.set_payload(str(encrypted_message_body))
         typ, data = parent.append(self, CRYPTOBLOBS, None, None, str(message))
+
+    def decrypt_and_unpack_message(self, message):
+        old_message_str = message.get_payload()
+        # TODO: decrypt old_message_str
+        return old_message_str
 
     def append_index(self, table):
         message = Message()
@@ -121,15 +154,17 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         message.set_payload(json.dumps(table)+"\n")
         # TODO: encrypt message
         typ, data = imaplib.IMAP4_SSL.append(self, CRYPTOBLOBS, None, None, str(message))
+        print "append_index", typ, data
 
     # assumes cryptoblobs and index already exist
     def save_index(self, table):
         index_id = self.find_index_id()
         # delete original index
         self.delete_index(index_id)
+        # increment the sequence number
+        table[SEQUENCE_NUMBER] = table[SEQUENCE_NUMBER] + 1
         # append new index        
         self.append_index(table)
-
 
     def create_cryptoblobs_or_load_index(self):
         if self.mapping != None:
@@ -140,10 +175,10 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         if not CRYPTOBLOBS in names:
             print "creating cryptoblobs"
             imaplib.IMAP4_SSL.create(self, CRYPTOBLOBS)
-            self.append_index({})
+            self.append_index({SEQUENCE_NUMBER: 1})
         # unload the index
         index_id = self.find_index_id()
-        self.mapping = self.load_index(index_id)
+        self.mapping = self.fetch_and_load_index(index_id)
         print "loaded index", self.mapping
 
     def login(self, user, password):
@@ -181,6 +216,9 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def uid(self, command, *args):
         self.create_cryptoblobs_or_load_index()
         typ, data = imaplib.IMAP4_SSL.uid(self, command, *args)
+        print "got data", data
+        if data == [None]:
+            print "args", args
         command = command.upper()
         if command == "FETCH" and "BODY" in args[1]:
             print args
@@ -189,33 +227,64 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             if len(args) >= 3:
                 folder = args[2]
             # TODO: actually handle case where this is the index that's been
-            if folder == CRYPTOBLOBS:
-                return # ignore it for now
             # updated by another client
+            message_contents = data[0][1].strip()
+            if folder == CRYPTOBLOBS:
+                # this could be the index, which means that
+                # another client has updated the index
+                messageified = Message(message_contents)
+                print "subject", messageified['Subject']
+                if messageified['Subject'].strip() == INDEX:
+                    return False, []
+                    print "found the index", data
+                    # deal with the changed contents of the index?
+                    # for now, just copy the index into the local store
+                    # the scan will just give us the updated messages in cryptoblobs
+                    ok = self.decrypt_and_validate_updated_index(messageified.get_payload())
+                    # not sure we currently actually have to deal with changes in the index
+                    # this is a fantastic UI choice.
+                    if ok:
+                        messageified.set_payload("Everything is awesome.")
+                    else:
+                        messageified.set_payload("Everything is not awesome.")
+                    data[0][1] = str(messageified)
+                    # it's probably fine to just have this ui component here,
+                    # because it means the server has updated it, and wants us
+                    # to grab the rolled back one.
+                else:
+                    # returns a string
+                    unpacked_message = self.decrypt_and_unpack_message(messageified)
+                    data[0][1] = unpacked_message
+                    # TODO: do we need to know which folder it belonged in originally?
+                    # maybe select the folder
+            else:
+                # assume this is the first time we've fetched it
+                # (as in we wouldn't be fetching it unless it's changed on the server)
+                # delete it off the server
+                self.delete_message_from_actual_folder_uid(uid, folder)
 
-            # assume this is the first time we've fetched it
-            # (as in we wouldn't be fetching it unless it's changed on the server)
-            # delete it off the server
-            self.delete_message_from_actual_folder_uid(uid, folder)
+                # update it in the index
+                if not folder in self.mapping:
+                    self.mapping[folder] = []
+                self.mapping[folder].append(uid)
 
-            # update it in the index
-            if not folder in self.mapping:
-                self.mapping[folder] = []
-            self.mapping[folder].append(uid)
+                # save the index
+                self.save_index(self.mapping)
 
-            # save the index
-            self.save_index(self.mapping)
+                # turn it into a Message object
+                messageified = Message(message_contents)
 
-            # reupload message to the cryptoblobs folder
-            self.encrypt_and_append_message(Message(data[0][1].strip()))
+                # reupload message to the cryptoblobs folder
+                self.encrypt_and_append_message(messageified)
 
+                # just return the original message to the local client,
+                # I'm sure nothing could ever go wrong with thaaaat
         print "uid", command#, _parse_imap(a)
         # _parse_imap will only work when it's not FETCH.
         # from mailbox import Mailbox, Message
         #Message(data)
         #if 
-
-
+        print "returning data", data
         return typ, data
 
     # ******************************************************** #

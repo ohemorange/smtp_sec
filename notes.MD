@@ -28,7 +28,25 @@ handle both types of selection.
   without significantly changing mailpile as well...
  - added rollback detection. unsure if that made it recrash or I just found an original bug??
 
-## notes from meeting during the second to last week in February
+## notes from meeting 2/26/15
+- forward security
+- index --> size
+- fine to know it exists
+- currently can see when a message was created
+- time it would have come from
+- my mission: enabling a secure client to use imap at all
+- want all functions and show that it works so mailpile, for example, can use it
+- in the case of captured imap server + SMTorP or network + legacy IMAP:
+- we don't want the adversary to know when we've received a message
+- so: algorithm based on the state of the system sends some information per unit time, informing a planning component of a schedule for ups and downs
+- by ups and down: either download k messages and upload k+1, or the reverse.
+- so how often, and how many messages. this way we can hide received messages in there, and also delete messages off of the server.
+- note that this is planned with SMTorP/untrusted imap in mind. network/legacy should not be a priority in planning.
+
+## to bring up in next meeting
+- scrap network/legacy model. it's not what we're planning for at all.
+
+## notes from meeting 2/17/15
 ### Threats
 - "oblivious RAM"
 - reupload how many

@@ -11,62 +11,14 @@ class IMAP4(imaplib.IMAP4):
     def __init__(self):
         raise NotImplementedError("Do not use this class")
 
-CRLF = imaplib.CRLF
-
-# ***************************************************************
-# parsing code from mailpile
-
-IMAP_TOKEN = re.compile('("[^"]*"'
-                        '|[\\(\\)]'
-                        '|[^\\(\\)"\\s]+'
-                        '|\\s+)')
-
-def _parse_imap(reply):
-    """
-    This routine will parse common IMAP4 responses into Pythonic data
-    structures.
-
-    >>> _parse_imap(('OK', ['One (Two (Th ree)) "Four Five"']))
-    (True, ['One', ['Two', ['Th', 'ree']], 'Four Five'])
-
-    >>> _parse_imap(('BAD', ['Sorry']))
-    (False, ['Sorry'])
-    """
-    stack = []
-    pdata = []
-    for dline in reply[1]:
-        while True:
-            if isinstance(dline, (str, unicode)):
-                m = IMAP_TOKEN.match(dline)
-            else:
-                print 'WARNING: Unparsed IMAP response data: %s' % (dline,)
-                m = None
-            if m:
-                token = m.group(0)
-                dline = dline[len(token):]
-                if token[:1] == '"':
-                    pdata.append(token[1:-1])
-                elif token[:1] == '(':
-                    stack.append(pdata)
-                    pdata.append([])
-                    pdata = pdata[-1]
-                elif token[:1] == ')':
-                    pdata = stack.pop(-1)
-                elif token[:1] not in (' ', '\t', '\n', '\r'):
-                    pdata.append(token)
-            else:
-                break
-    return (reply[0].upper() == 'OK'), pdata
-
-# ***************************************************************
-# ***************************************************************
-
 CRYPTOBLOBS = "CRYPTOBLOBS"
 INDEX = "INDEX"
 ENCRYPTED = "ENCRYPTED"
 SEQUENCE_NUMBER = "SEQUENCE_NUMBER"
 
 parent = imaplib.IMAP4_SSL
+
+CRLF = imaplib.CRLF
 
 # we need to keep track of imap state
 class IMAP4_SSL(imaplib.IMAP4_SSL):
@@ -83,17 +35,22 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def find_index_id(self):
         imaplib.IMAP4_SSL.select(self, mailbox=CRYPTOBLOBS)
         typ, data = imaplib.IMAP4_SSL.search(self, None, "SUBJECT", '"'+INDEX+'"')
+        imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
         return data[0].split()[0]
 
     def delete_message_from_actual_folder(self, index_id, folder):
         imaplib.IMAP4_SSL.select(self, mailbox=folder)
         typ, data = imaplib.IMAP4_SSL.store(self, str(index_id), "+FLAGS", r'(\Deleted)')
+        print "delete response", typ, data
         typ, response = imaplib.IMAP4_SSL.expunge(self)
+        print "expunge response", typ, response
+        imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
 
     def delete_message_from_actual_folder_uid(self, index_id, folder):
         imaplib.IMAP4_SSL.select(self, mailbox=folder)
         typ, data = imaplib.IMAP4_SSL.uid(self, "STORE", str(index_id), "+FLAGS", r'(\Deleted)')
         typ, response = imaplib.IMAP4_SSL.expunge(self)
+        imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
 
     def delete_index(self, index_id):
         self.delete_message_from_actual_folder(index_id, CRYPTOBLOBS)
@@ -112,6 +69,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         # fetches the text of message with id index_id
         typ, data = imaplib.IMAP4_SSL.fetch(self, index_id, '(BODY[TEXT])')
         # TODO: decrypt message
+        imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
         return self.unpack_index_contents(data)
 
     def decrypt_and_validate_updated_index(self, encrypted_index_body):
@@ -159,6 +117,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # assumes cryptoblobs and index already exist
     def save_index(self, table):
         index_id = self.find_index_id()
+        print "old index id", index_id
         # delete original index
         self.delete_index(index_id)
         # increment the sequence number

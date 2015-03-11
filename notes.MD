@@ -54,7 +54,7 @@ handle both types of selection.
 - http://imapwiki.org/ImapTest/ServerStatus
 -- most servers do not implement the entire protocol
 
-# notes from 3/10
+# notes from 3/10ish
 - I found where it's stored. it's .local/share/Mailpile/.
 - all mail is just wonky. it's not me. it shows 2 when it should show all? It doesn't copy messages into all mail that are elsewhere?
 - holy inconsistencies, batman: "If you delete a message from your inbox or one of your custom folders in your IMAP client, it will still appear in [Gmail]/All Mail.
@@ -62,6 +62,11 @@ handle both types of selection.
 Here's why: in most folders, deleting a message simply removes that folder's label from the message, including the label identifying the message as being in your inbox. [Gmail]/All Mail shows all of your messages, whether or not they have labels attached to them. If you want to delete a message from all folders, move it to the [Gmail]/Trash folder.
 
 If you delete a message from [Gmail]/Spam or [Gmail]/Trash, it will be deleted permanently."
+- ok, changed the settings on the server to do the REASONABLE thing.
+- that is, auto-expunge off, and deleting actually deletes. who knew you needed to
+tell it to do that explicitly? asdajfasdf.
+- so the index contains messages from cryptoblobs, which is probably what's causing the triple-index problem.
+- EVERYTHING IS CRASHING BECAUSE OF SOME EXTRA QUOTES AND JSON.
 
 ## to bring up in next meeting
 - scrap network/legacy model. it's not what we're planning for at all.

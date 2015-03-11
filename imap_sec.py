@@ -118,6 +118,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def save_index(self, table):
         index_id = self.find_index_id()
         print "old index id", index_id
+        # TODO: get information from old index
         # delete original index
         self.delete_index(index_id)
         # increment the sequence number
@@ -163,7 +164,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # switches which mailbox we're prodding for updates in
     def select(self, mailbox='INBOX', readonly=False):
         self.create_cryptoblobs_or_load_index()
-        self.selected_mailbox = mailbox
+        self.selected_mailbox = mailbox.strip('"')
         typ, data = imaplib.IMAP4_SSL.select(self, mailbox, readonly)
         print "select", mailbox, data
         return typ, data
@@ -180,22 +181,28 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             print "args", args
         command = command.upper()
         if command == "FETCH" and "BODY" in args[1]:
-            print args
+            print "args", args
             uid = args[0]
             folder = self.selected_mailbox
             if len(args) >= 3:
                 folder = args[2]
+            print "in folder", folder
             # TODO: actually handle case where this is the index that's been
             # updated by another client
             message_contents = data[0][1].strip()
-            if folder == CRYPTOBLOBS:
+            messageified = Message(message_contents)
+            subject = messageified['Subject'].strip().strip('"')
+            print "subject", subject
+            if folder == CRYPTOBLOBS or subject == ENCRYPTED or subject == INDEX:
+                print "probably not a real message"
                 # this could be the index, which means that
                 # another client has updated the index
-                messageified = Message(message_contents)
-                print "subject", messageified['Subject']
-                if messageified['Subject'].strip() == INDEX:
+                if subject == INDEX and folder == CRYPTOBLOBS:
+                    # TODO currently ignoring index updates, because we're
+                    # the ones who made them. change for multiple clients.
                     return False, []
                     print "found the index", data
+                    # 
                     # deal with the changed contents of the index?
                     # for now, just copy the index into the local store
                     # the scan will just give us the updated messages in cryptoblobs
@@ -210,12 +217,20 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                     # it's probably fine to just have this ui component here,
                     # because it means the server has updated it, and wants us
                     # to grab the rolled back one.
-                else:
+                elif subject == ENCRYPTED and folder == CRYPTOBLOBS:
                     # returns a string
+                    # TODO we need to know if we're the ones who just put this there.
+                    # if so, ignore for now, maybe change this later.
+                    return False, []
                     unpacked_message = self.decrypt_and_unpack_message(messageified)
                     data[0][1] = unpacked_message
                     # TODO: do we need to know which folder it belonged in originally?
                     # maybe select the folder
+                else:
+                    # we're in all mail and the subject is encrypted or cryptoblobs
+                    # should probably actually uniquely identify here
+                    # TODO
+                    return False, []
             else:
                 # assume this is the first time we've fetched it
                 # (as in we wouldn't be fetching it unless it's changed on the server)

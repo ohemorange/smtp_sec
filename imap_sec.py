@@ -21,6 +21,8 @@ parent = imaplib.IMAP4_SSL
 
 CRLF = imaplib.CRLF
 
+DEBUG_IMAP_FROM_GMAIL = False
+
 # we need to keep track of imap state
 class IMAP4_SSL(imaplib.IMAP4_SSL):
     pass
@@ -37,15 +39,18 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         imaplib.IMAP4_SSL.select(self, mailbox=folder)
         typ, data = imaplib.IMAP4_SSL.uid(self, 'SEARCH', "SUBJECT", '"'+INDEX+'"')
         imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
-        print "found index id", data
+        if DEBUG_IMAP_FROM_GMAIL:
+            print "found index id", data
         return data[0].split()[0]
 
     def delete_message_from_actual_folder_uid(self, index_id, folder):
         imaplib.IMAP4_SSL.select(self, mailbox=folder)
         typ, data = imaplib.IMAP4_SSL.uid(self, "STORE", str(index_id), "+FLAGS", r'(\Deleted)')
-        print "delete response", typ, data
+        if DEBUG_IMAP_FROM_GMAIL:
+            print "delete response", typ, data
         typ, response = imaplib.IMAP4_SSL.expunge(self)
-        print "expunge response", typ, response
+        if DEBUG_IMAP_FROM_GMAIL:
+            print "expunge response", typ, response
         imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
 
     def delete_index(self):
@@ -118,12 +123,14 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         message.set_payload(json.dumps(table)+"\n")
         # TODO: encrypt message
         typ, data = imaplib.IMAP4_SSL.append(self, CRYPTOBLOBS, None, None, str(message))
-        print "append_index", typ, data
+        if DEBUG_IMAP_FROM_GMAIL:
+            print "append_index", typ, data
 
     # assumes cryptoblobs and index already exist
     def save_index(self, table):
         index_id = self.find_index_uid_in_folder(CRYPTOBLOBS)
-        print "old index id", index_id
+        if DEBUG_IMAP_FROM_GMAIL:
+            print "old index id", index_id
         # TODO: get information from old index
         self.mapping = self.fetch_and_load_index(index_id) 
         # delete original index
@@ -140,13 +147,15 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         names = [line.split()[-1].strip('"') for line in data]
         # create cryptoblobs folder if one does not yet exist
         if not CRYPTOBLOBS in names:
-            print "creating cryptoblobs"
+            if DEBUG_IMAP_FROM_GMAIL:
+                print "creating cryptoblobs"
             imaplib.IMAP4_SSL.create(self, CRYPTOBLOBS)
             self.append_index({SEQUENCE_NUMBER: 1})
         # unload the index
         index_id = self.find_index_uid_in_folder(CRYPTOBLOBS)
         self.mapping = self.fetch_and_load_index(index_id)
-        print "loaded index", self.mapping
+        if DEBUG_IMAP_FROM_GMAIL:
+            print "loaded index", self.mapping
 
     def login(self, user, password):
         imaplib.IMAP4_SSL.login(self, user, password)
@@ -159,7 +168,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def list(self, directory='""', pattern='*'):
         self.create_cryptoblobs_or_load_index()
         typ, data = imaplib.IMAP4_SSL.list(self, directory, pattern)
-        print "list", data
+        if DEBUG_IMAP_FROM_GMAIL:
+            print "list", data
         return typ, data
 
     def noop(self):
@@ -173,7 +183,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         self.create_cryptoblobs_or_load_index()
         self.selected_mailbox = mailbox.strip('"')
         typ, data = imaplib.IMAP4_SSL.select(self, mailbox, readonly)
-        print "select", mailbox, data
+        if DEBUG_IMAP_FROM_GMAIL:
+            print "select", mailbox, data
         return typ, data
 
     # asks for and receives email
@@ -185,30 +196,36 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         typ, data = imaplib.IMAP4_SSL.uid(self, command, *args)
         # print "got data", data
         if data == [None]:
-            print "args", args
+            if DEBUG_IMAP_FROM_GMAIL:
+                print "args", args
         command = command.upper()
         if command == "FETCH" and "BODY" in args[1]:
-            print "args", args
+            if DEBUG_IMAP_FROM_GMAIL:
+                print "args", args
             uid = args[0]
             folder = self.selected_mailbox
             if len(args) >= 3:
                 folder = args[2]
-            print "in folder", folder
+            if DEBUG_IMAP_FROM_GMAIL:
+                print "in folder", folder
             # TODO: actually handle case where this is the index that's been
             # updated by another client
             message_contents = data[0][1].strip()
             messageified = Message(message_contents)
             subject = messageified['Subject'].strip().strip('"')
-            print "subject", subject
+            if DEBUG_IMAP_FROM_GMAIL:
+                print "subject", subject
             if folder == CRYPTOBLOBS or subject == ENCRYPTED or subject == INDEX:
-                print "probably not a real message"
+                if DEBUG_IMAP_FROM_GMAIL:
+                    print "probably not a real message"
                 # this could be the index, which means that
                 # another client has updated the index
                 if subject == INDEX and folder == CRYPTOBLOBS:
                     # TODO currently ignoring index updates, because we're
                     # the ones who made them. change for multiple clients.
                     return False, []
-                    print "found the index", data
+                    if DEBUG_IMAP_FROM_GMAIL:
+                        print "found the index", data
                     # 
                     # deal with the changed contents of the index?
                     # for now, just copy the index into the local store
@@ -261,8 +278,10 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 # just return the original message to the local client,
                 # I'm sure nothing could ever go wrong with thaaaat
         elif command == "SEARCH":
-            print "search", data
-        print "uid", command#, _parse_imap(a)
+            if DEBUG_IMAP_FROM_GMAIL:
+                print "search", data
+        if DEBUG_IMAP_FROM_GMAIL:
+            print "uid", command#, _parse_imap(a)
         # _parse_imap will only work when it's not FETCH.
         # from mailbox import Mailbox, Message
         #Message(data)

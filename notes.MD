@@ -81,6 +81,25 @@ tell it to do that explicitly? asdajfasdf.
 - ok, so here's the thing. this is super gmail-dependent. because if I want to actually delete from all mail, I have to move to trash, then delete from trash. that's the only gmail way to do it. as opposed to a PROPER, NORMAL, NON-MALICIOUS server that doesn't have weird unspecified behaviors. so you know what, the old indices are just going to stay in all mail for now. because I have other things to do.
 - actually, I think I have it mostly set up so the code is generic, and changes are made in gmail. maybe.
 - possible todo: check what happens when message is there before index is thrust upon it.
+- setting up smtorp.
+- this means setting up tor as a hidden service. that's putting these lines into the torrc file:
+HiddenServiceDir /home/user/.local/share/tor/hidden_service/
+HiddenServicePort 25 localhost:33412
+- note, needed to create that folder before it was happy.
+- https://github.com/mailpile/Mailpile/wiki/SMTorP#proof-of-concept this is the sort of fun documentation I get to enjoy.
+-   def _is_dangerous_address(self, address):
+        return False  # FIXME
+
+    def _is_spam_address(self, address):
+        return False  # FIXME
+- well that's one way to handle spam detection on encrypted data.
+- but what is the user name.
+- irc is a dead zone.
+- https://github.com/mailpile/Mailpile/wiki/SMTorP
+- https://github.com/mailpile/Mailpile/commit/eeb315cbd831777902fc8ff9a33fe570e2093987
+- https://github.com/mailpile/Mailpile/commit/eeb315cbd831777902fc8ff9a33fe570e2093987
+- https://github.com/mailpile/Mailpile/commit/bdc8d92ad8b21219e28ce8e16f6b74dfded1d579
+
 
 ## notes from meeting 2/17/15
 ### Threats

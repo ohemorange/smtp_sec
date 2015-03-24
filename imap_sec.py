@@ -32,28 +32,23 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         self.last_index_number = 0
         self.rollback_detected = False
 
-    def find_index_id(self):
+    def find_index_uid(self):
         imaplib.IMAP4_SSL.select(self, mailbox=CRYPTOBLOBS)
-        typ, data = imaplib.IMAP4_SSL.search(self, None, "SUBJECT", '"'+INDEX+'"')
+        typ, data = imaplib.IMAP4_SSL.uid(self, 'SEARCH', "SUBJECT", '"'+INDEX+'"')
         imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
+        print "found index id", data
         return data[0].split()[0]
 
-    def delete_message_from_actual_folder(self, index_id, folder):
+    def delete_message_from_actual_folder_uid(self, index_id, folder):
         imaplib.IMAP4_SSL.select(self, mailbox=folder)
-        typ, data = imaplib.IMAP4_SSL.store(self, str(index_id), "+FLAGS", r'(\Deleted)')
+        typ, data = imaplib.IMAP4_SSL.uid(self, "STORE", str(index_id), "+FLAGS", r'(\Deleted)')
         print "delete response", typ, data
         typ, response = imaplib.IMAP4_SSL.expunge(self)
         print "expunge response", typ, response
         imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
 
-    def delete_message_from_actual_folder_uid(self, index_id, folder):
-        imaplib.IMAP4_SSL.select(self, mailbox=folder)
-        typ, data = imaplib.IMAP4_SSL.uid(self, "STORE", str(index_id), "+FLAGS", r'(\Deleted)')
-        typ, response = imaplib.IMAP4_SSL.expunge(self)
-        imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
-
     def delete_index(self, index_id):
-        self.delete_message_from_actual_folder(index_id, CRYPTOBLOBS)
+        self.delete_message_from_actual_folder_uid(index_id, CRYPTOBLOBS)
 
     # this method checks and sets the rollback_detected flag
     # if rollback is detected, it returns the current index
@@ -67,7 +62,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def fetch_and_load_index(self, index_id):
         imaplib.IMAP4_SSL.select(self, mailbox=CRYPTOBLOBS)
         # fetches the text of message with id index_id
-        typ, data = imaplib.IMAP4_SSL.fetch(self, index_id, '(BODY[TEXT])')
+        typ, data = imaplib.IMAP4_SSL.uid(self, "FETCH", index_id, '(BODY[TEXT])')
         # TODO: decrypt message
         imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
         return self.unpack_index_contents(data)
@@ -116,7 +111,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
     # assumes cryptoblobs and index already exist
     def save_index(self, table):
-        index_id = self.find_index_id()
+        index_id = self.find_index_uid()
         print "old index id", index_id
         # TODO: get information from old index
         # delete original index
@@ -137,7 +132,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             imaplib.IMAP4_SSL.create(self, CRYPTOBLOBS)
             self.append_index({SEQUENCE_NUMBER: 1})
         # unload the index
-        index_id = self.find_index_id()
+        index_id = self.find_index_uid()
         self.mapping = self.fetch_and_load_index(index_id)
         print "loaded index", self.mapping
 
@@ -176,7 +171,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def uid(self, command, *args):
         self.create_cryptoblobs_or_load_index()
         typ, data = imaplib.IMAP4_SSL.uid(self, command, *args)
-        print "got data", data
+        # print "got data", data
         if data == [None]:
             print "args", args
         command = command.upper()
@@ -253,12 +248,14 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
                 # just return the original message to the local client,
                 # I'm sure nothing could ever go wrong with thaaaat
+        elif command == "SEARCH":
+            print "search", data
         print "uid", command#, _parse_imap(a)
         # _parse_imap will only work when it's not FETCH.
         # from mailbox import Mailbox, Message
         #Message(data)
         #if 
-        print "returning data", data
+        # print "returning data", data
         return typ, data
 
     # ******************************************************** #

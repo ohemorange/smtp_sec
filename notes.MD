@@ -1,4 +1,4 @@
-## to test
+	## to test
 - what if a filter's set up and it comes in that way?
 - you know actually run with multiple clients
 
@@ -70,6 +70,13 @@ tell it to do that explicitly? asdajfasdf.
 
 ## to bring up in next meeting
 - scrap network/legacy model. it's not what we're planning for at all.
+
+## notes from 3/23
+- When a message is marked as deleted and expunged from the last visible IMAP folder: Immediately delete the message forever
+- how to solve my problems, temporarily: set up a rule in receiving gmail to have all messages skip the inbox and go directly to all mail. because you know what I am done dealing with this and have to move on.
+- this doesn't fix the problem of keeping the last three indices. why is that happening.
+- FOUND THE PROBLEM. ok so what's happening is that the message is removed from the cryptoblobs folder, but not all mail, so it still exists. then another message appears with the same subject. this will be threaded with the previous message, which will be BROUGHT OUT OF ALL MAIL AND GROUPED WITH THE NEW ONE AND HAVE THE LABEL REAPPLIED TO IT. I'm just turning off threading. YEP THAT SOLVES EVERYTHING.
+
 
 ## notes from meeting 2/17/15
 ### Threats

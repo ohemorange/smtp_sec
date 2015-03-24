@@ -76,7 +76,11 @@ tell it to do that explicitly? asdajfasdf.
 - how to solve my problems, temporarily: set up a rule in receiving gmail to have all messages skip the inbox and go directly to all mail. because you know what I am done dealing with this and have to move on.
 - this doesn't fix the problem of keeping the last three indices. why is that happening.
 - FOUND THE PROBLEM. ok so what's happening is that the message is removed from the cryptoblobs folder, but not all mail, so it still exists. then another message appears with the same subject. this will be threaded with the previous message, which will be BROUGHT OUT OF ALL MAIL AND GROUPED WITH THE NEW ONE AND HAVE THE LABEL REAPPLIED TO IT. I'm just turning off threading. YEP THAT SOLVES EVERYTHING.
-
+- https://support.google.com/mail/answer/78755
+- https://support.google.com/mail/answer/77657?hl=en
+- ok, so here's the thing. this is super gmail-dependent. because if I want to actually delete from all mail, I have to move to trash, then delete from trash. that's the only gmail way to do it. as opposed to a PROPER, NORMAL, NON-MALICIOUS server that doesn't have weird unspecified behaviors. so you know what, the old indices are just going to stay in all mail for now. because I have other things to do.
+- actually, I think I have it mostly set up so the code is generic, and changes are made in gmail. maybe.
+- possible todo: check what happens when message is there before index is thrust upon it.
 
 ## notes from meeting 2/17/15
 ### Threats

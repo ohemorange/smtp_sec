@@ -11,3 +11,35 @@ old index id 2
 delete response OK ['1 (FLAGS (\\Seen \\Deleted) UID 2)', '1 (UID 2 FLAGS (\\Deleted \\Seen))']
 expunge response OK ['1']
 append_index OK ['[APPENDUID 36 4] (Success)']
+
+
+
+select "[Gmail]/All Mail" ['4']
+search ['469 470 471 472']
+uid SEARCH
+uid FETCH
+args (472, '(BODY[]<0.61440>)')
+in folder [Gmail]/All Mail
+subject this time for the win
+delete response OK ['4 (FLAGS (\\Deleted) UID 472)', '4 (UID 472 FLAGS (\\Deleted))']
+expunge response OK ['4']
+found index id ['2']
+old index id 2
+found index id ['2']
+delete response OK ['1 (FLAGS (\\Seen \\Deleted) UID 2)', '1 (UID 2 FLAGS (\\Deleted \\Seen))']
+expunge response OK ['1']
+found index id ['469 470']
+delete response OK [None]
+expunge response OK [None]
+append_index OK ['[APPENDUID 40 4] (Success)']
+
+
+subject here we gooooo
+delete response OK ['2 (FLAGS (\\Deleted) UID 477)', '2 (UID 477 FLAGS (\\Deleted))']
+expunge response OK ['2']
+found index id ['1']
+old index id 1
+found index id ['1']
+delete response OK ['1 (FLAGS (\\Seen \\Deleted) UID 1)', '1 (UID 1 FLAGS (\\Deleted \\Seen))']
+expunge response OK ['1']
+append_index OK ['[APPENDUID 41 2] (Success)']

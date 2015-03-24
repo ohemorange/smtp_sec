@@ -15,6 +15,7 @@ CRYPTOBLOBS = "CRYPTOBLOBS"
 INDEX = "INDEX"
 ENCRYPTED = "ENCRYPTED"
 SEQUENCE_NUMBER = "SEQUENCE_NUMBER"
+GMAIL_ALL_MAIL = "[Gmail]/All Mail"
 
 parent = imaplib.IMAP4_SSL
 
@@ -32,8 +33,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         self.last_index_number = 0
         self.rollback_detected = False
 
-    def find_index_uid(self):
-        imaplib.IMAP4_SSL.select(self, mailbox=CRYPTOBLOBS)
+    def find_index_uid_in_folder(self, folder):
+        imaplib.IMAP4_SSL.select(self, mailbox=folder)
         typ, data = imaplib.IMAP4_SSL.uid(self, 'SEARCH', "SUBJECT", '"'+INDEX+'"')
         imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
         print "found index id", data
@@ -47,8 +48,15 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         print "expunge response", typ, response
         imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
 
-    def delete_index(self, index_id):
+    def delete_index(self):
+        index_id = self.find_index_uid_in_folder(CRYPTOBLOBS)
         self.delete_message_from_actual_folder_uid(index_id, CRYPTOBLOBS)
+        # so you can't actually delete from all mail. to handle this in gmail,
+        # what we SHOULD be doing is moving to trash then deleting from
+        # trash. but then it's gmail specific. not like everything else isn't
+        # already.
+        # index_id_in_all = self.find_index_uid_in_folder(GMAIL_ALL_MAIL)
+        # self.delete_message_from_actual_folder_uid(index_id, GMAIL_ALL_MAIL)
 
     # this method checks and sets the rollback_detected flag
     # if rollback is detected, it returns the current index
@@ -65,6 +73,9 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         typ, data = imaplib.IMAP4_SSL.uid(self, "FETCH", index_id, '(BODY[TEXT])')
         # TODO: decrypt message
         imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
+        # TODO: check index integrity
+        # TODO: combine with self.mapping
+        # this is probably a race condition
         return self.unpack_index_contents(data)
 
     def decrypt_and_validate_updated_index(self, encrypted_index_body):
@@ -111,11 +122,12 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
     # assumes cryptoblobs and index already exist
     def save_index(self, table):
-        index_id = self.find_index_uid()
+        index_id = self.find_index_uid_in_folder(CRYPTOBLOBS)
         print "old index id", index_id
         # TODO: get information from old index
+        self.mapping = self.fetch_and_load_index(index_id) 
         # delete original index
-        self.delete_index(index_id)
+        self.delete_index()
         # increment the sequence number
         table[SEQUENCE_NUMBER] = table[SEQUENCE_NUMBER] + 1
         # append new index        
@@ -132,7 +144,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             imaplib.IMAP4_SSL.create(self, CRYPTOBLOBS)
             self.append_index({SEQUENCE_NUMBER: 1})
         # unload the index
-        index_id = self.find_index_uid()
+        index_id = self.find_index_uid_in_folder(CRYPTOBLOBS)
         self.mapping = self.fetch_and_load_index(index_id)
         print "loaded index", self.mapping
 

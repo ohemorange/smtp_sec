@@ -1,4 +1,4 @@
-	## to test
+## to test
 - what if a filter's set up and it comes in that way?
 - you know actually run with multiple clients
 
@@ -29,7 +29,7 @@ handle both types of selection.
   if I added it to a local folder or something, it doesn't care. so if I actually
   made it so such changes were reflected in the imap stuff, I couldn't test it
   without significantly changing mailpile as well...
- - added rollback detection. unsure if that made it recrash or I just found an original bug??
+- added rollback detection. unsure if that made it recrash or I just found an original bug??
 
 ## notes from meeting 2/26/15
 - forward security
@@ -52,7 +52,7 @@ handle both types of selection.
 
 ### notes 3/3
 - http://imapwiki.org/ImapTest/ServerStatus
--- most servers do not implement the entire protocol
+ - most servers do not implement the entire protocol
 
 # notes from 3/10ish
 - I found where it's stored. it's .local/share/Mailpile/.
@@ -100,6 +100,26 @@ HiddenServicePort 25 localhost:33412
 - https://github.com/mailpile/Mailpile/commit/eeb315cbd831777902fc8ff9a33fe570e2093987
 - https://github.com/mailpile/Mailpile/commit/bdc8d92ad8b21219e28ce8e16f6b74dfded1d579
 
+## notes from meeting 3/24/15
+- include short section on policy, including third party doctrine
+- appendices: weird stuff in gmail, mailpile
+- dissemination: within an organization. they usually have to download special software anyway.
+- key management:
+ - problems with passphrase-based encryption
+ - what if they forget the password. you could do it so it's either password or device,
+   but users tend to not like it if you can't do the thing you told them you wouldn't
+   be able to do.
+- subject lines: random string. doesn't need to be saved because you can tell as new client.
+ - cool but not necessary: a string that's possible in imap but not smtp
+- how to test:
+ - telnet to smtp server
+ - hello, then ask for names
+ - try delivering to username, ask for hosts
+ - ask for addresses
+- append to todo list:
+ - handle key management
+ - multi-client systems problem - index as a log or a lock. Your Favorite Method, really.
+  - then every t, delete log, because you don't want deleted messages saved.
 
 ## notes from meeting 2/17/15
 ### Threats

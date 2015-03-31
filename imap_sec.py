@@ -23,6 +23,8 @@ CRLF = imaplib.CRLF
 
 DEBUG_IMAP_FROM_GMAIL = False
 
+DEBUG_IMAP_FROM_SMTORP = True
+
 # we need to keep track of imap state
 class IMAP4_SSL(imaplib.IMAP4_SSL):
     pass
@@ -191,6 +193,11 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # where message is a Message object.
     def add_message_to_folder(self, message_contents, folder, uid):
         # update it in the index
+        if DEBUG_IMAP_FROM_SMTORP:
+            print "add_message_to_folder"
+            print "message_contents", message_contents
+            print "folder", folder
+            print "uid", uid
         if not folder in self.mapping:
             self.mapping[folder] = []
         self.mapping[folder].append(uid)
@@ -278,7 +285,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 # delete it off the server
                 self.delete_message_from_actual_folder_uid(uid, folder)
 
-                self.add_message_to_folder(message, folder, uid)
+                self.add_message_to_folder(message_contents, folder, uid)
 
                 # just return the original message to the local client,
                 # I'm sure nothing could ever go wrong with thaaaat

@@ -170,6 +170,7 @@ HiddenServicePort 25 localhost:33412
   it to yourself.
 - smtp_server: smtpserver: processmessage --> imapmailsource:add_side_message -->
   imap_sec:	add_message_to_folder
+- when resetting, make sure to set port number.
 
 ## notes from meeting 2/17/15
 ### Threats

@@ -1,0 +1,36 @@
+Traceback (most recent call last):
+  File "/home/user/Mailpile/mailpile/plugins/smtp_server.py", line 184, in process_message
+    source.add_side_message(message)
+  File "/home/user/Mailpile/mailpile/mail_source/imap.py", line 654, in add_side_message
+    self.conn._conn.add_message_to_folder(msg_str, "SMTorP", string)
+  File "/home/user/smtp_sec/imap_sec.py", line 206, in add_message_to_folder
+    self.save_index(self.mapping)
+  File "/home/user/smtp_sec/imap_sec.py", line 133, in save_index
+    index_id = self.find_index_uid_in_folder(CRYPTOBLOBS)
+  File "/home/user/smtp_sec/imap_sec.py", line 41, in find_index_uid_in_folder
+    imaplib.IMAP4_SSL.select(self, mailbox=folder)
+  File "/usr/lib/python2.7/imaplib.py", line 661, in select
+    typ, dat = self._simple_command(name, mailbox)
+  File "/usr/lib/python2.7/imaplib.py", line 1087, in _simple_command
+    return self._command_complete(name, self._command(name, *args))
+  File "/usr/lib/python2.7/imaplib.py", line 909, in _command_complete
+    typ, data = self._get_tagged_response(tag)
+  File "/home/user/smtp_sec/imap_sec.py", line 349, in _get_tagged_response
+    a = imaplib.IMAP4_SSL._get_tagged_response(self, tag)
+  File "/usr/lib/python2.7/imaplib.py", line 1016, in _get_tagged_response
+    self._get_response()
+  File "/usr/lib/python2.7/imaplib.py", line 928, in _get_response
+    resp = self._get_line()
+  File "/usr/lib/python2.7/imaplib.py", line 1026, in _get_line
+    line = self.readline()
+  File "/home/user/smtp_sec/imap_sec.py", line 354, in readline
+    a = imaplib.IMAP4_SSL.readline(self)
+  File "/usr/lib/python2.7/imaplib.py", line 1188, in readline
+    return self.file.readline()
+  File "/usr/lib/python2.7/socket.py", line 447, in readline
+    data = self._sock.recv(self._rbufsize)
+  File "/usr/lib/python2.7/ssl.py", line 709, in recv
+    return self.read(buflen)
+  File "/usr/lib/python2.7/ssl.py", line 603, in read
+    v = self._sslobj.read(len or 1024)
+SSLError: [SSL: BLOCK_CIPHER_PAD_IS_WRONG] block cipher pad is wrong (_ssl.c:1750)

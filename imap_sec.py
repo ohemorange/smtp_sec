@@ -187,6 +187,21 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             print "select", mailbox, data
         return typ, data
 
+    def add_message_to_folder(self, message_contents, folder, uid):
+        # update it in the index
+        if not folder in self.mapping:
+            self.mapping[folder] = []
+        self.mapping[folder].append(uid)
+
+        # save the index
+        self.save_index(self.mapping)
+
+        # turn it into a Message object
+        messageified = Message(message_contents)
+
+        # reupload message to the cryptoblobs folder
+        self.encrypt_and_append_message(messageified)
+
     # asks for and receives email
     # command=SEARCH returns a list of the uids in the current mailbox
     # command=FETCH fetches a specific message?
@@ -261,19 +276,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 # delete it off the server
                 self.delete_message_from_actual_folder_uid(uid, folder)
 
-                # update it in the index
-                if not folder in self.mapping:
-                    self.mapping[folder] = []
-                self.mapping[folder].append(uid)
-
-                # save the index
-                self.save_index(self.mapping)
-
-                # turn it into a Message object
-                messageified = Message(message_contents)
-
-                # reupload message to the cryptoblobs folder
-                self.encrypt_and_append_message(messageified)
+                self.add_message_to_folder(message, folder, uid)
 
                 # just return the original message to the local client,
                 # I'm sure nothing could ever go wrong with thaaaat

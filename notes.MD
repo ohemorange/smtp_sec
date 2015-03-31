@@ -2,12 +2,22 @@
 - what if a filter's set up and it comes in that way?
 - you know actually run with multiple clients
 
-## big remaining todo steps
+## todo
+- test messages go to and coming from a secure source:
+  - telnet to smtp server
+  - hello, then ask for names
+  - try delivering to username, ask for hosts
+  - ask for addresses
 - implement workflow when coming from a secure source
-- delete from all mail, in addition to inbox
-- don't re-fetch message that I just pushed to cryptoblobs
 - implement scheduler and updates on schedule
-- have all functionalities operate on that schedule
+  - have all functionalities operate on that schedule
+- subject lines: random string. doesn't need to be saved because you can tell
+  as new client.
+  - cool but not necessary: a string that's possible in imap but not smtp
+- handle key management
+- solve the multi-client systems problem - index as a log or a lock. Your Favorite
+    Method, really.
+  - then every t, delete log, because you don't want deleted messages saved.
 
 ## some notes
 - assuming that all IMAP clients are running the protocol
@@ -120,6 +130,46 @@ HiddenServicePort 25 localhost:33412
  - handle key management
  - multi-client systems problem - index as a log or a lock. Your Favorite Method, really.
   - then every t, delete log, because you don't want deleted messages saved.
+
+## notes from 4/30
+- no no I see nothing wrong with writing protocols that only talk to themselves
+  - anyway, the format is:
+    - MAIL FROM: eportnoy@princeton.edu
+    - RCPT TO: ebportnoy@gmail.com
+    - RCPT TO: ebportnoy@gmail.com##239-1
+    - use calc_collision.py
+- guess who found another bug. it's me. did they even run this code?
+    def smtp_DATA(self, arg):
+        print "smtp_DATA", arg
+        if self.is_spam:
+            self.push("450 I don't like spam!")
+            self.close_when_done()
+        else:
+            smtpd.SMTPChannel.smtp_DATA(self, arg)
+
+   put prints around this stuff:
+   # Update the in-memory-index
+   mi = self.get_msg_info()
+   mi[self.index.MSG_PTRS] = newptr
+   self.index.set_msg_at_idx_pos(self.msg_idx_pos, mi)
+   self.index.index_email(session, Email(self.index, self.msg_idx_pos))
+- smtp_ssl = proto in ('smtpssl', )  # FIXME: 'smtorp'
+- I think the address might be foo@, something flashed by.
+-             if rcpts[0].lower().endswith('.onion'):
+                return {"protocol": "smtorp",
+                        "host": rcpts[0].split('@')[-1],
+                        "port": 25,
+                        "username": "",
+                        "password": ""}
+- compose:Sendit calls mailutils:preparemessage, then smtpclient:sendmail
+- ok so I FINALLY got their code working. no one has ever run this code.
+  it freaks out when smtorp has two recipients, but hey GUESS WHAT THE
+  COMPOSE CODE DOES. it adds the sender as a second recipient is what it
+  does. and don't get me started on the bcc code. this nightmare is in
+  preparemessage, in mailutils. anyway, it's working now. who needs to send
+  it to yourself.
+- smtp_server: smtpserver: processmessage --> imapmailsource:add_side_message -->
+  imap_sec:	add_message_to_folder
 
 ## notes from meeting 2/17/15
 ### Threats

@@ -187,6 +187,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             print "select", mailbox, data
         return typ, data
 
+    # message_contents is the message as a string. get by calling str(message)
+    # where message is a Message object.
     def add_message_to_folder(self, message_contents, folder, uid):
         # update it in the index
         if not folder in self.mapping:

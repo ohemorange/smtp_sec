@@ -23,7 +23,7 @@ CRLF = imaplib.CRLF
 
 DEBUG_IMAP_FROM_GMAIL = False
 
-DEBUG_IMAP_FROM_SMTORP = True
+DEBUG_IMAP_FROM_SMTORP = False
 
 # we need to keep track of imap state
 class IMAP4_SSL(imaplib.IMAP4_SSL):

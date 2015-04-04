@@ -131,7 +131,7 @@ HiddenServicePort 25 localhost:33412
  - multi-client systems problem - index as a log or a lock. Your Favorite Method, really.
   - then every t, delete log, because you don't want deleted messages saved.
 
-## notes from 4/30
+## notes from 3/30
 - no no I see nothing wrong with writing protocols that only talk to themselves
   - anyway, the format is:
     - MAIL FROM: eportnoy@princeton.edu
@@ -170,7 +170,30 @@ HiddenServicePort 25 localhost:33412
   it to yourself.
 - smtp_server: smtpserver: processmessage --> imapmailsource:add_side_message -->
   imap_sec:	add_message_to_folder
-- when resetting, make sure to set port number.
+- when deleting all local data, make sure to set port number. the plugin is
+  already appended.
+- 173.194.206.109: google
+- 140.180.254.66: me
+- https://www.bearfruit.org/2008/04/17/telnet-for-testing-ssl-https-websites/
+
+
+## notes from 4/4
+- why is it working? oh please don't make me look into play_nice_with_threads().
+  - it's in a try/catch block, which makes me think there's someone out there who
+    knows PERFECTLY WELL what nonsense is going on here.
+  - let's see who calls process_message.
+    - ????????????? NO ONE CALLS IT?????
+    - ok no other class seems to be calling SMTPServer, which it's in???
+    - maybe it's using plugins to replace smtpd. because mailpile-test uses a
+      different port number for smtpd. I'm not sure I buy this.
+    - ok so the plugin manager loads the file. that is the setup we have here.
+    - and then we register a worker and command. a worker has a start and a quit.
+    - ok we're using generics here. so an SMTPServer subclasses the python
+      smtpd.SMTPServer, and process_message is something that like just happens
+      with that. so the server's running, it catches incoming messages, and we
+      just change the processing. which means that the problem might be in how it's
+      configured. or it could be my personal python's version of SMTPServer which
+      is outdated.
 
 ## notes from meeting 2/17/15
 ### Threats

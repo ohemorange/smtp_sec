@@ -4,6 +4,9 @@ from mailbox import Message
 import json
 import sys
 import traceback
+import threading
+
+import imap_scheduler
 
 class IMAP4(imaplib.IMAP4):
     pass
@@ -25,6 +28,33 @@ DEBUG_IMAP_FROM_GMAIL = False
 
 DEBUG_IMAP_FROM_SMTORP = False
 
+# TODO: read these from a config, or set based on algorithm.
+INITIAL_DT = 30.0
+DT = 60.0
+
+class SMTPWorker(threading.Thread):
+    def __init__(self, session):
+        self.session = session
+        self.quitting = False
+        threading.Thread.__init__(self)
+
+    def run(self):
+        cfg = self.session.config.sys.smtpd
+        if cfg.host and cfg.port:
+            print "host, port", cfg.host, cfg.port
+            server = SMTPServer(self.session, (cfg.host, cfg.port))
+            while not self.quitting:
+                asyncore.poll(timeout=1.0)
+            asyncore.close_all()
+
+    def quit(self, join=True):
+        self.quitting = True
+        if join:
+            try:
+                self.join()
+            except RuntimeError:
+                pass
+
 # we need to keep track of imap state
 class IMAP4_SSL(imaplib.IMAP4_SSL):
     pass
@@ -36,6 +66,10 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         # TODO: load locally stored index number
         self.last_index_number = 0
         self.rollback_detected = False
+        self._scheduler = imap_scheduler.ImapScheduler()
+        # TODO: start a worker that sends every DT. make the first
+        # call after time INITIAL_DT
+        threading.Timer(INITIAL_DT, self.timed_imap_exchange).start()
 
     def find_index_uid_in_folder(self, folder):
         imaplib.IMAP4_SSL.select(self, mailbox=folder)
@@ -188,10 +222,52 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         if DEBUG_IMAP_FROM_GMAIL:
             print "select", mailbox, data
         return typ, data
+    
+    def timed_imap_exchange(self):
+        # restart timer
+        threading.Timer(DT, self.timed_imap_exchange).start()
+        # do things
+        if self._scheduler.next_time_point_action_is_push():
+            # push up message
+            self.push_up_next_message()
+        else:
+            # pull down (delete) message from imap
+            self.pull_down_next_message()
+
+    def push_up_next_message(self):
+        if len(self.send_queue >= 1):
+            (message_contents, folder, uid) = self.send_queue[0]
+            self.send_queue = self.send_queue[1:]
+            self.add_message_to_folder_internal(message_contents,
+                folder, uid, False)
+            self._scheduler.message_was_pushed()
+        else:
+            # push up a fake message
+            # save the fact that it's fake somewhere
+            print "TODO"
+
+    def pull_down_next_message(self):
+        # check messages to delete and pull down one of those.
+        # otherwise, pull down a fake message.
+        self._scheduler.message_was_pulled()
+        print "TODO"
 
     # message_contents is the message as a string. get by calling str(message)
     # where message is a Message object.
     def add_message_to_folder(self, message_contents, folder, uid):
+        # we've called this from an external class, so it can't be the index.
+        self.add_message_to_folder_internal(message_contents, folder,
+            uid, True)
+
+    # schedule_upload should be True for messages coming from a
+    # metadata-secure source. it should probably be False if we've
+    # just pulled the message down from IMAP and are reuploading it.
+    def add_message_to_folder_internal(self, message_contents, folder,
+        uid, schedule_upload):
+        if schedule_upload:
+            # place it on the queue, deal with it later
+            self.send_queue.append((message_contents, folder, uid))
+            return
         # update it in the index
         if DEBUG_IMAP_FROM_SMTORP:
             print "add_message_to_folder"
@@ -285,7 +361,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 # delete it off the server
                 self.delete_message_from_actual_folder_uid(uid, folder)
 
-                self.add_message_to_folder(message_contents, folder, uid)
+                self.add_message_to_folder_internal(message_contents, folder, uid, False)
 
                 # just return the original message to the local client,
                 # I'm sure nothing could ever go wrong with thaaaat

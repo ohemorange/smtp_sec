@@ -3,14 +3,9 @@
 - you know actually run with multiple clients
 
 ## todo
-- test messages go to and coming from a secure source:
-  - telnet to smtp server
-  - hello, then ask for names
-  - try delivering to username, ask for hosts
-  - ask for addresses
-- implement workflow when coming from a secure source
 - implement scheduler and updates on schedule
   - have all functionalities operate on that schedule
+- add functionality for delete and change folders
 - subject lines: random string. doesn't need to be saved because you can tell
   as new client.
   - cool but not necessary: a string that's possible in imap but not smtp
@@ -18,6 +13,8 @@
 - solve the multi-client systems problem - index as a log or a lock. Your Favorite
     Method, really.
   - then every t, delete log, because you don't want deleted messages saved.
+- figure out if imap is running over ssl or the other way around in imap_ssl
+  (I think it's the former)
 
 ## some notes
 - assuming that all IMAP clients are running the protocol
@@ -177,7 +174,7 @@ HiddenServicePort 25 localhost:33412
 - https://www.bearfruit.org/2008/04/17/telnet-for-testing-ssl-https-websites/
 
 
-## notes from 4/4
+## notes from week of 4/4
 - why is it working? oh please don't make me look into play_nice_with_threads().
   - it's in a try/catch block, which makes me think there's someone out there who
     knows PERFECTLY WELL what nonsense is going on here.
@@ -194,6 +191,23 @@ HiddenServicePort 25 localhost:33412
       just change the processing. which means that the problem might be in how it's
       configured. or it could be my personal python's version of SMTPServer which
       is outdated.
+    - http://pymotw.com/2/smtpd/
+- ssl handshake
+  - 10.8.90.153 to 54.68.169.172: hello, version TLS 1.0
+  - 54 to 10: server hello, version TLS 1.2
+  - 54 to 10: certificate
+  - 10 to 54: client key exchange, change cipher spec, hello request, hello request
+  - 54 to 10: new session ticket, change cipher spec, encrypted handshake message
+  - 54 to 10: spdy
+    - spdy is not http.
+- another ssl handshake
+  - 10.8.90.153 to 173.194.121.52:
+    - so the outer layer says 1.0, but the handshake itself says 1.2?
+- so the client hello claims to be running 1.0, but initiates a 1.2 handshake.
+  guess I should probably check out that RFC. look at tls_version.png.
+- current framework only accounts for up and down, not move. that is a
+  combination, but it should definitely be there.
+- the index probably shouldn't be on the same schedule as everything else.
 
 ## notes from meeting 2/17/15
 ### Threats

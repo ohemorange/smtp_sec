@@ -224,7 +224,7 @@ HiddenServicePort 25 localhost:33412
 - don't forget to start tor, sweetie...
 - so. I probably have to actually fix the tls version problem. I figured out
   how to do that, found a nice patch for it. a patch. for the source. which I
-  will now be attempting to build python from. I'm excited.
+  will now be attempting to build python from. I'm excited. see PEP 466
 - better idea! "just" go into /usr/lib/python2.7, and change all the defaults
   in ssl.py to use PROTOCOL_TLSv1_2. anyway, we can probably pass that as a
   parameter in the application.

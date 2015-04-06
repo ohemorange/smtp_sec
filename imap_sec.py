@@ -32,29 +32,6 @@ DEBUG_IMAP_FROM_SMTORP = False
 INITIAL_DT = 30.0
 DT = 60.0
 
-class SMTPWorker(threading.Thread):
-    def __init__(self, session):
-        self.session = session
-        self.quitting = False
-        threading.Thread.__init__(self)
-
-    def run(self):
-        cfg = self.session.config.sys.smtpd
-        if cfg.host and cfg.port:
-            print "host, port", cfg.host, cfg.port
-            server = SMTPServer(self.session, (cfg.host, cfg.port))
-            while not self.quitting:
-                asyncore.poll(timeout=1.0)
-            asyncore.close_all()
-
-    def quit(self, join=True):
-        self.quitting = True
-        if join:
-            try:
-                self.join()
-            except RuntimeError:
-                pass
-
 # we need to keep track of imap state
 class IMAP4_SSL(imaplib.IMAP4_SSL):
     pass
@@ -67,7 +44,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         self.last_index_number = 0
         self.rollback_detected = False
         self._scheduler = imap_scheduler.ImapScheduler()
-        # TODO: start a worker that sends every DT. make the first
+        self.send_queue = []
+        # start a worker that sends every DT. make the first
         # call after time INITIAL_DT
         threading.Timer(INITIAL_DT, self.timed_imap_exchange).start()
 
@@ -235,7 +213,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             self.pull_down_next_message()
 
     def push_up_next_message(self):
-        if len(self.send_queue >= 1):
+        if len(self.send_queue) >= 1:
             (message_contents, folder, uid) = self.send_queue[0]
             self.send_queue = self.send_queue[1:]
             self.add_message_to_folder_internal(message_contents,
@@ -244,13 +222,13 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         else:
             # push up a fake message
             # save the fact that it's fake somewhere
-            print "TODO"
+            print "TODO(imap_sec): push up fake message"
 
     def pull_down_next_message(self):
         # check messages to delete and pull down one of those.
         # otherwise, pull down a fake message.
         self._scheduler.message_was_pulled()
-        print "TODO"
+        print "TODO(imap_sec): pull down message, real or fake"
 
     # message_contents is the message as a string. get by calling str(message)
     # where message is a Message object.
@@ -262,10 +240,13 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # schedule_upload should be True for messages coming from a
     # metadata-secure source. it should probably be False if we've
     # just pulled the message down from IMAP and are reuploading it.
+    # TODO: check to make sure this actually works. because if it
+    # doesn't, there's no fault tolerance going on...
     def add_message_to_folder_internal(self, message_contents, folder,
         uid, schedule_upload):
         if schedule_upload:
             # place it on the queue, deal with it later
+            # TODO: make sure that all messages are sent when we close down.
             self.send_queue.append((message_contents, folder, uid))
             return
         # update it in the index

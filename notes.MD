@@ -1,3 +1,9 @@
+## where are the methods?
+- smtp_server: smtpserver: processmessage
+- imapmailsource:add_side_message
+- imap_sec: add_message_to_folder
+- mailutils: prepare message
+
 ## to test
 - what if a filter's set up and it comes in that way?
 - you know actually run with multiple clients
@@ -208,6 +214,13 @@ HiddenServicePort 25 localhost:33412
 - current framework only accounts for up and down, not move. that is a
   combination, but it should definitely be there.
 - the index probably shouldn't be on the same schedule as everything else.
+- _plugins.register_config_variables('prefs', {
+    'empty_outbox_interval': [_('Delay between attempts to send mail'),
+                              int, 90]
+  })
+  - from mailpile/plugins/compose.py
+  - so outgoing is batched anyway. that's the other end of things, anyway.
+- don't forget to start tor, sweetie...
 
 ## notes from meeting 2/17/15
 ### Threats

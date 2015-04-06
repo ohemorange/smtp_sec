@@ -21,6 +21,7 @@
   - then every t, delete log, because you don't want deleted messages saved.
 - figure out if imap is running over ssl or the other way around in imap_ssl
   (I think it's the former)
+- maybe pull pack to gmail folder and such if it's gone over smtorp.
 
 ## some notes
 - assuming that all IMAP clients are running the protocol
@@ -221,6 +222,17 @@ HiddenServicePort 25 localhost:33412
   - from mailpile/plugins/compose.py
   - so outgoing is batched anyway. that's the other end of things, anyway.
 - don't forget to start tor, sweetie...
+- so. I probably have to actually fix the tls version problem. I figured out
+  how to do that, found a nice patch for it. a patch. for the source. which I
+  will now be attempting to build python from. I'm excited.
+- better idea! "just" go into /usr/lib/python2.7, and change all the defaults
+  in ssl.py to use PROTOCOL_TLSv1_2. anyway, we can probably pass that as a
+  parameter in the application.
+  - tried that. doesn't change anything??? someone else is calling this guy
+    and not setting defaults. could be another python guy. maybe imaplib or
+    SMTPServer.
+  - yeah, it's in imaplib. on the bright side, I found one place to hook in
+    and fix things instead of having to do it at every point in ssl.py...
 
 ## notes from meeting 2/17/15
 ### Threats

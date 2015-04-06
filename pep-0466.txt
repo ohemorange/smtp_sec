@@ -1,0 +1,765 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US">
+<head>
+<link rel="icon" href="/peps/static/hgicon.png" type="image/png" />
+<meta name="robots" content="index, nofollow" />
+<link rel="stylesheet" href="/peps/static/style-paper.css" type="text/css" />
+<script type="text/javascript" src="/peps/static/mercurial.js"></script>
+
+<link rel="stylesheet" href="/peps/highlightcss" type="text/css" />
+<title>peps: 4eb8de143801 pep-0466.txt</title>
+</head>
+<body>
+
+<div class="container">
+<div class="menu">
+<div class="logo">
+<a href="https://hg.python.org">
+<img src="/peps/static/hglogo.png" alt="back to hg.python.org repositories" /></a>
+</div>
+<ul>
+<li><a href="/peps/shortlog/4eb8de143801">log</a></li>
+<li><a href="/peps/graph/4eb8de143801">graph</a></li>
+<li><a href="/peps/tags">tags</a></li>
+<li><a href="/peps/branches">branches</a></li>
+</ul>
+<ul>
+<li><a href="/peps/rev/4eb8de143801">changeset</a></li>
+<li><a href="/peps/file/4eb8de143801/">browse</a></li>
+</ul>
+<ul>
+<li class="active">file</li>
+<li><a href="/peps/file/tip/pep-0466.txt">latest</a></li>
+<li><a href="/peps/diff/4eb8de143801/pep-0466.txt">diff</a></li>
+<li><a href="/peps/comparison/4eb8de143801/pep-0466.txt">comparison</a></li>
+<li><a href="/peps/annotate/4eb8de143801/pep-0466.txt">annotate</a></li>
+<li><a href="/peps/log/4eb8de143801/pep-0466.txt">file log</a></li>
+<li><a href="/peps/raw-file/4eb8de143801/pep-0466.txt">raw</a></li>
+</ul>
+<ul>
+<li><a href="/peps/help">help</a></li>
+</ul>
+</div>
+
+<div class="main">
+<h2 class="breadcrumb"><a href="/">Mercurial</a> &gt; <a href="/peps">peps</a> </h2>
+<h3>view pep-0466.txt @ 5428:4eb8de143801</h3>
+
+<form class="search" action="/peps/log">
+
+<p><input name="rev" id="search1" type="text" size="30" /></p>
+<div id="hint">Find changesets by keywords (author, files, the commit message), revision
+number or hash, or <a href="/peps/help/revsets">revset expression</a>.</div>
+</form>
+
+<div class="description">PEP 466: further simplify the proposal
+
+- dropped the &quot;legacy ssl&quot; branch idea again
+- explained why selective backports are a bad idea
+- better explained how long term support differs from short term
+- better explained some downstream constraints
+- explained that downstream redistributors have been respecting
+  our upstream policies, potentially against their own better
+  judgement
+- used Red Hat's support cycle as a reference model
+- removed the snarky comments that hit unintended targets
+- note the need for Windows specific contributions as an open question
+- not the general need for contributions of time as an open question
+- last open question is whether or not we're happy this is the best
+  available solution given downstream constraints</div>
+
+<table id="changesetEntry">
+<tr>
+ <th class="author">author</th>
+ <td class="author">&#78;&#105;&#99;&#107;&#32;&#67;&#111;&#103;&#104;&#108;&#97;&#110;&#32;&#60;&#110;&#99;&#111;&#103;&#104;&#108;&#97;&#110;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;&#62;</td>
+</tr>
+<tr>
+ <th class="date">date</th>
+ <td class="date age">Tue, 25 Mar 2014 22:40:26 +1000</td>
+</tr>
+<tr>
+ <th class="author">parents</th>
+ <td class="author"><a href="/peps/file/168173658ca7/pep-0466.txt">168173658ca7</a> </td>
+</tr>
+<tr>
+ <th class="author">children</th>
+ <td class="author"><a href="/peps/file/8527f6e2beb0/pep-0466.txt">8527f6e2beb0</a> </td>
+</tr>
+</table>
+
+<div class="overflow">
+<div class="sourcefirst linewraptoggle">line wrap: <a class="linewraplink" href="javascript:toggleLinewrap()">on</a></div>
+<div class="sourcefirst"> line source</div>
+<pre class="sourcelines stripes4 wrap">
+<span id="l1">PEP: 466</span><a href="#l1"></a>
+<span id="l2">Title: Network Security Enhancement Exception for Python 2.7</span><a href="#l2"></a>
+<span id="l3">Version: $Revision$</span><a href="#l3"></a>
+<span id="l4">Last-Modified: $Date$</span><a href="#l4"></a>
+<span id="l5">Author: Nick Coghlan &lt;ncoghlan@gmail.com&gt;,</span><a href="#l5"></a>
+<span id="l6">Status: Draft</span><a href="#l6"></a>
+<span id="l7">Type: Informational</span><a href="#l7"></a>
+<span id="l8">Content-Type: text/x-rst</span><a href="#l8"></a>
+<span id="l9">Created: 23-Mar-2014</span><a href="#l9"></a>
+<span id="l10">Post-History: 23-Mar-2014</span><a href="#l10"></a>
+<span id="l11"></span><a href="#l11"></a>
+<span id="l12"></span><a href="#l12"></a>
+<span id="l13">Abstract</span><a href="#l13"></a>
+<span id="l14">========</span><a href="#l14"></a>
+<span id="l15"></span><a href="#l15"></a>
+<span id="l16">Most CPython tracker issues are classified as errors in behaviour or</span><a href="#l16"></a>
+<span id="l17">proposed enhancements. Most patches to fix behavioural errors are</span><a href="#l17"></a>
+<span id="l18">applied to all active maintenance branches.  Enhancement patches are</span><a href="#l18"></a>
+<span id="l19">restricted to the default branch that becomes the next Python version.</span><a href="#l19"></a>
+<span id="l20"></span><a href="#l20"></a>
+<span id="l21">This cadence works reasonably well during Python&#39;s normal 18-24 month</span><a href="#l21"></a>
+<span id="l22">feature release cycle, which is still applicable to the Python 3 series.</span><a href="#l22"></a>
+<span id="l23">However, the age of the standard library in Python 2 has now reached a point</span><a href="#l23"></a>
+<span id="l24">where it is sufficiently far behind the state of the art in network security</span><a href="#l24"></a>
+<span id="l25">protocols for it to be causing real problems in commercial use cases</span><a href="#l25"></a>
+<span id="l26">where upgrading to Python 3 in the near term may not be practical.</span><a href="#l26"></a>
+<span id="l27"></span><a href="#l27"></a>
+<span id="l28">In recognition of the additional practical considerations that have arisen</span><a href="#l28"></a>
+<span id="l29">during the 4+ year maintenance cycle for Python 2.7, this PEP allows</span><a href="#l29"></a>
+<span id="l30">Python 2.7 standard library components that have implications for the</span><a href="#l30"></a>
+<span id="l31">overall security of the internet to be updated in line with the</span><a href="#l31"></a>
+<span id="l32">corresponding Python 3 feature releases.</span><a href="#l32"></a>
+<span id="l33"></span><a href="#l33"></a>
+<span id="l34">Specifically, the exception will apply to:</span><a href="#l34"></a>
+<span id="l35"></span><a href="#l35"></a>
+<span id="l36">* the ``ssl`` module</span><a href="#l36"></a>
+<span id="l37">* the ``hashlib`` module</span><a href="#l37"></a>
+<span id="l38">* the ``hmac`` module</span><a href="#l38"></a>
+<span id="l39">* the components of the ``random`` and ``os`` modules that the above</span><a href="#l39"></a>
+<span id="l40">  modules rely on for cryptographic randomness</span><a href="#l40"></a>
+<span id="l41">* the version of OpenSSL bundled with the binary installers for Windows</span><a href="#l41"></a>
+<span id="l42">  and Mac OS X</span><a href="#l42"></a>
+<span id="l43"></span><a href="#l43"></a>
+<span id="l44">Changes to these modules will still need to undergo normal backwards</span><a href="#l44"></a>
+<span id="l45">compatibility assessments to ensure their default behaviour remains</span><a href="#l45"></a>
+<span id="l46">consistent with earlier Python 2.7 releases, but otherwise they will be</span><a href="#l46"></a>
+<span id="l47">kept entirely aligned with the latest feature release of their Python 3</span><a href="#l47"></a>
+<span id="l48">counterparts. This is designed to make it easier to implement secure</span><a href="#l48"></a>
+<span id="l49">networked software in Python, even for software that currently needs to</span><a href="#l49"></a>
+<span id="l50">remain compatible with the Python 2 series (which includes a lot of</span><a href="#l50"></a>
+<span id="l51">network infrastructure software).</span><a href="#l51"></a>
+<span id="l52"></span><a href="#l52"></a>
+<span id="l53">While this PEP does not make any changes to the core development team&#39;s</span><a href="#l53"></a>
+<span id="l54">handling of security-fix-only branches that are no longer in active</span><a href="#l54"></a>
+<span id="l55">maintenance, it *does* recommend that commercial redistributors providing</span><a href="#l55"></a>
+<span id="l56">extended support periods for the Python standard library either adopt a</span><a href="#l56"></a>
+<span id="l57">similar approach to ensuring that the secure networking infrastructure</span><a href="#l57"></a>
+<span id="l58">keeps pace with the evolution of the internet, or else explicitly</span><a href="#l58"></a>
+<span id="l59">disclaim support for the use of older versions in roles that involve</span><a href="#l59"></a>
+<span id="l60">connecting directly to the public internet.</span><a href="#l60"></a>
+<span id="l61"></span><a href="#l61"></a>
+<span id="l62"></span><a href="#l62"></a>
+<span id="l63">Exemption Policy</span><a href="#l63"></a>
+<span id="l64">================</span><a href="#l64"></a>
+<span id="l65"></span><a href="#l65"></a>
+<span id="l66">Under this policy, the following network security related modules are</span><a href="#l66"></a>
+<span id="l67">granted a blanket exemption to the normal restriction against adding new</span><a href="#l67"></a>
+<span id="l68">features in Python 2.7 maintenance releases, for the purpose of keeping</span><a href="#l68"></a>
+<span id="l69">their APIs aligned with their counterparts in the latest feature release</span><a href="#l69"></a>
+<span id="l70">of Python 3:</span><a href="#l70"></a>
+<span id="l71"></span><a href="#l71"></a>
+<span id="l72">* the ``ssl`` module</span><a href="#l72"></a>
+<span id="l73">* the ``hashlib`` module</span><a href="#l73"></a>
+<span id="l74">* the ``hmac`` module</span><a href="#l74"></a>
+<span id="l75"></span><a href="#l75"></a>
+<span id="l76">Under this exemption, these modules are updated to provide identical</span><a href="#l76"></a>
+<span id="l77">functionality to their Python 3 counterparts after every new Python 3</span><a href="#l77"></a>
+<span id="l78">feature release. The default behaviour of the backported modules will be</span><a href="#l78"></a>
+<span id="l79">adjusted as appropriate to meet the backwards compatibility requirements</span><a href="#l79"></a>
+<span id="l80">of a Python 2.7 maintenance release.</span><a href="#l80"></a>
+<span id="l81"></span><a href="#l81"></a>
+<span id="l82">As part of this policy, permission is also granted to upgrade to newer</span><a href="#l82"></a>
+<span id="l83">feature releases of OpenSSL when preparing the binary installers</span><a href="#l83"></a>
+<span id="l84">for new maintenance releases of Python 2.7.</span><a href="#l84"></a>
+<span id="l85"></span><a href="#l85"></a>
+<span id="l86">Note that the ``sha`` and ``md5`` modules are not covered by this policy,</span><a href="#l86"></a>
+<span id="l87">but have been deprecated in favour of ``hashlib`` since Python 2.5 and have</span><a href="#l87"></a>
+<span id="l88">been removed entirely in the Python 3 series.</span><a href="#l88"></a>
+<span id="l89"></span><a href="#l89"></a>
+<span id="l90">In addition to the above blanket exemption, a conditional exemption is</span><a href="#l90"></a>
+<span id="l91">granted for these modules that may include some network security related</span><a href="#l91"></a>
+<span id="l92">features:</span><a href="#l92"></a>
+<span id="l93"></span><a href="#l93"></a>
+<span id="l94">* the ``os`` module (specifically ``os.urandom``)</span><a href="#l94"></a>
+<span id="l95">* the ``random`` module</span><a href="#l95"></a>
+<span id="l96"></span><a href="#l96"></a>
+<span id="l97">This more limited exemption for these modules requires that the *specific*</span><a href="#l97"></a>
+<span id="l98">enhancement being proposed for backporting needs to be justified as being</span><a href="#l98"></a>
+<span id="l99">network security related. This is generally restricted to cases where the</span><a href="#l99"></a>
+<span id="l100">feature in question is needed by an update to one of the modules covered</span><a href="#l100"></a>
+<span id="l101">by the blanket exemption.</span><a href="#l101"></a>
+<span id="l102"></span><a href="#l102"></a>
+<span id="l103"></span><a href="#l103"></a>
+<span id="l104">Backwards Compatibility Considerations</span><a href="#l104"></a>
+<span id="l105">======================================</span><a href="#l105"></a>
+<span id="l106"></span><a href="#l106"></a>
+<span id="l107">This PEP does *not* grant Python 2.7 any general exemptions to the usual</span><a href="#l107"></a>
+<span id="l108">backwards compatibility policy for maintenance releases. Instead, by</span><a href="#l108"></a>
+<span id="l109">explicitly encouraging the use of feature based checks and explicitly</span><a href="#l109"></a>
+<span id="l110">opting in to less secure configurations, it is designed to make it easier</span><a href="#l110"></a>
+<span id="l111">to write more secure cross-version compatible Python software, while still</span><a href="#l111"></a>
+<span id="l112">limiting the risk of breaking currently working software when upgrading to</span><a href="#l112"></a>
+<span id="l113">a new Python 2.7 maintenance release.</span><a href="#l113"></a>
+<span id="l114"></span><a href="#l114"></a>
+<span id="l115">In *all* cases where this policy is applied to backport enhancements to</span><a href="#l115"></a>
+<span id="l116">Python 2.7 maintenance releases, it MUST be possible to write cross-version</span><a href="#l116"></a>
+<span id="l117">compatible code that operates by &quot;feature detection&quot; (for example, checking</span><a href="#l117"></a>
+<span id="l118">for particular attributes in the module), without needing to explicitly check</span><a href="#l118"></a>
+<span id="l119">the Python version.</span><a href="#l119"></a>
+<span id="l120"></span><a href="#l120"></a>
+<span id="l121">It is then up to library and framework code to provide an appropriate warning</span><a href="#l121"></a>
+<span id="l122">and fallback behaviour if a desired feature is found to be missing. While</span><a href="#l122"></a>
+<span id="l123">some especially security sensitive software MAY fail outright if a desired</span><a href="#l123"></a>
+<span id="l124">security feature is unavailable, most software SHOULD instead emit a warning</span><a href="#l124"></a>
+<span id="l125">and continue operating using a slightly degraded security configuration.</span><a href="#l125"></a>
+<span id="l126"></span><a href="#l126"></a>
+<span id="l127">Affected APIs SHOULD be designed to allow library and application code to</span><a href="#l127"></a>
+<span id="l128">perform the following actions after detecting the presence of a relevant</span><a href="#l128"></a>
+<span id="l129">network security related feature:</span><a href="#l129"></a>
+<span id="l130"></span><a href="#l130"></a>
+<span id="l131">* explicitly opt in to more secure settings (to allow the use of enhanced</span><a href="#l131"></a>
+<span id="l132">  security features in older maintenance releases of Python)</span><a href="#l132"></a>
+<span id="l133">* explicitly opt in to less secure settings (to allow the use of newer Python</span><a href="#l133"></a>
+<span id="l134">  feature releases in lower security environments)</span><a href="#l134"></a>
+<span id="l135">* determine the default setting for the feature (this MAY require explicit</span><a href="#l135"></a>
+<span id="l136">  Python version checks to determine the Python feature release, but MUST</span><a href="#l136"></a>
+<span id="l137">  NOT require checking for a specific maintenance release)</span><a href="#l137"></a>
+<span id="l138"></span><a href="#l138"></a>
+<span id="l139">Security related changes to other modules (such as higher level networking</span><a href="#l139"></a>
+<span id="l140">libraries and data format processing libraries) will continue to be made</span><a href="#l140"></a>
+<span id="l141">available as backports and new modules on the Python Package Index, as</span><a href="#l141"></a>
+<span id="l142">independent distribution remains the preferred approach to handling</span><a href="#l142"></a>
+<span id="l143">software that must continue to evolve to handle changing development</span><a href="#l143"></a>
+<span id="l144">requirements independently of the Python 2 standard library. Refer to</span><a href="#l144"></a>
+<span id="l145">the `Motivation and Rationale`_ section for a review of the characteristics</span><a href="#l145"></a>
+<span id="l146">that make the secure networking infrastructure worthy of special</span><a href="#l146"></a>
+<span id="l147">consideration.</span><a href="#l147"></a>
+<span id="l148"></span><a href="#l148"></a>
+<span id="l149"></span><a href="#l149"></a>
+<span id="l150">OpenSSL compatibility</span><a href="#l150"></a>
+<span id="l151">---------------------</span><a href="#l151"></a>
+<span id="l152"></span><a href="#l152"></a>
+<span id="l153">Under this policy, OpenSSL may be upgraded to more recent feature releases</span><a href="#l153"></a>
+<span id="l154">in Python 2.7 maintenance releases. On Linux and most other POSIX systems,</span><a href="#l154"></a>
+<span id="l155">the specific version of OpenSSL used already varies, as CPython dynamically</span><a href="#l155"></a>
+<span id="l156">links to the system provided OpenSSL library by default.</span><a href="#l156"></a>
+<span id="l157"></span><a href="#l157"></a>
+<span id="l158">For the Windows binary installers, the ``_ssl`` and ``_hashlib`` modules are</span><a href="#l158"></a>
+<span id="l159">statically linked with OpenSSL and the associated symbols are not exported.</span><a href="#l159"></a>
+<span id="l160">Marc-Andre Lemburg indicates that updating to newer OpenSSL releases in the</span><a href="#l160"></a>
+<span id="l161">``egenix-pyopenssl`` binaries has not resulted in any reported compatibility</span><a href="#l161"></a>
+<span id="l162">issues [3]_</span><a href="#l162"></a>
+<span id="l163"></span><a href="#l163"></a>
+<span id="l164">The Mac OS X binary installers historically followed the same policy as</span><a href="#l164"></a>
+<span id="l165">other POSIX installations and dynamically linked to the Apple provided</span><a href="#l165"></a>
+<span id="l166">OpenSSL libraries. However, Apple has now ceased updating these</span><a href="#l166"></a>
+<span id="l167">cross-platform libraries, instead requiring that even cross-platform</span><a href="#l167"></a>
+<span id="l168">developers adopt Mac OS X specific interfaces to access up to date security</span><a href="#l168"></a>
+<span id="l169">infrastructure on their platform. Accordingly, and independently of this</span><a href="#l169"></a>
+<span id="l170">PEP, the Mac OS X binary installers were already going to be switched to</span><a href="#l170"></a>
+<span id="l171">statically linker newer versions of OpenSSL [4]_</span><a href="#l171"></a>
+<span id="l172"></span><a href="#l172"></a>
+<span id="l173"></span><a href="#l173"></a>
+<span id="l174">Other Considerations</span><a href="#l174"></a>
+<span id="l175">====================</span><a href="#l175"></a>
+<span id="l176"></span><a href="#l176"></a>
+<span id="l177">Maintainability</span><a href="#l177"></a>
+<span id="l178">---------------</span><a href="#l178"></a>
+<span id="l179"></span><a href="#l179"></a>
+<span id="l180">This policy does NOT represent a commitment by volunteer contributors to</span><a href="#l180"></a>
+<span id="l181">actually backport network security related changes from the Python 3 series</span><a href="#l181"></a>
+<span id="l182">to the Python 2 series. Rather, it is intended to send a clear signal to</span><a href="#l182"></a>
+<span id="l183">potential corporate contributors that the core development team are willing</span><a href="#l183"></a>
+<span id="l184">to accept offers of corporate assistance in putting this policy into</span><a href="#l184"></a>
+<span id="l185">effect and handling the resulting increase in the Python 2 maintenance</span><a href="#l185"></a>
+<span id="l186">load.</span><a href="#l186"></a>
+<span id="l187"></span><a href="#l187"></a>
+<span id="l188">Backporting security related fixes and enhancements to earlier versions is</span><a href="#l188"></a>
+<span id="l189">a common service for commercial redistributors to offer to their customers.</span><a href="#l189"></a>
+<span id="l190">This policy represents an explicit invitation to contribute some of those</span><a href="#l190"></a>
+<span id="l191">changes back to the upstream Python community in cases where they are likely</span><a href="#l191"></a>
+<span id="l192">to have a broad impact that helps improve the security of the internet as a</span><a href="#l192"></a>
+<span id="l193">whole, with the assurance that the existing core development team not only</span><a href="#l193"></a>
+<span id="l194">won&#39;t object to such contributions, but will actively encourage their</span><a href="#l194"></a>
+<span id="l195">incorporation into the next Python 2.7 maintenance release.</span><a href="#l195"></a>
+<span id="l196"></span><a href="#l196"></a>
+<span id="l197"></span><a href="#l197"></a>
+<span id="l198">Documentation</span><a href="#l198"></a>
+<span id="l199">-------------</span><a href="#l199"></a>
+<span id="l200"></span><a href="#l200"></a>
+<span id="l201">All modules covered by this policy MUST include a &quot;Security Considerations&quot;</span><a href="#l201"></a>
+<span id="l202">section in their documentation in order to take advantage of this policy.</span><a href="#l202"></a>
+<span id="l203"></span><a href="#l203"></a>
+<span id="l204">In addition to any other module specific contents, this section MUST</span><a href="#l204"></a>
+<span id="l205">enumerate key security enhancements and fixes (with CVE identifiers where</span><a href="#l205"></a>
+<span id="l206">applicable), along with the feature and maintenance releases that first</span><a href="#l206"></a>
+<span id="l207">included them.</span><a href="#l207"></a>
+<span id="l208"></span><a href="#l208"></a>
+<span id="l209"></span><a href="#l209"></a>
+<span id="l210">Security releases</span><a href="#l210"></a>
+<span id="l211">-----------------</span><a href="#l211"></a>
+<span id="l212"></span><a href="#l212"></a>
+<span id="l213">This PEP does not propose any changes to the handling of security</span><a href="#l213"></a>
+<span id="l214">releases - those will continue to be source only releases that</span><a href="#l214"></a>
+<span id="l215">include only critical security fixes.</span><a href="#l215"></a>
+<span id="l216"></span><a href="#l216"></a>
+<span id="l217">However, the recommendations for library and application developers are</span><a href="#l217"></a>
+<span id="l218">deliberately designed to accommodate commercial redistributors that choose</span><a href="#l218"></a>
+<span id="l219">to apply this policy to additional Python release series that are either in</span><a href="#l219"></a>
+<span id="l220">security fix only mode, or have been declared &quot;end of life&quot; by the core</span><a href="#l220"></a>
+<span id="l221">development team.</span><a href="#l221"></a>
+<span id="l222"></span><a href="#l222"></a>
+<span id="l223">Whether or not redistributors choose to exercise that option will be up</span><a href="#l223"></a>
+<span id="l224">to the individual redistributor.</span><a href="#l224"></a>
+<span id="l225"></span><a href="#l225"></a>
+<span id="l226"></span><a href="#l226"></a>
+<span id="l227">Integration testing</span><a href="#l227"></a>
+<span id="l228">-------------------</span><a href="#l228"></a>
+<span id="l229"></span><a href="#l229"></a>
+<span id="l230">Third party integration testing services should offer users the ability</span><a href="#l230"></a>
+<span id="l231">to test against specific Python 2.7 maintenance releases, to ensure that</span><a href="#l231"></a>
+<span id="l232">libraries, frameworks and applications can still test their handling of the</span><a href="#l232"></a>
+<span id="l233">legacy security infrastructure correctly (either failing or degrading</span><a href="#l233"></a>
+<span id="l234">gracefully, depending on the security sensitivity of the software), even</span><a href="#l234"></a>
+<span id="l235">after the latest Python 2.7 maintenance release has been synchronised with</span><a href="#l235"></a>
+<span id="l236">a new Python 3 feature release for the modules covered by this policy.</span><a href="#l236"></a>
+<span id="l237"></span><a href="#l237"></a>
+<span id="l238"></span><a href="#l238"></a>
+<span id="l239">Handling lower security environments with low risk tolerance</span><a href="#l239"></a>
+<span id="l240">------------------------------------------------------------</span><a href="#l240"></a>
+<span id="l241"></span><a href="#l241"></a>
+<span id="l242">For better or for worse (mostly worse), there are some environments where</span><a href="#l242"></a>
+<span id="l243">the risk of latent security defects is more tolerated than even a slightly</span><a href="#l243"></a>
+<span id="l244">increased risk of regressions in maintenance releases. This policy largely</span><a href="#l244"></a>
+<span id="l245">excludes these environments from consideration where the modules covered by</span><a href="#l245"></a>
+<span id="l246">the exemption are concerned - this approach is entirely inappropriate for</span><a href="#l246"></a>
+<span id="l247">software connected to the public internet, and defence in depth security</span><a href="#l247"></a>
+<span id="l248">principles suggest that it is not appropriate for most private networks</span><a href="#l248"></a>
+<span id="l249">either.</span><a href="#l249"></a>
+<span id="l250"></span><a href="#l250"></a>
+<span id="l251">Downstream redistributors may still choose to cater to such environments,</span><a href="#l251"></a>
+<span id="l252">but they will need to handle the process of downgrading the security</span><a href="#l252"></a>
+<span id="l253">related modules and doing the associated regression testing themselves.</span><a href="#l253"></a>
+<span id="l254">The main CPython continuous integration infrastructure will not cover this</span><a href="#l254"></a>
+<span id="l255">scenario.</span><a href="#l255"></a>
+<span id="l256"></span><a href="#l256"></a>
+<span id="l257"></span><a href="#l257"></a>
+<span id="l258">Evolution of this Policy</span><a href="#l258"></a>
+<span id="l259">========================</span><a href="#l259"></a>
+<span id="l260"></span><a href="#l260"></a>
+<span id="l261">The key requirement for a module to be considered for inclusion in this</span><a href="#l261"></a>
+<span id="l262">policy (whether under a blanket or conditional exemption) is that it must</span><a href="#l262"></a>
+<span id="l263">have security implications *beyond* the specific application that is written</span><a href="#l263"></a>
+<span id="l264">in Python and the system that application is running on. Thus the focus on</span><a href="#l264"></a>
+<span id="l265">network security protocols and related cryptographic infrastructure - Python</span><a href="#l265"></a>
+<span id="l266">is a popular choice for the development of web services and clients, and</span><a href="#l266"></a>
+<span id="l267">thus the capabilities of widely used Python versions have implications for</span><a href="#l267"></a>
+<span id="l268">the security design of other services that may themselves be using newer</span><a href="#l268"></a>
+<span id="l269">versions of Python or other development languages, but need to interoperate</span><a href="#l269"></a>
+<span id="l270">with clients or servers written using older versions of Python.</span><a href="#l270"></a>
+<span id="l271"></span><a href="#l271"></a>
+<span id="l272">The intent behind this requirement is to minimise any impact that the</span><a href="#l272"></a>
+<span id="l273">introduction of this policy may have on the stability and compatibility of</span><a href="#l273"></a>
+<span id="l274">maintenance releases. It would be thoroughly counterproductive if end</span><a href="#l274"></a>
+<span id="l275">users became as cautious about updating to new Python 2.7 maintenance</span><a href="#l275"></a>
+<span id="l276">releases as they are about updating to new feature releases within the</span><a href="#l276"></a>
+<span id="l277">same release series.</span><a href="#l277"></a>
+<span id="l278"></span><a href="#l278"></a>
+<span id="l279"></span><a href="#l279"></a>
+<span id="l280">Motivation and Rationale</span><a href="#l280"></a>
+<span id="l281">========================</span><a href="#l281"></a>
+<span id="l282"></span><a href="#l282"></a>
+<span id="l283">This PEP can be seen as a more targeted version of the &quot;faster standard</span><a href="#l283"></a>
+<span id="l284">library release cycle&quot; proposals discussed in PEP 407 and PEP 413,</span><a href="#l284"></a>
+<span id="l285">focusing specifically on those areas which have implications beyond the</span><a href="#l285"></a>
+<span id="l286">Python community.</span><a href="#l286"></a>
+<span id="l287"></span><a href="#l287"></a>
+<span id="l288"></span><a href="#l288"></a>
+<span id="l289">Background</span><a href="#l289"></a>
+<span id="l290">----------</span><a href="#l290"></a>
+<span id="l291"></span><a href="#l291"></a>
+<span id="l292">The creation of this PEP was prompted primarily by the aging SSL support in</span><a href="#l292"></a>
+<span id="l293">the Python 2 series. As of March 2014, the Python 2.7 SSL module is</span><a href="#l293"></a>
+<span id="l294">approaching four years of age, and the SSL support in the still popular</span><a href="#l294"></a>
+<span id="l295">Python 2.6 release had its feature set locked six years ago.</span><a href="#l295"></a>
+<span id="l296"></span><a href="#l296"></a>
+<span id="l297">These are simply too old to provide a foundation that can be recommended</span><a href="#l297"></a>
+<span id="l298">in good conscience for secure networking software that operates over the</span><a href="#l298"></a>
+<span id="l299">public internet, especially in an era where it is becoming quite clearly</span><a href="#l299"></a>
+<span id="l300">evident that advanced persistent security threats are even more widespread</span><a href="#l300"></a>
+<span id="l301">and more indiscriminate in their targeting than had previously been</span><a href="#l301"></a>
+<span id="l302">understood. While they represented reasonable security infrastructure in</span><a href="#l302"></a>
+<span id="l303">their time, the state of the art has moved on, and we need to investigate</span><a href="#l303"></a>
+<span id="l304">mechanisms for effectively providing more up to date network security</span><a href="#l304"></a>
+<span id="l305">infrastructure for users that, for whatever reason, are not currently in</span><a href="#l305"></a>
+<span id="l306">a position to migrate to Python 3.</span><a href="#l306"></a>
+<span id="l307"></span><a href="#l307"></a>
+<span id="l308">While the use of the system OpenSSL installation addresses many of these</span><a href="#l308"></a>
+<span id="l309">concerns on Linux platforms, it doesn&#39;t address all of them (in particular,</span><a href="#l309"></a>
+<span id="l310">it is still difficult for sotware to explicitly require some higher level</span><a href="#l310"></a>
+<span id="l311">security settings). In the case of the binary installers for Windows and</span><a href="#l311"></a>
+<span id="l312">Mac OS X that are published on python.org, the version of OpenSSL used is</span><a href="#l312"></a>
+<span id="l313">entirely within the control of the Python core development team, but is</span><a href="#l313"></a>
+<span id="l314">currently limited to OpenSSL maintenance releases for the version initially</span><a href="#l314"></a>
+<span id="l315">shipped with the corresponding Python feature release.</span><a href="#l315"></a>
+<span id="l316"></span><a href="#l316"></a>
+<span id="l317">With increased popularity comes increased responsibility, and this policy</span><a href="#l317"></a>
+<span id="l318">aims to acknowledge the fact that Python&#39;s popularity and adoption has now</span><a href="#l318"></a>
+<span id="l319">reached a level where some of our design and policy decisions have</span><a href="#l319"></a>
+<span id="l320">significant implications beyond the Python development community.</span><a href="#l320"></a>
+<span id="l321"></span><a href="#l321"></a>
+<span id="l322">As one example, the Python 2 ``ssl`` module does not support the Server</span><a href="#l322"></a>
+<span id="l323">Name Identification standard. While it is possible to obtain SNI support</span><a href="#l323"></a>
+<span id="l324">by using the third party ``requests`` client library, actually doing so</span><a href="#l324"></a>
+<span id="l325">currently requires using not only ``requests`` and its embedded dependencies,</span><a href="#l325"></a>
+<span id="l326">but also half a dozen or more additional libraries. The lack of support</span><a href="#l326"></a>
+<span id="l327">in the Python 2 series thus serves as an impediment to making effective</span><a href="#l327"></a>
+<span id="l328">use of SNI on servers, as Python 2 clients will frequently fail to handle</span><a href="#l328"></a>
+<span id="l329">it correctly.</span><a href="#l329"></a>
+<span id="l330"></span><a href="#l330"></a>
+<span id="l331">Another more critical example is the lack of SSL hostname matching in the</span><a href="#l331"></a>
+<span id="l332">Python 2 standard library - it is currently necessary to rely on a third</span><a href="#l332"></a>
+<span id="l333">party library, such as ``requests`` or ``backports.ssl_match_hostname`` to</span><a href="#l333"></a>
+<span id="l334">obtain that functionality in Python 2.</span><a href="#l334"></a>
+<span id="l335"></span><a href="#l335"></a>
+<span id="l336">The Python 2 series also remains more vulnerable to remote timing attacks</span><a href="#l336"></a>
+<span id="l337">on security sensitive comparisons than the Python 3 series, as it lacks a</span><a href="#l337"></a>
+<span id="l338">standard library equivalent to the timing attack resistant</span><a href="#l338"></a>
+<span id="l339">``hmac.compare_digest()`` function. While appropriate secure comparison</span><a href="#l339"></a>
+<span id="l340">functions can be implemented in third party extensions, many users don&#39;t</span><a href="#l340"></a>
+<span id="l341">even consider the issue and use ordinary equality comparisons instead</span><a href="#l341"></a>
+<span id="l342">- while a standard library solution doesn&#39;t automatically fix that problem,</span><a href="#l342"></a>
+<span id="l343">it *does* make the barrier to resolution much lower once the problem is</span><a href="#l343"></a>
+<span id="l344">pointed out.</span><a href="#l344"></a>
+<span id="l345"></span><a href="#l345"></a>
+<span id="l346">My position on the ongoing transition from Python 2 to Python 3 has long</span><a href="#l346"></a>
+<span id="l347">been that Python 2 remains a supported platform for the core development</span><a href="#l347"></a>
+<span id="l348">team, and that commercial support will remain available well after upstream</span><a href="#l348"></a>
+<span id="l349">maintenance ends. However, in the absence of this network security</span><a href="#l349"></a>
+<span id="l350">enhancement policy, that position is difficult to justify when it comes to</span><a href="#l350"></a>
+<span id="l351">software that operates over the public internet. Just as many developers</span><a href="#l351"></a>
+<span id="l352">consider it too difficult to develop truly secure modern networked software</span><a href="#l352"></a>
+<span id="l353">in C/C++ (largely due to the challenges associated with manual</span><a href="#l353"></a>
+<span id="l354">memory management), I anticipate that in the not too distant future, it</span><a href="#l354"></a>
+<span id="l355">will be considered too difficult to develop truly secure modern networked</span><a href="#l355"></a>
+<span id="l356">software using the Python 2 series (some developers would argue that we</span><a href="#l356"></a>
+<span id="l357">have already reached that point).</span><a href="#l357"></a>
+<span id="l358"></span><a href="#l358"></a>
+<span id="l359">Python 2.7 represents the only long term maintenance release the core</span><a href="#l359"></a>
+<span id="l360">development team has provided, and it is natural that there will be things</span><a href="#l360"></a>
+<span id="l361">that worked over a historically shorter maintenance lifespan that don&#39;t work</span><a href="#l361"></a>
+<span id="l362">over this longer support period. In the specific case of the problem</span><a href="#l362"></a>
+<span id="l363">described in this PEP, the simplest available solution is to acknowledge</span><a href="#l363"></a>
+<span id="l364">that long term maintenance of network security related modules *requires*</span><a href="#l364"></a>
+<span id="l365">the ability to add new features, even while retaining backwards compatibility</span><a href="#l365"></a>
+<span id="l366">for existing interfaces.</span><a href="#l366"></a>
+<span id="l367"></span><a href="#l367"></a>
+<span id="l368">It is worth comparing the approach described in this PEP with Red Hat&#39;s</span><a href="#l368"></a>
+<span id="l369">handling of its long term support commitments: it isn&#39;t the RHEL 6.0 release</span><a href="#l369"></a>
+<span id="l370">itself that receives 10 years worth of support, but the overall RHEL 6</span><a href="#l370"></a>
+<span id="l371">*series*. The individual RHEL 6.x point releases within the series then</span><a href="#l371"></a>
+<span id="l372">receive a wide variety of new features, including security enhancements,</span><a href="#l372"></a>
+<span id="l373">all while meeting strict backwards compatibility guarantees for existing</span><a href="#l373"></a>
+<span id="l374">software. Subscribers *are* able to continue using a given point release</span><a href="#l374"></a>
+<span id="l375">after the next point release has become available, but a corresponding</span><a href="#l375"></a>
+<span id="l376">add-on subscription for `Extended Update Support</span><a href="#l376"></a>
+<span id="l377">&lt;https://access.redhat.com/site/support/policy/updates/errata/#Extended_Update_Support&gt;`__</span><a href="#l377"></a>
+<span id="l378">is needed to cover the additional backporting work involved.</span><a href="#l378"></a>
+<span id="l379"></span><a href="#l379"></a>
+<span id="l380">To date, downstream redistributors have respected our upstream policy of</span><a href="#l380"></a>
+<span id="l381">&quot;no new features in Python maintenance releases&quot;. This PEP explicitly</span><a href="#l381"></a>
+<span id="l382">accepts that a more nuanced policy is appropriate in the case of network</span><a href="#l382"></a>
+<span id="l383">security related features, and the specific one it describes is deliberately</span><a href="#l383"></a>
+<span id="l384">designed such that it at least has some chance of being applied to Red Hat</span><a href="#l384"></a>
+<span id="l385">Enterprise Linux and its downstream derivatives.</span><a href="#l385"></a>
+<span id="l386"></span><a href="#l386"></a>
+<span id="l387"></span><a href="#l387"></a>
+<span id="l388">Alternative: advise developers of networked software to migrate to Python 3</span><a href="#l388"></a>
+<span id="l389">---------------------------------------------------------------------------</span><a href="#l389"></a>
+<span id="l390"></span><a href="#l390"></a>
+<span id="l391">This alternative represents the status quo. Unfortunately, it has proven</span><a href="#l391"></a>
+<span id="l392">to be unworkable in practice, as the backwards compatibility implications</span><a href="#l392"></a>
+<span id="l393">mean that this is a non-trivial migration process for large applications</span><a href="#l393"></a>
+<span id="l394">and integration projects. While the tools for migration have evolved to</span><a href="#l394"></a>
+<span id="l395">a point where it is possible to migrate even large applications</span><a href="#l395"></a>
+<span id="l396">opportunistically and incrementally (rather than all at once) by updating</span><a href="#l396"></a>
+<span id="l397">code to run in the large common subset of Python 2 and Python 3, using the</span><a href="#l397"></a>
+<span id="l398">most recent technology often isn&#39;t a priority in commercial environments.</span><a href="#l398"></a>
+<span id="l399"></span><a href="#l399"></a>
+<span id="l400">Previously, this was considered an acceptable harm, as while it was an</span><a href="#l400"></a>
+<span id="l401">unfortunate problem for the affected developers to have to face, it was</span><a href="#l401"></a>
+<span id="l402">seen as an issue between them and their management chain to make the case</span><a href="#l402"></a>
+<span id="l403">for infrastructure modernisation, and this case would become naturally</span><a href="#l403"></a>
+<span id="l404">more compelling as the Python 3 series evolved.</span><a href="#l404"></a>
+<span id="l405"></span><a href="#l405"></a>
+<span id="l406">However, now that we&#39;re fully aware of the impact the limitations of the</span><a href="#l406"></a>
+<span id="l407">Python 2 standard library may be having on the evolution of internet</span><a href="#l407"></a>
+<span id="l408">security standards, I no longer believe that it is reasonable to expect</span><a href="#l408"></a>
+<span id="l409">platform and application developers to resolve all of the latent defects</span><a href="#l409"></a>
+<span id="l410">in an application&#39;s Unicode correctness solely in order to gain access to</span><a href="#l410"></a>
+<span id="l411">the network security enhancements already available in Python 3.</span><a href="#l411"></a>
+<span id="l412"></span><a href="#l412"></a>
+<span id="l413">While Ubuntu (and to some extent Debian as well) are committed to porting all</span><a href="#l413"></a>
+<span id="l414">default system services and scripts to Python 3, and to removing Python 2</span><a href="#l414"></a>
+<span id="l415">from its default distribution images (but not from its archives), this is</span><a href="#l415"></a>
+<span id="l416">a mammoth task and won&#39;t be completed for the Ubuntu 14.04 LTS release</span><a href="#l416"></a>
+<span id="l417">(at least for the desktop image - it may be achieved for the mobile and</span><a href="#l417"></a>
+<span id="l418">server images).</span><a href="#l418"></a>
+<span id="l419"></span><a href="#l419"></a>
+<span id="l420">Fedora has even more work to do to migrate, and it will take a non-trivial</span><a href="#l420"></a>
+<span id="l421">amount of time to migrate the relevant infrastructure components. While</span><a href="#l421"></a>
+<span id="l422">Red Hat are also actively working to make it easier for users to use more</span><a href="#l422"></a>
+<span id="l423">recent versions of Python on our stable platforms, it&#39;s going to take time</span><a href="#l423"></a>
+<span id="l424">for those efforts to start having an impact on end users&#39; choice of version,</span><a href="#l424"></a>
+<span id="l425">and any such changes also don&#39;t benefit the core platform infrastructure</span><a href="#l425"></a>
+<span id="l426">that runs in the integrated system Python by necessity.</span><a href="#l426"></a>
+<span id="l427"></span><a href="#l427"></a>
+<span id="l428">The OpenStack migration to Python 3 is also still in its infancy, and even</span><a href="#l428"></a>
+<span id="l429">though that&#39;s a project with an extensive and relatively robust automated</span><a href="#l429"></a>
+<span id="l430">test suite, it&#39;s still large enough that it is going to take quite some time</span><a href="#l430"></a>
+<span id="l431">to migrate.</span><a href="#l431"></a>
+<span id="l432"></span><a href="#l432"></a>
+<span id="l433">And that&#39;s just three of the highest profile open source projects that</span><a href="#l433"></a>
+<span id="l434">make heavy use of Python. Given the likely existence of large amounts of</span><a href="#l434"></a>
+<span id="l435">legacy code that lacks the kind of automated regression test suite needed</span><a href="#l435"></a>
+<span id="l436">to help support a migration from Python 2 to Python 3, there are likely to</span><a href="#l436"></a>
+<span id="l437">be many cases where reimplementation (perhaps even in Python 3) proves</span><a href="#l437"></a>
+<span id="l438">easier than migration. The key point of this PEP is that those situations</span><a href="#l438"></a>
+<span id="l439">affect more people than just the developers and users of the affected</span><a href="#l439"></a>
+<span id="l440">application: the existence of clients and servers with outdated network</span><a href="#l440"></a>
+<span id="l441">security infrastructure becomes something that developers of secure</span><a href="#l441"></a>
+<span id="l442">networked services need to take into account as part of their security</span><a href="#l442"></a>
+<span id="l443">design, and that&#39;s a problem that inhibits the adoption of better security</span><a href="#l443"></a>
+<span id="l444">standards.</span><a href="#l444"></a>
+<span id="l445"></span><a href="#l445"></a>
+<span id="l446">As Terry Reedy noted, if we try to persist with the status quo, the likely</span><a href="#l446"></a>
+<span id="l447">outcome is that commercial redistributors will attempt to do something</span><a href="#l447"></a>
+<span id="l448">like this on behalf of their customers *anyway*, but in a potentially</span><a href="#l448"></a>
+<span id="l449">inconsistent and ad hoc manner. By drawing the scope definition process</span><a href="#l449"></a>
+<span id="l450">into the upstream project we are in a better position to influence the</span><a href="#l450"></a>
+<span id="l451">approach taken to address the situation and to help ensure some consistency</span><a href="#l451"></a>
+<span id="l452">across redistributors.</span><a href="#l452"></a>
+<span id="l453"></span><a href="#l453"></a>
+<span id="l454">The problem is real, so *something* needs to change, and this PEP describes</span><a href="#l454"></a>
+<span id="l455">my preferred approach to addressing the situation.</span><a href="#l455"></a>
+<span id="l456"></span><a href="#l456"></a>
+<span id="l457"></span><a href="#l457"></a>
+<span id="l458">Alternative: create and release Python 2.8</span><a href="#l458"></a>
+<span id="l459">------------------------------------------</span><a href="#l459"></a>
+<span id="l460"></span><a href="#l460"></a>
+<span id="l461">With sufficient corporate support, it likely *would* be possible to create</span><a href="#l461"></a>
+<span id="l462">and release Python 2.8 (it&#39;s highly unlikely such a project would garner</span><a href="#l462"></a>
+<span id="l463">enough interest to be achievable with only volunteers). However, this</span><a href="#l463"></a>
+<span id="l464">wouldn&#39;t actually solve the problem, as the aim is to provide a *relatively</span><a href="#l464"></a>
+<span id="l465">low impact* way to incorporate enhanced security features into integrated</span><a href="#l465"></a>
+<span id="l466">products and deployments that make use of Python 2.</span><a href="#l466"></a>
+<span id="l467"></span><a href="#l467"></a>
+<span id="l468">Upgrading to a new Python feature release would mean both more work for the</span><a href="#l468"></a>
+<span id="l469">core development team, as well as a more disruptive update that most</span><a href="#l469"></a>
+<span id="l470">potential end users would likely just skip entirely.</span><a href="#l470"></a>
+<span id="l471"></span><a href="#l471"></a>
+<span id="l472">Attempting to create a Python 2.8 release would also bring in suggestions</span><a href="#l472"></a>
+<span id="l473">to backport many additional features from Python 3 (such as ``tracemalloc``</span><a href="#l473"></a>
+<span id="l474">and the improved coroutine support), making the migration from Python 2.7</span><a href="#l474"></a>
+<span id="l475">to this hypothetical 2.8 release even riskier and more disruptive.</span><a href="#l475"></a>
+<span id="l476"></span><a href="#l476"></a>
+<span id="l477">This is not a recommended approach, as it would involve substantial</span><a href="#l477"></a>
+<span id="l478">additional work for a result that is actually less effective in achieving</span><a href="#l478"></a>
+<span id="l479">the original aim (which is to eliminate the current widespread use of the</span><a href="#l479"></a>
+<span id="l480">aging network security infrastructure in the Python 2 series).</span><a href="#l480"></a>
+<span id="l481"></span><a href="#l481"></a>
+<span id="l482">Furthermore, while I can&#39;t make any commitments to actually addressing</span><a href="#l482"></a>
+<span id="l483">this issue on Red Hat platforms, I *can* categorically rule out the idea</span><a href="#l483"></a>
+<span id="l484">of a Python 2.8 being of any use to me in even attempting to get it</span><a href="#l484"></a>
+<span id="l485">addressed.</span><a href="#l485"></a>
+<span id="l486"></span><a href="#l486"></a>
+<span id="l487"></span><a href="#l487"></a>
+<span id="l488">Alternative: distribute the security enhancements via PyPI</span><a href="#l488"></a>
+<span id="l489">----------------------------------------------------------</span><a href="#l489"></a>
+<span id="l490"></span><a href="#l490"></a>
+<span id="l491">While this initially appears to be an attractive and easier to manage</span><a href="#l491"></a>
+<span id="l492">approach, it actually suffers from several significant problems.</span><a href="#l492"></a>
+<span id="l493"></span><a href="#l493"></a>
+<span id="l494">Firstly, this is complex, low level, cross-platform code that integrates</span><a href="#l494"></a>
+<span id="l495">with the underlying operating system across a variety of POSIX platforms</span><a href="#l495"></a>
+<span id="l496">(including Mac OS X) and Windows. The CPython BuildBot fleet is already set</span><a href="#l496"></a>
+<span id="l497">up to handle continuous integration in that context, but most of the</span><a href="#l497"></a>
+<span id="l498">freely available continuous integration services just offer Linux, and</span><a href="#l498"></a>
+<span id="l499">perhaps paid access to Windows. Those services work reasonably well for</span><a href="#l499"></a>
+<span id="l500">software that largely runs on the abstraction layers offered by Python and</span><a href="#l500"></a>
+<span id="l501">other dynamic languages, as well as the more comprehensive abstraction</span><a href="#l501"></a>
+<span id="l502">offered by the JVM, but won&#39;t suffice for the kind of code involved here.</span><a href="#l502"></a>
+<span id="l503"></span><a href="#l503"></a>
+<span id="l504">The OpenSSL dependency for the network security support also qualifies as</span><a href="#l504"></a>
+<span id="l505">the kind of &quot;complex binary dependency&quot; that isn&#39;t yet handled well by the</span><a href="#l505"></a>
+<span id="l506">``pip`` based software distribution ecosystem. Relying on a third party</span><a href="#l506"></a>
+<span id="l507">binary dependency also creates potential compatibility problems for ``pip``</span><a href="#l507"></a>
+<span id="l508">when running on other interpreters like ``PyPy``.</span><a href="#l508"></a>
+<span id="l509"></span><a href="#l509"></a>
+<span id="l510">Another practical problem with the idea is the fact that ``pip`` itself</span><a href="#l510"></a>
+<span id="l511">relies on the ``ssl`` support in the standard library (with some additional</span><a href="#l511"></a>
+<span id="l512">support from a bundled copy of ``requests``, which in turn bundles</span><a href="#l512"></a>
+<span id="l513">``backport.ssl_match_hostname``), and hence would require any replacement</span><a href="#l513"></a>
+<span id="l514">module to also be bundled within ``pip``. This wouldn&#39;t pose any</span><a href="#l514"></a>
+<span id="l515">insurmountable difficulties (it&#39;s just another dependency to vendor), but</span><a href="#l515"></a>
+<span id="l516">it *would* mean yet another copy of OpenSSL to keep up to date.</span><a href="#l516"></a>
+<span id="l517"></span><a href="#l517"></a>
+<span id="l518">This approach also has the same flaw as all other &quot;improve security by</span><a href="#l518"></a>
+<span id="l519">renaming things&quot; approaches: they completely miss the users who most need</span><a href="#l519"></a>
+<span id="l520">help, and raise significant barriers against being able to encourage users</span><a href="#l520"></a>
+<span id="l521">to do the right thing when their infrastructure supports it (since</span><a href="#l521"></a>
+<span id="l522">&quot;use this other module&quot; is a much higher impact change than &quot;turn on this</span><a href="#l522"></a>
+<span id="l523">higher security setting&quot;). Deprecating the aging SSL infrastructure in the</span><a href="#l523"></a>
+<span id="l524">standard library in favour of an external module would be even more user</span><a href="#l524"></a>
+<span id="l525">hostile than accepting the slightly increased risk of regressions associated</span><a href="#l525"></a>
+<span id="l526">with upgrading it in place.</span><a href="#l526"></a>
+<span id="l527"></span><a href="#l527"></a>
+<span id="l528">Last, but certainly not least, this approach suffers from the same problem</span><a href="#l528"></a>
+<span id="l529">as the idea of doing a Python 2.8 release: likely not solving the actual</span><a href="#l529"></a>
+<span id="l530">problem. Commercial redistributors of Python are set up to redistribute</span><a href="#l530"></a>
+<span id="l531">*Python*, and a pre-existing set of additional packages. Getting new</span><a href="#l531"></a>
+<span id="l532">packages added to the pre-existing set *can* be done, but means approaching</span><a href="#l532"></a>
+<span id="l533">each and every redistributor and asking them to update their</span><a href="#l533"></a>
+<span id="l534">repackaging process accordingly. By contrast, the approach described in</span><a href="#l534"></a>
+<span id="l535">this PEP would require redistributors to deliberately *opt out* of the</span><a href="#l535"></a>
+<span id="l536">security enhancements by deliberately downgrading the provided network</span><a href="#l536"></a>
+<span id="l537">security infrastructure, which most of them are unlikely to do.</span><a href="#l537"></a>
+<span id="l538"></span><a href="#l538"></a>
+<span id="l539"></span><a href="#l539"></a>
+<span id="l540">Alternative: provide a &quot;legacy SSL infrastructure&quot; branch</span><a href="#l540"></a>
+<span id="l541">---------------------------------------------------------</span><a href="#l541"></a>
+<span id="l542"></span><a href="#l542"></a>
+<span id="l543">Earlier versions of this PEP included the concept of a ``2.7-legacy-ssl``</span><a href="#l543"></a>
+<span id="l544">branch that preserved the exact feature set of the Python 2.7.6 network</span><a href="#l544"></a>
+<span id="l545">security infrastructure.</span><a href="#l545"></a>
+<span id="l546"></span><a href="#l546"></a>
+<span id="l547">It is the opinion of the PEP author that anyone that actually wants this is</span><a href="#l547"></a>
+<span id="l548">almost certainly making a mistake, and if they insist they really do want</span><a href="#l548"></a>
+<span id="l549">it in their specific situation, they&#39;re welcome to either make it themselves</span><a href="#l549"></a>
+<span id="l550">or arrange for a downstream redistributor to make it for them.</span><a href="#l550"></a>
+<span id="l551"></span><a href="#l551"></a>
+<span id="l552">If they are made publicly available, any such rebuilds should be referred to</span><a href="#l552"></a>
+<span id="l553">as &quot;Python 2.7 with Legacy SSL&quot; to clearly distinguish them from the official</span><a href="#l553"></a>
+<span id="l554">Python 2.7 releases that include more up to date network security</span><a href="#l554"></a>
+<span id="l555">infrastructure.</span><a href="#l555"></a>
+<span id="l556"></span><a href="#l556"></a>
+<span id="l557">After the first Python 2.7 maintenance release that has the security</span><a href="#l557"></a>
+<span id="l558">infrastructure updated to match Python 3.4, it would also be appropriate to</span><a href="#l558"></a>
+<span id="l559">refer to Python 2.7.6 and earlier releases as &quot;Python 2.7 with Legacy SSL&quot;.</span><a href="#l559"></a>
+<span id="l560"></span><a href="#l560"></a>
+<span id="l561"></span><a href="#l561"></a>
+<span id="l562">Alternative: selectively backport particular APIs</span><a href="#l562"></a>
+<span id="l563">-------------------------------------------------</span><a href="#l563"></a>
+<span id="l564"></span><a href="#l564"></a>
+<span id="l565">An instinctively minimalist reaction to this proposal is to only backport</span><a href="#l565"></a>
+<span id="l566">particular APIs in the affected modules that are judged to be &quot;security</span><a href="#l566"></a>
+<span id="l567">critical&quot;. However, this ends up providing a worse end user experience,</span><a href="#l567"></a>
+<span id="l568">as well as a worse developer experience.</span><a href="#l568"></a>
+<span id="l569"></span><a href="#l569"></a>
+<span id="l570">For end users, the selective backporting approach means learning not only</span><a href="#l570"></a>
+<span id="l571">the legacy Python 2.7 API and the current Python 3 APIs, but also the</span><a href="#l571"></a>
+<span id="l572">hybrid API created by the selective backporting process. It is much</span><a href="#l572"></a>
+<span id="l573">simpler to just learn the APIs of the original Python 2.7 feature release</span><a href="#l573"></a>
+<span id="l574">and the relevant Python 3 features releases, without trying to define a new</span><a href="#l574"></a>
+<span id="l575">hybrid API that only exists in later Python 2.7 maintenance branches.</span><a href="#l575"></a>
+<span id="l576"></span><a href="#l576"></a>
+<span id="l577">For developers, the main benefit of the &quot;just align the available</span><a href="#l577"></a>
+<span id="l578">functionality with Python 3&quot; approach is that it reduces the amount of</span><a href="#l578"></a>
+<span id="l579">design work needing when updating Python 2.7 with new security features.</span><a href="#l579"></a>
+<span id="l580">The &quot;feature or fix?&quot; and &quot;security related or not?&quot; debates are both</span><a href="#l580"></a>
+<span id="l581">handled in advance by this policy, leaving only the matter of ensuring</span><a href="#l581"></a>
+<span id="l582">that backwards compatibility is preserved as needed by adjusting the</span><a href="#l582"></a>
+<span id="l583">default behaviour in the Python 2.7 backport when appropriate.</span><a href="#l583"></a>
+<span id="l584"></span><a href="#l584"></a>
+<span id="l585"></span><a href="#l585"></a>
+<span id="l586">Open Questions</span><a href="#l586"></a>
+<span id="l587">==============</span><a href="#l587"></a>
+<span id="l588"></span><a href="#l588"></a>
+<span id="l589">* MvL has indicated he is not prepared to tackle the task of trying to</span><a href="#l589"></a>
+<span id="l590">  integrate a newer OpenSSL into the also aging Python 2.7 build</span><a href="#l590"></a>
+<span id="l591">  infrastructure on Windows (unfortunately, we&#39;ve looked into upgrading</span><a href="#l591"></a>
+<span id="l592">  that build infrastructure, and the backwards compatibility issues</span><a href="#l592"></a>
+<span id="l593">  appear to be effectively insurmountable). We would require a commitment</span><a href="#l593"></a>
+<span id="l594">  from another trusted contributor to handle at least this task, and</span><a href="#l594"></a>
+<span id="l595">  potentially also taking over the task of creating the official</span><a href="#l595"></a>
+<span id="l596">  Python 2.7 Windows installers for the remaining Python 2.7 maintenance</span><a href="#l596"></a>
+<span id="l597">  releases.</span><a href="#l597"></a>
+<span id="l598"></span><a href="#l598"></a>
+<span id="l599">* We would need commitments to create and review full backports of the</span><a href="#l599"></a>
+<span id="l600">  components covered by this policy from Python 3.4 to Python 2.7, as well</span><a href="#l600"></a>
+<span id="l601">  as support for handling any more specific security issues affecting these</span><a href="#l601"></a>
+<span id="l602">  modules.</span><a href="#l602"></a>
+<span id="l603"></span><a href="#l603"></a>
+<span id="l604">* I believe I&#39;ve addressed all the technical and scope questions I had, or</span><a href="#l604"></a>
+<span id="l605">  others raised. That just leaves the question of &quot;Do we agree this plan</span><a href="#l605"></a>
+<span id="l606">  actually makes sense, given the constraints on downstream redistributors</span><a href="#l606"></a>
+<span id="l607">  that would also like to see this problem solved?&quot; :)</span><a href="#l607"></a>
+<span id="l608"></span><a href="#l608"></a>
+<span id="l609"></span><a href="#l609"></a>
+<span id="l610">Disclosure of Interest</span><a href="#l610"></a>
+<span id="l611">======================</span><a href="#l611"></a>
+<span id="l612"></span><a href="#l612"></a>
+<span id="l613">The author of this PEP currently works for Red Hat on test automation tools.</span><a href="#l613"></a>
+<span id="l614">If this proposal is accepted, I will be strongly encouraging Red Hat to take</span><a href="#l614"></a>
+<span id="l615">advantage of the resulting opportunity to help improve the overall security</span><a href="#l615"></a>
+<span id="l616">of the Python ecosystem. However, I do not speak for Red Hat in this matter,</span><a href="#l616"></a>
+<span id="l617">and cannot make any commitments on Red Hat&#39;s behalf.</span><a href="#l617"></a>
+<span id="l618"></span><a href="#l618"></a>
+<span id="l619"></span><a href="#l619"></a>
+<span id="l620">Acknowledgements</span><a href="#l620"></a>
+<span id="l621">================</span><a href="#l621"></a>
+<span id="l622"></span><a href="#l622"></a>
+<span id="l623">Thanks to Christian Heimes for his recent efforts on greatly improving</span><a href="#l623"></a>
+<span id="l624">Python&#39;s SSL support in the Python 3 series, and a variety of members of</span><a href="#l624"></a>
+<span id="l625">the Python community for helping me to better understand the implications</span><a href="#l625"></a>
+<span id="l626">of the default settings we provide in our SSL modules, and the impact that</span><a href="#l626"></a>
+<span id="l627">tolerating the use of SSL infrastructure that was defined in 2010</span><a href="#l627"></a>
+<span id="l628">(Python 2.7) or even 2008 (Python 2.6) potentially has for the security</span><a href="#l628"></a>
+<span id="l629">of the web as a whole.</span><a href="#l629"></a>
+<span id="l630"></span><a href="#l630"></a>
+<span id="l631">Christian and Donald Stufft also provided valuable feedback on a preliminary</span><a href="#l631"></a>
+<span id="l632">draft of this proposal.</span><a href="#l632"></a>
+<span id="l633"></span><a href="#l633"></a>
+<span id="l634">Thanks also to participants in the python-dev mailing list threads [1,2,5]_</span><a href="#l634"></a>
+<span id="l635"></span><a href="#l635"></a>
+<span id="l636"></span><a href="#l636"></a>
+<span id="l637">References</span><a href="#l637"></a>
+<span id="l638">==========</span><a href="#l638"></a>
+<span id="l639"></span><a href="#l639"></a>
+<span id="l640">.. [1] https://mail.python.org/pipermail/python-dev/2014-March/133334.html</span><a href="#l640"></a>
+<span id="l641">.. [2] https://mail.python.org/pipermail/python-dev/2014-March/133389.html</span><a href="#l641"></a>
+<span id="l642">.. [3] https://mail.python.org/pipermail/python-dev/2014-March/133438.html</span><a href="#l642"></a>
+<span id="l643">.. [4] https://mail.python.org/pipermail/python-dev/2014-March/133347.html</span><a href="#l643"></a>
+<span id="l644">.. [5] https://mail.python.org/pipermail/python-dev/2014-March/133442.html</span><a href="#l644"></a>
+<span id="l645"></span><a href="#l645"></a>
+<span id="l646"></span><a href="#l646"></a>
+<span id="l647">Copyright</span><a href="#l647"></a>
+<span id="l648">=========</span><a href="#l648"></a>
+<span id="l649"></span><a href="#l649"></a>
+<span id="l650">This document has been placed in the public domain.</span><a href="#l650"></a>
+<span id="l651"></span><a href="#l651"></a>
+<span id="l652"></span><a href="#l652"></a>
+<span id="l653"></span><a href="#l653"></a>
+<span id="l654"></span><a href="#l654"></a>
+<span id="l655">..</span><a href="#l655"></a>
+<span id="l656">   Local Variables:</span><a href="#l656"></a>
+<span id="l657">   mode: indented-text</span><a href="#l657"></a>
+<span id="l658">   indent-tabs-mode: nil</span><a href="#l658"></a>
+<span id="l659">   sentence-end-double-space: t</span><a href="#l659"></a>
+<span id="l660">   fill-column: 70</span><a href="#l660"></a>
+<span id="l661">   coding: utf-8</span><a href="#l661"></a></pre>
+<div class="sourcelast"></div>
+</div>
+</div>
+</div>
+
+<script type="text/javascript">process_dates()</script>
+
+
+</body>
+</html>
+

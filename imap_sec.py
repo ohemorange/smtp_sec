@@ -219,6 +219,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         else:
             # pull down (delete) message from imap
             self.pull_down_next_message()
+            # pleeeease don't forget to call create_cryptoblobs...
 
     def push_up_next_message(self):
         if len(self.send_queue) >= 1:

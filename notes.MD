@@ -22,6 +22,7 @@
 - figure out if imap is running over ssl or the other way around in imap_ssl
   (I think it's the former)
 - maybe pull pack to gmail folder and such if it's gone over smtorp.
+- pickle and load the send-to-imap-from-smtorp queue.
 
 ## some notes
 - assuming that all IMAP clients are running the protocol
@@ -246,7 +247,10 @@ HiddenServicePort 25 localhost:33412
     this a bit more. it should be the same instance tbh, because I'm just
     grabbing it from the context. the problem was when I was calling new 
     threads of myself and such.
-
+    - forget this. I'm keeping it in noop. because this lets mailpile do
+      WHATEVER STRANGE NONSENSE it wants with making methods part of other
+      classes and proxying and I am just NOT dealing with that.
+      - I should still pickle the queue, though.
 
 
 

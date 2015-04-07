@@ -233,6 +233,29 @@ HiddenServicePort 25 localhost:33412
     SMTPServer.
   - yeah, it's in imaplib. on the bright side, I found one place to hook in
     and fix things instead of having to do it at every point in ssl.py...
+- we were talking to 64.233.171.108 (definitely imap)
+  - then we started talking to 74.125.22.109 (pretty sure this is also imap)
+- try this: grep -r "mail_sources" .
+- so. what I'm currently trying is putting the dequeue code in noop.
+  - because it's called every 120 second (although it seems to actually be 
+    going faster than that, but that's not a big issue). I could also just
+    call the "timed imap" method or whatever. it seems to be working now. a
+    thing to make sure is that the same instance it's enqueued on is the one
+    it's pushed from. I could handle this with saving it down and bringing it
+    up, that's probably better anyway. I'll put that in the todo. once I test
+    this a bit more. it should be the same instance tbh, because I'm just
+    grabbing it from the context. the problem was when I was calling new 
+    threads of myself and such.
+
+
+
+
+
+
+
+
+
+
 
 ## notes from meeting 2/17/15
 ### Threats

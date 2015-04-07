@@ -24,9 +24,11 @@ parent = imaplib.IMAP4_SSL
 
 CRLF = imaplib.CRLF
 
+IMAP4_SSL_PORT = imaplib.IMAP4_SSL_PORT
+
 DEBUG_IMAP_FROM_GMAIL = False
 
-DEBUG_IMAP_FROM_SMTORP = False
+DEBUG_IMAP_FROM_SMTORP = True
 
 # TODO: read these from a config, or set based on algorithm.
 INITIAL_DT = 30.0
@@ -37,6 +39,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     pass
 
     def __init__(self, host = '', port = imaplib.IMAP4_SSL_PORT, keyfile = None, certfile = None):
+        print "initializing IMAP4_SSL(imap_sec)", host, port
         imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
         self.mapping = None
         self.selected_mailbox = "INBOX"
@@ -47,7 +50,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         self.send_queue = []
         # start a worker that sends every DT. make the first
         # call after time INITIAL_DT
-        threading.Timer(INITIAL_DT, self.timed_imap_exchange).start()
+        # threading.Timer(INITIAL_DT, self.timed_imap_exchange).start()
+        print "initting IMAP4_SSL", self
 
     def find_index_uid_in_folder(self, folder):
         imaplib.IMAP4_SSL.select(self, mailbox=folder)
@@ -187,7 +191,9 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         return typ, data
 
     def noop(self):
+        print "noop", self
         self.create_cryptoblobs_or_load_index()
+        self.timed_imap_exchange()
         typ, data = imaplib.IMAP4_SSL.noop(self)
         # print "noop", data
         return typ, data
@@ -203,8 +209,10 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     
     def timed_imap_exchange(self):
         # restart timer
-        threading.Timer(DT, self.timed_imap_exchange).start()
+        # threading.Timer(DT, self.timed_imap_exchange).start()
         # do things
+        print "imap timer tick"
+
         if self._scheduler.next_time_point_action_is_push():
             # push up message
             self.push_up_next_message()
@@ -214,6 +222,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
     def push_up_next_message(self):
         if len(self.send_queue) >= 1:
+            if DEBUG_IMAP_FROM_SMTORP:
+                print "pushing up next message"
             (message_contents, folder, uid) = self.send_queue[0]
             self.send_queue = self.send_queue[1:]
             self.add_message_to_folder_internal(message_contents,
@@ -244,6 +254,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # doesn't, there's no fault tolerance going on...
     def add_message_to_folder_internal(self, message_contents, folder,
         uid, schedule_upload):
+        if DEBUG_IMAP_FROM_SMTORP:
+            print "add_message_to_folder", self, "schedule for later", schedule_upload
         if schedule_upload:
             # place it on the queue, deal with it later
             # TODO: make sure that all messages are sent when we close down.
@@ -251,10 +263,14 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             return
         # update it in the index
         if DEBUG_IMAP_FROM_SMTORP:
-            print "add_message_to_folder"
-            print "message_contents", message_contents
+            # print "message_contents", message_contents
             print "folder", folder
             print "uid", uid
+            print "host", self.host
+            print "port", self.port
+
+        self.create_cryptoblobs_or_load_index()
+
         if not folder in self.mapping:
             self.mapping[folder] = []
         self.mapping[folder].append(uid)
@@ -367,7 +383,10 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         print "store", a
         return a
 
-    # def open():
+    def open(self, host = '', port = IMAP4_SSL_PORT):
+        a = imaplib.IMAP4_SSL.open(self, host, port)
+        print "opening mailbox", host, port
+        return a    
 
     def fetch(self, message_set, message_parts):
         a = imaplib.IMAP4_SSL.fetch(self, message_set, message_parts)
@@ -409,7 +428,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
     def readline(self):
         a = imaplib.IMAP4_SSL.readline(self)
-        # print "readline", a
+        # print "readline:", a
         return a
 
     # update index

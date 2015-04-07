@@ -1,0 +1,464 @@
+ 
+user@chrubuntu:~/Mailpile$ ./mp
+we are at least trying to initialize a channel here                            
+host, port localhost 33412
+look who decided to start a server
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+Elapsed: 0.002s (load: Loaded metadata index)
+initializing IMAP4_SSL(imap_sec) imap.gmail.com 993
+
+(process:6721): GLib-CRITICAL **: g_slice_set_config: assertion 'sys_page_size == 0' failed
+ssl version: PROTOCOL_TLSv1_2
+server hostname None
+opening mailbox imap.gmail.com 993
+initting IMAP4_SSL <imap_sec.IMAP4_SSL instance at 0x7fea55550830>
+initting sharedimapconn <SharedImapConn(imap.gmail.com, started daemon 140644419020544)>
+Mailpile.py          a tool                 Copyright 2013-2014, Mailpile ehf
+               for searching and                   <https://www.mailpile.is/>
+           organizing piles of e-mail
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of either the GNU Affero General Public License as published by the
+Free Software Foundation or the Apache License 2.0 as published by the Apache
+Software Foundation. See the file COPYING.md for details.
+
+The Web interface address is: http://localhost:33411/
+
+   * Type `help` for instructions or `quit` to quit.
+   * Long running operations can be aborted by pressing: <CTRL-C>
+   * Check your web browser!
+
+mailpile> opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+mailutils: preparing message
+mailutils: preparing message
+this message has already been prepared
+oh look we're trying to accept stuff
+push called 220 chrubuntu Python SMTP proxy version 0.2
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+collect_incoming_data
+push called 502 Error: command "EHLO" not implemented
+collect_incoming_data
+push called 250 cs.utah.edu
+collect_incoming_data
+smtp_MAIL FROM:<eportnoy@princeton.edu>
+push called 250 Ok
+collect_incoming_data
+smtp_RCPT TO:<foo@rwq5q4vh3aphekjj.onion>
+push called 450 Please collide 8,70911105-149280156-212963201 or retry. See: https://www.mailpile.is/hashcash/
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+collect_incoming_data
+smtp_RCPT TO:<foo@rwq5q4vh3aphekjj.onion##183-1>
+push called 250 Ok
+collect_incoming_data
+smtp_DATA None
+push called 354 End data with <CR><LF>.<CR><LF>
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+process message
+ImapMailSource
+add side message SharedImapConn
+conn <SharedImapConn(imap.gmail.com, started daemon 140644419020544)>
+_conn <imap_sec.IMAP4_SSL instance at 0x7fea55550830>
+add_message_to_folder
+folder SMTorP
+uid 5dd6193d4120c387083eb46b606b0855
+host imap.gmail.com
+port 993
+push called 250 Ok
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+mailutils: preparing message
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+mailutils: preparing message
+this message has already been prepared
+oh look we're trying to accept stuff
+push called 220 chrubuntu Python SMTP proxy version 0.2
+collect_incoming_data
+push called 502 Error: command "EHLO" not implemented
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+collect_incoming_data
+push called 250 cs.utah.edu
+collect_incoming_data
+smtp_MAIL FROM:<eportnoy@princeton.edu>
+push called 250 Ok
+collect_incoming_data
+smtp_RCPT TO:<foo@rwq5q4vh3aphekjj.onion>
+push called 450 Please collide 8,265717822-186812485-36061083 or retry. See: https://www.mailpile.is/hashcash/
+collect_incoming_data
+smtp_RCPT TO:<foo@rwq5q4vh3aphekjj.onion##31-1>
+push called 250 Ok
+collect_incoming_data
+smtp_DATA None
+push called 354 End data with <CR><LF>.<CR><LF>
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+process message
+ImapMailSource
+add side message SharedImapConn
+conn <SharedImapConn(imap.gmail.com, started daemon 140644419020544)>
+_conn <imap_sec.IMAP4_SSL instance at 0x7fea55550830>
+add_message_to_folder
+folder SMTorP
+uid 2356814935581c85a31d47104f9b3517
+host imap.gmail.com
+port 993
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+Error: <class 'ssl.SSLError'>
+Traceback (most recent call last):
+  File "/home/user/Mailpile/mailpile/plugins/smtp_server.py", line 185, in process_message
+    source.add_side_message(message)
+  File "/home/user/Mailpile/mailpile/mail_source/imap.py", line 659, in add_side_message
+    self.conn._conn.add_message_to_folder(msg_str, "SMTorP", string)
+  File "/home/user/smtp_sec/imap_sec.py", line 246, in add_message_to_folder
+    uid, True)
+  File "/home/user/smtp_sec/imap_sec.py", line 282, in add_message_to_folder_internal
+    self.encrypt_and_append_message(messageified)
+  File "/home/user/smtp_sec/imap_sec.py", line 121, in encrypt_and_append_message
+    self.append_encrypted_message(new_body)
+  File "/home/user/smtp_sec/imap_sec.py", line 129, in append_encrypted_message
+    typ, data = parent.append(self, CRYPTOBLOBS, None, None, str(message))
+  File "/usr/lib/python2.7/imaplib.py", line 336, in append
+    return self._simple_command(name, mailbox, flags, date_time)
+  File "/usr/lib/python2.7/imaplib.py", line 1087, in _simple_command
+    return self._command_complete(name, self._command(name, *args))
+  File "/usr/lib/python2.7/imaplib.py", line 909, in _command_complete
+    typ, data = self._get_tagged_response(tag)
+  File "/home/user/smtp_sec/imap_sec.py", line 422, in _get_tagged_response
+    a = imaplib.IMAP4_SSL._get_tagged_response(self, tag)
+  File "/usr/lib/python2.7/imaplib.py", line 1016, in _get_tagged_response
+    self._get_response()
+  File "/usr/lib/python2.7/imaplib.py", line 928, in _get_response
+    resp = self._get_line()
+  File "/usr/lib/python2.7/imaplib.py", line 1026, in _get_line
+    line = self.readline()
+  File "/home/user/smtp_sec/imap_sec.py", line 427, in readline
+    a = imaplib.IMAP4_SSL.readline(self)
+  File "/usr/lib/python2.7/imaplib.py", line 1188, in readline
+    return self.file.readline()
+  File "/usr/lib/python2.7/socket.py", line 447, in readline
+    data = self._sock.recv(self._rbufsize)
+  File "/usr/lib/python2.7/ssl.py", line 711, in recv
+    return self.read(buflen)
+  File "/usr/lib/python2.7/ssl.py", line 605, in read
+    v = self._sslobj.read(len or 1024)
+SSLError: [SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1750)
+push called 400 Oops wtf
+initializing IMAP4_SSL(imap_sec) imap.gmail.com 993
+ssl version: PROTOCOL_TLSv1_2
+server hostname None
+opening mailbox imap.gmail.com 993
+initting IMAP4_SSL <imap_sec.IMAP4_SSL instance at 0x7fea2cc99e18>
+mailutils: preparing message
+this message has already been prepared
+initting sharedimapconn <SharedImapConn(imap.gmail.com, started daemon 140644419020544)>
+oh look we're trying to accept stuff
+push called 220 chrubuntu Python SMTP proxy version 0.2
+collect_incoming_data
+push called 502 Error: command "EHLO" not implemented
+collect_incoming_data
+push called 250 cs.utah.edu
+collect_incoming_data
+smtp_MAIL FROM:<eportnoy@princeton.edu>
+push called 250 Ok
+collect_incoming_data
+smtp_RCPT TO:<foo@rwq5q4vh3aphekjj.onion>
+push called 450 Please collide 8,64060610-196211493-77335143 or retry. See: https://www.mailpile.is/hashcash/
+collect_incoming_data
+smtp_RCPT TO:<foo@rwq5q4vh3aphekjj.onion##621-1>
+push called 250 Ok
+collect_incoming_data
+smtp_DATA None
+push called 354 End data with <CR><LF>.<CR><LF>
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+collect_incoming_data
+process message
+ImapMailSource
+add side message SharedImapConn
+conn <SharedImapConn(imap.gmail.com, started daemon 140644419020544)>
+_conn <imap_sec.IMAP4_SSL instance at 0x7fea2cc99e18>
+add_message_to_folder
+folder SMTorP
+uid fe1658e28c5fc6a2ff299148d804d833
+host imap.gmail.com
+port 993
+Error: <class 'ssl.SSLError'>
+Traceback (most recent call last):
+  File "/home/user/Mailpile/mailpile/plugins/smtp_server.py", line 185, in process_message
+    source.add_side_message(message)
+  File "/home/user/Mailpile/mailpile/mail_source/imap.py", line 659, in add_side_message
+    self.conn._conn.add_message_to_folder(msg_str, "SMTorP", string)
+  File "/home/user/smtp_sec/imap_sec.py", line 246, in add_message_to_folder
+    uid, True)
+  File "/home/user/smtp_sec/imap_sec.py", line 269, in add_message_to_folder_internal
+    self.create_cryptoblobs_or_load_index()
+  File "/home/user/smtp_sec/imap_sec.py", line 164, in create_cryptoblobs_or_load_index
+    typ, data = imaplib.IMAP4_SSL.list(self)
+  File "/usr/lib/python2.7/imaplib.py", line 506, in list
+    typ, dat = self._simple_command(name, directory, pattern)
+  File "/usr/lib/python2.7/imaplib.py", line 1087, in _simple_command
+    return self._command_complete(name, self._command(name, *args))
+  File "/usr/lib/python2.7/imaplib.py", line 909, in _command_complete
+    typ, data = self._get_tagged_response(tag)
+  File "/home/user/smtp_sec/imap_sec.py", line 422, in _get_tagged_response
+    a = imaplib.IMAP4_SSL._get_tagged_response(self, tag)
+  File "/usr/lib/python2.7/imaplib.py", line 1016, in _get_tagged_response
+    self._get_response()
+  File "/usr/lib/python2.7/imaplib.py", line 928, in _get_response
+    resp = self._get_line()
+  File "/usr/lib/python2.7/imaplib.py", line 1026, in _get_line
+    line = self.readline()
+  File "/home/user/smtp_sec/imap_sec.py", line 427, in readline
+    a = imaplib.IMAP4_SSL.readline(self)
+  File "/usr/lib/python2.7/imaplib.py", line 1188, in readline
+    return self.file.readline()
+  File "/usr/lib/python2.7/socket.py", line 447, in readline
+    data = self._sock.recv(self._rbufsize)
+  File "/usr/lib/python2.7/ssl.py", line 711, in recv
+    return self.read(buflen)
+  File "/usr/lib/python2.7/ssl.py", line 605, in read
+    v = self._sslobj.read(len or 1024)
+SSLError: [SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1750)
+push called 400 Oops wtf
+initializing IMAP4_SSL(imap_sec) imap.gmail.com 993
+ssl version: PROTOCOL_TLSv1_2
+server hostname None
+opening mailbox imap.gmail.com 993
+initting IMAP4_SSL <imap_sec.IMAP4_SSL instance at 0x7fea2cc99e18>
+mailutils: preparing message
+this message has already been prepared
+oh look we're trying to accept stuff
+push called 220 chrubuntu Python SMTP proxy version 0.2
+initting sharedimapconn <SharedImapConn(imap.gmail.com, started daemon 140643768096512)>
+collect_incoming_data
+push called 502 Error: command "EHLO" not implemented
+collect_incoming_data
+push called 250 cs.utah.edu
+collect_incoming_data
+smtp_MAIL FROM:<eportnoy@princeton.edu>
+push called 250 Ok
+collect_incoming_data
+smtp_RCPT TO:<foo@rwq5q4vh3aphekjj.onion>
+push called 450 Please collide 8,104366909-235936639-261752595 or retry. See: https://www.mailpile.is/hashcash/
+collect_incoming_data
+smtp_RCPT TO:<foo@rwq5q4vh3aphekjj.onion##174-1>
+push called 250 Ok
+collect_incoming_data
+smtp_DATA None
+push called 354 End data with <CR><LF>.<CR><LF>
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+process message
+ImapMailSource
+add side message SharedImapConn
+conn <SharedImapConn(imap.gmail.com, started daemon 140643768096512)>
+_conn <imap_sec.IMAP4_SSL instance at 0x7fea2cc99e18>
+add_message_to_folder
+folder SMTorP
+uid cc2aefd9065f30de9b4922d863e3cdcf
+host imap.gmail.com
+port 993
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+Error: <class 'ssl.SSLError'>
+Traceback (most recent call last):
+  File "/home/user/Mailpile/mailpile/plugins/smtp_server.py", line 185, in process_message
+    source.add_side_message(message)
+  File "/home/user/Mailpile/mailpile/mail_source/imap.py", line 659, in add_side_message
+    self.conn._conn.add_message_to_folder(msg_str, "SMTorP", string)
+  File "/home/user/smtp_sec/imap_sec.py", line 246, in add_message_to_folder
+    uid, True)
+  File "/home/user/smtp_sec/imap_sec.py", line 276, in add_message_to_folder_internal
+    self.save_index(self.mapping)
+  File "/home/user/smtp_sec/imap_sec.py", line 159, in save_index
+    self.append_index(table)
+  File "/home/user/smtp_sec/imap_sec.py", line 143, in append_index
+    typ, data = imaplib.IMAP4_SSL.append(self, CRYPTOBLOBS, None, None, str(message))
+  File "/usr/lib/python2.7/imaplib.py", line 336, in append
+    return self._simple_command(name, mailbox, flags, date_time)
+  File "/usr/lib/python2.7/imaplib.py", line 1087, in _simple_command
+    return self._command_complete(name, self._command(name, *args))
+  File "/usr/lib/python2.7/imaplib.py", line 909, in _command_complete
+    typ, data = self._get_tagged_response(tag)
+  File "/home/user/smtp_sec/imap_sec.py", line 422, in _get_tagged_response
+    a = imaplib.IMAP4_SSL._get_tagged_response(self, tag)
+  File "/usr/lib/python2.7/imaplib.py", line 1016, in _get_tagged_response
+    self._get_response()
+  File "/usr/lib/python2.7/imaplib.py", line 928, in _get_response
+    resp = self._get_line()
+  File "/usr/lib/python2.7/imaplib.py", line 1026, in _get_line
+    line = self.readline()
+  File "/home/user/smtp_sec/imap_sec.py", line 427, in readline
+    a = imaplib.IMAP4_SSL.readline(self)
+  File "/usr/lib/python2.7/imaplib.py", line 1188, in readline
+    return self.file.readline()
+  File "/usr/lib/python2.7/socket.py", line 447, in readline
+    data = self._sock.recv(self._rbufsize)
+  File "/usr/lib/python2.7/ssl.py", line 711, in recv
+    return self.read(buflen)
+  File "/usr/lib/python2.7/ssl.py", line 605, in read
+    v = self._sslobj.read(len or 1024)
+SSLError: [SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1750)
+push called 400 Oops wtf
+initializing IMAP4_SSL(imap_sec) imap.gmail.com 993
+ssl version: PROTOCOL_TLSv1_2
+server hostname None
+opening mailbox imap.gmail.com 993
+initting IMAP4_SSL <imap_sec.IMAP4_SSL instance at 0x7fea2cb895a8>
+mailutils: preparing message
+this message has already been prepared
+initting sharedimapconn <SharedImapConn(imap.gmail.com, started daemon 140644419020544)>
+oh look we're trying to accept stuff
+push called 220 chrubuntu Python SMTP proxy version 0.2
+collect_incoming_data
+push called 502 Error: command "EHLO" not implemented
+collect_incoming_data
+push called 250 cs.utah.edu
+collect_incoming_data
+smtp_MAIL FROM:<eportnoy@princeton.edu>
+push called 250 Ok
+collect_incoming_data
+smtp_RCPT TO:<foo@rwq5q4vh3aphekjj.onion>
+push called 450 Please collide 8,257004807-152151546-259824857 or retry. See: https://www.mailpile.is/hashcash/
+collect_incoming_data
+smtp_RCPT TO:<foo@rwq5q4vh3aphekjj.onion##212-1>
+push called 250 Ok
+collect_incoming_data
+smtp_DATA None
+push called 354 End data with <CR><LF>.<CR><LF>
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+process message
+ImapMailSource
+add side message SharedImapConn
+conn <SharedImapConn(imap.gmail.com, started daemon 140644419020544)>
+_conn <imap_sec.IMAP4_SSL instance at 0x7fea2cb895a8>
+add_message_to_folder
+folder SMTorP
+uid 6c1ecafb3c38a606cbf13787752be5fd
+host imap.gmail.com
+port 993
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+Error: <class 'ssl.SSLError'>
+Traceback (most recent call last):
+  File "/home/user/Mailpile/mailpile/plugins/smtp_server.py", line 185, in process_message
+    source.add_side_message(message)
+  File "/home/user/Mailpile/mailpile/mail_source/imap.py", line 659, in add_side_message
+    self.conn._conn.add_message_to_folder(msg_str, "SMTorP", string)
+  File "/home/user/smtp_sec/imap_sec.py", line 246, in add_message_to_folder
+    uid, True)
+  File "/home/user/smtp_sec/imap_sec.py", line 276, in add_message_to_folder_internal
+    self.save_index(self.mapping)
+  File "/home/user/smtp_sec/imap_sec.py", line 159, in save_index
+    self.append_index(table)
+  File "/home/user/smtp_sec/imap_sec.py", line 143, in append_index
+    typ, data = imaplib.IMAP4_SSL.append(self, CRYPTOBLOBS, None, None, str(message))
+  File "/usr/lib/python2.7/imaplib.py", line 336, in append
+    return self._simple_command(name, mailbox, flags, date_time)
+  File "/usr/lib/python2.7/imaplib.py", line 1087, in _simple_command
+    return self._command_complete(name, self._command(name, *args))
+  File "/usr/lib/python2.7/imaplib.py", line 909, in _command_complete
+    typ, data = self._get_tagged_response(tag)
+  File "/home/user/smtp_sec/imap_sec.py", line 422, in _get_tagged_response
+    a = imaplib.IMAP4_SSL._get_tagged_response(self, tag)
+  File "/usr/lib/python2.7/imaplib.py", line 1016, in _get_tagged_response
+    self._get_response()
+  File "/usr/lib/python2.7/imaplib.py", line 928, in _get_response
+    resp = self._get_line()
+  File "/usr/lib/python2.7/imaplib.py", line 1026, in _get_line
+    line = self.readline()
+  File "/home/user/smtp_sec/imap_sec.py", line 427, in readline
+    a = imaplib.IMAP4_SSL.readline(self)
+  File "/usr/lib/python2.7/imaplib.py", line 1188, in readline
+    return self.file.readline()
+  File "/usr/lib/python2.7/socket.py", line 447, in readline
+    data = self._sock.recv(self._rbufsize)
+  File "/usr/lib/python2.7/ssl.py", line 711, in recv
+    return self.read(buflen)
+  File "/usr/lib/python2.7/ssl.py", line 605, in read
+    v = self._sslobj.read(len or 1024)
+SSLError: [SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1750)
+push called 400 Oops wtf
+initializing IMAP4_SSL(imap_sec) imap.gmail.com 993
+ssl version: PROTOCOL_TLSv1_2
+server hostname None
+opening mailbox imap.gmail.com 993
+initting IMAP4_SSL <imap_sec.IMAP4_SSL instance at 0x7fea2ca9a998>
+mailutils: preparing message
+this message has already been prepared
+oh look we're trying to accept stuff
+push called 220 chrubuntu Python SMTP proxy version 0.2
+initting sharedimapconn <SharedImapConn(imap.gmail.com, started daemon 140643768096512)>
+collect_incoming_data
+push called 502 Error: command "EHLO" not implemented
+collect_incoming_data
+push called 250 cs.utah.edu
+collect_incoming_data
+smtp_MAIL FROM:<eportnoy@princeton.edu>
+push called 250 Ok
+collect_incoming_data
+smtp_RCPT TO:<foo@rwq5q4vh3aphekjj.onion>
+push called 450 Please collide 8,153504531-70470164-218694387 or retry. See: https://www.mailpile.is/hashcash/
+collect_incoming_data
+smtp_RCPT TO:<foo@rwq5q4vh3aphekjj.onion##95-1>
+push called 250 Ok
+collect_incoming_data
+smtp_DATA None
+push called 354 End data with <CR><LF>.<CR><LF>
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+collect_incoming_data
+process message
+ImapMailSource
+add side message SharedImapConn
+conn <SharedImapConn(imap.gmail.com, started daemon 140643768096512)>
+_conn <imap_sec.IMAP4_SSL instance at 0x7fea2ca9a998>
+add_message_to_folder
+folder SMTorP
+uid 24852cbb6883faeb7db28b2397812e0a
+host imap.gmail.com
+port 993
+push called 250 Ok
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+opening an ImapMailSource <ImapMailSource(yup, started 140644340463360)>: Idle
+q
+Elapsed: 0.022s (quit: Shutting down...)
+
+OK: Shutting down...
+Elapsed: 0.000s (interact: Ran interactive shell)
+user@chrubuntu:~/Mailpile$ s

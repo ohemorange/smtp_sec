@@ -27,8 +27,8 @@ CRLF = imaplib.CRLF
 IMAP4_SSL_PORT = imaplib.IMAP4_SSL_PORT
 
 DEBUG_IMAP_FROM_GMAIL = False
-
-DEBUG_IMAP_FROM_SMTORP = True
+DEBUG_IMAP_FROM_SMTORP = False
+DEBUG_SCHEDULER = False
 
 # TODO: read these from a config, or set based on algorithm.
 INITIAL_DT = 30.0
@@ -51,7 +51,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         # start a worker that sends every DT. make the first
         # call after time INITIAL_DT
         # threading.Timer(INITIAL_DT, self.timed_imap_exchange).start()
-        print "initting IMAP4_SSL", self
+        if DEBUG_SCHEDULER:
+            print "initting IMAP4_SSL", self
 
     def find_index_uid_in_folder(self, folder):
         imaplib.IMAP4_SSL.select(self, mailbox=folder)
@@ -191,7 +192,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         return typ, data
 
     def noop(self):
-        print "noop", self
+        if DEBUG_SCHEDULER:
+            print "noop", self
         self.create_cryptoblobs_or_load_index()
         self.timed_imap_exchange()
         typ, data = imaplib.IMAP4_SSL.noop(self)
@@ -211,7 +213,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         # restart timer
         # threading.Timer(DT, self.timed_imap_exchange).start()
         # do things
-        print "imap timer tick"
+        if DEBUG_SCHEDULER:
+            print "imap timer tick"
 
         if self._scheduler.next_time_point_action_is_push():
             # push up message
@@ -223,7 +226,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
     def push_up_next_message(self):
         if len(self.send_queue) >= 1:
-            if DEBUG_IMAP_FROM_SMTORP:
+            if DEBUG_IMAP_FROM_SMTORP or DEBUG_SCHEDULER:
                 print "pushing up next message"
             (message_contents, folder, uid) = self.send_queue[0]
             self.send_queue = self.send_queue[1:]
@@ -233,7 +236,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         else:
             # push up a fake message
             # save the fact that it's fake somewhere
-            print "TODO(imap_sec): push up fake message"
+            if DEBUG_SCHEDULER:
+                print "TODO(imap_sec): push up fake message"
 
     def pull_down_next_message(self):
         # check messages to delete and pull down one of those.
@@ -386,7 +390,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
     def open(self, host = '', port = IMAP4_SSL_PORT):
         a = imaplib.IMAP4_SSL.open(self, host, port)
-        print "opening mailbox", host, port
+        # print "opening mailbox", host, port
         return a    
 
     def fetch(self, message_set, message_parts):

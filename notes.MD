@@ -23,6 +23,8 @@
   (I think it's the former)
 - maybe pull pack to gmail folder and such if it's gone over smtorp.
 - pickle and load the send-to-imap-from-smtorp queue.
+- instead of calling timed_imap_exchange from noop, call after noop in the
+  run method of ImapMailSource. if we want control to work that way.
 
 ## some notes
 - assuming that all IMAP clients are running the protocol
@@ -251,9 +253,45 @@ HiddenServicePort 25 localhost:33412
       WHATEVER STRANGE NONSENSE it wants with making methods part of other
       classes and proxying and I am just NOT dealing with that.
       - I should still pickle the queue, though.
-
-
-
+- current task: figure out why noop is getting called so often. and how to 
+  time for things for the scheduler.
+- OK. SO.
+  - in mail_source/__init__, BaseMailSource has a run method. this run
+    method calls sleeptime(), which returns 300 from self.my_config.interval,
+    which is loaded from somewhere.
+  - I'm guessing ./mailpile/www/default/html/jsapi/setup/sources.js
+  - NOW. if !(self._last_rescan_completed or self._last_rescan_failed), then
+    sleeptime just returns 1. I'd be willing to bet those never complete
+    because I'm just throwing things out when I'm rescanning. so to handle
+    this properly, I should add another flag or something. but instead, I'm
+    just having it always return self.my_config.interval. because whatever.
+  - anyway, this means that now BaseMailSource.run is called every 300
+    seconds. This calls ImapMailSource.open, which calls noop as just part
+    of its stuff to test things or whatever.
+  - so then we also have ImapMailSource.run, which has some funky idle code
+    or whatever, but I'm pretty sure it's called every 120 seconds. this is
+    just hardcoded in there. there being mail_sources/imap.py. anyway, every
+    120 seconds, it calls noop to keep the connection alive and such. now
+    unfortunately, the way it calls noop is convoluted and strange and
+    involves some proxying something or other.
+  - so the best thing to do is probably to put a second call in the 120-
+    second run loop, to timed_imap_exchange. this means figuring out their
+    way to call things. I'd rather keep it in noop, but that could be called
+    whenever and it's really best to keep things on schedule. it's probably
+    best to let the caller handle it. actually, we could have 
+    timed_imap_exchange take in a number of seconds since it was last called,
+    and calculate what to do based on that. and if I want to be janky about
+    it, I could have noop itself keep track of when it was last called, and
+    continue calling from noop. that's messy but would theoretically work.
+  - or, if I want to be super duper janky, I can just keep calling
+    timed_imap_exchange from noop. and have it called every 120 and every 300
+    seconds and just deal with it, because it's pretty fuzzy.
+    - this is wrong and I totally should not do this.
+  - I should also mention, while I'm here: an ImapMailSource inherits from a
+    BaseMailSource, which is a Thread. it is instantiated by calling
+    MailSource, and which one it is is based on my_config.protocol. this code
+    is at the bottom of mail_source/__init__.
+- I used this "who called me" code for debugging: http://stackoverflow.com/questions/2654113/python-how-to-get-the-callers-method-name-in-the-called-method
 
 
 

@@ -296,9 +296,15 @@ HiddenServicePort 25 localhost:33412
 
 ## notes from meeting 4/8
 - on init, promise to call the scheduler every time t, then do it.
+- possible todo: have imap_sec set the "everything worked" flags and actually
+  go back to checking them, instead of just always doing every 300 seconds
+  and never immediately retrying on fail.
 
 ## notes from week of 4/8
-
+- translating it to calling the method directly after the noop was
+  surprisingly easy, it just like worked with the setattr mechanism? I
+  also pass in a parameter of how often the tick is called, in the
+  constructor.
 
 
 ## notes from meeting 2/17/15

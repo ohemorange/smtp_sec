@@ -38,7 +38,7 @@ DT = 60.0
 class IMAP4_SSL(imaplib.IMAP4_SSL):
     pass
 
-    def __init__(self, host = '', port = imaplib.IMAP4_SSL_PORT, keyfile = None, certfile = None):
+    def __init__(self, host = '', port = imaplib.IMAP4_SSL_PORT, keyfile = None, certfile = None, timer_tick=120):
         print "initializing IMAP4_SSL(imap_sec)", host, port
         imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
         self.mapping = None
@@ -48,6 +48,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         self.rollback_detected = False
         self._scheduler = imap_scheduler.ImapScheduler()
         self.send_queue = []
+        self.timer_tick = timer_tick
         # start a worker that sends every DT. make the first
         # call after time INITIAL_DT
         # threading.Timer(INITIAL_DT, self.timed_imap_exchange).start()
@@ -195,7 +196,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         if DEBUG_SCHEDULER:
             print "noop", self
         self.create_cryptoblobs_or_load_index()
-        self.timed_imap_exchange()
         typ, data = imaplib.IMAP4_SSL.noop(self)
         # print "noop", data
         return typ, data

@@ -294,8 +294,10 @@ HiddenServicePort 25 localhost:33412
 - I used this "who called me" code for debugging: http://stackoverflow.com/questions/2654113/python-how-to-get-the-callers-method-name-in-the-called-method
 
 
+## notes from meeting 4/8
+- on init, promise to call the scheduler every time t, then do it.
 
-
+## notes from week of 4/8
 
 
 

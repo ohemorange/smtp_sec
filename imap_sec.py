@@ -7,6 +7,7 @@ import traceback
 import threading
 import hashlib
 import random
+import pickle
 
 import imap_scheduler
 
@@ -41,29 +42,66 @@ def uid_for_constructed_message(message_as_string):
     return hashlib.md5(message_as_string).hexdigest()
 
 def fake_message_with_random_contents_as_string():
-    return "TODO"
+    message = Message()
+    message['Subject'] = "garbage"
+    message['From'] = "foo@bar.com"
+    message['To'] = "foo@bar.com"
+    message.set_payload("trash")
+    return str(message)
 
 # we need to keep track of imap state
 class IMAP4_SSL(imaplib.IMAP4_SSL):
     pass
 
-    def __init__(self, host = '', port = imaplib.IMAP4_SSL_PORT, keyfile = None, certfile = None, timer_tick=120):
-        print "initializing IMAP4_SSL(imap_sec)", host, port
+    # if local store file isn't specified, we can't guarantee that the
+    # index hasn't been rolled back
+    # if local send/delete queue file isn't specified and we're shut down before
+    # all messages that came in from SMTorP are sent, we can't resend/delete
+    # when the next session starts.
+    def __init__(self, host='',port=imaplib.IMAP4_SSL_PORT,
+                 keyfile=None, certfile=None, timer_tick=120,
+                 local_store_file=None, local_send_queue_file=None,
+                 local_delete_queue_file=None):
+        if DEBUG_SCHEDULER or DEBUG_IMAP_FROM_GMAIL or DEBUG_IMAP_FROM_SMTORP:
+            print "initializing IMAP4_SSL(imap_sec)", host, port
         imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
         self.mapping = None
         self.selected_mailbox = "INBOX"
-        # TODO: load locally stored index number
-        self.last_index_number = 0
+        # load locally stored index number
+        if local_store_file:
+            self.local_store_file = local_store_file
+            self.last_index_number = pickle.load(open(local_store_file, "rb"))
+        else:
+            self.last_index_number = 0
         self.rollback_detected = False
         self._scheduler = imap_scheduler.ImapScheduler()
         self.send_queue = []
         self.delete_queue = []
+        if local_send_queue_file:
+            # load send queue from file
+            self.local_send_queue_file = local_send_queue_file
+            self.load_send_queue_from_disk()
+        if local_delete_queue_file:
+            self.local_delete_queue_file = local_delete_queue_file
+            self.load_delete_queue_from_disk()
         self.timer_tick = timer_tick
         # start a worker that sends every DT. make the first
         # call after time INITIAL_DT
         # threading.Timer(INITIAL_DT, self.timed_imap_exchange).start()
         if DEBUG_SCHEDULER:
             print "initting IMAP4_SSL", self
+
+    def load_send_queue_from_disk():
+        self.send_queue = pickle.load(open(self.local_send_queue_file, "rb"))
+
+    def load_delete_queue_from_disk():
+        self.delete_queue = pickle.load(open(self.local_delete_queue_file, "rb"))
+
+    def save_send_queue_to_disk():
+        pickle.dump(self.send_queue, open(self.local_send_queue_file, "wb"))
+
+    def save_delete_queue_to_disk():
+        pickle.dump(self.delete_queue, open(self.local_delete_queue_file, "wb"))
 
     def find_index_uid_in_folder(self, folder):
         imaplib.IMAP4_SSL.select(self, mailbox=folder)
@@ -121,7 +159,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         if changed_table[SEQUENCE_NUMBER] < self.last_index_number:
             return False # detect rollback
         self.last_index_number = changed_table[SEQUENCE_NUMBER]
-        # TODO: save to some local store
+        # save to the local store
+        self.save_index_sequence_number_to_disk()
         self.mapping = changed_table
         return True
 
@@ -157,17 +196,22 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         if DEBUG_IMAP_FROM_GMAIL:
             print "append_index", typ, data
 
+    def save_index_sequence_number_to_disk():
+        pickle.dump(table[SEQUENCE_NUMBER], open(self.local_store_file, "wb"))
+
     # assumes cryptoblobs and index already exist
     def save_index(self, table):
         index_id = self.find_index_uid_in_folder(CRYPTOBLOBS)
         if DEBUG_IMAP_FROM_GMAIL:
             print "old index id", index_id
-        # TODO: get information from old index
+        # get information from old index
         self.mapping = self.fetch_and_load_index(index_id) 
         # delete original index
         self.delete_index()
         # increment the sequence number
         table[SEQUENCE_NUMBER] = table[SEQUENCE_NUMBER] + 1
+        # save the new sequence number to disk
+        self.save_index_sequence_number_to_disk()
         # append new index        
         self.append_index(table)
 
@@ -254,6 +298,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 print "pushing up next message"
             (message_contents, folder, uid) = self.send_queue[0]
             self.send_queue = self.send_queue[1:]
+            self.save_send_queue_to_disk()
         else:
             # push up a fake message
             if DEBUG_SCHEDULER:
@@ -272,7 +317,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
     def pull_down_next_message(self):
         # check messages to delete and pull down one of those.
-        # otherwise, pull down a fake message.
+        # otherwise, pull down a fake message. also save delete queue to
+        # disk.
         if len(self.delete_queue) >= 1:
             raise NotImplementedError("No code should call this")
         else:
@@ -310,8 +356,9 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             print "add_message_to_folder", self, "schedule for later", schedule_upload
         if schedule_upload:
             # place it on the queue, deal with it later
-            # TODO: make sure that all messages are sent when we close down.
+            # if messages aren't sent, they'll be pickled and sent next time
             self.send_queue.append((message_contents, folder, uid))
+            self.save_send_queue_to_disk()
             return
         # update it in the index
         if DEBUG_IMAP_FROM_SMTORP:

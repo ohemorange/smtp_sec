@@ -25,6 +25,10 @@
 - when a new message comes in, if it's the index and a new version, update
   based on that. this will ensure that we always have the most recent 
   version.
+- up by putting up k and down k-1. (mixing step)
+- add local_store_file in mailpile. also local delete and send queue files.
+- think through what happens when we're the second client to sign up
+  - the server should not be able to sign up as a client
 
 ## some notes
 - assuming that all IMAP clients are running the protocol
@@ -317,6 +321,26 @@ HiddenServicePort 25 localhost:33412
 - scheduling algorithm 1: 6 up, 4 down. 1 per time stamp.
 - WAIT. is there any reason to bring up and down multiple per tick? I'm
   pretty convinced there's not.
+  - no, there is. assume you have 2x the number of messages pushed up as
+    actually exist. over time, for a given message, the probability of a
+    real message being deleted is 0, but the probably of a fake message
+    being deleted tends towards 1 (because the probability of it being
+    selected on any time tick is p < 1, the probability of it not being selected is 1 - p = q < 1, and so the probability of it never being
+    selected is q^n, and q^infinity is 0, so it will be selected at least
+    once).
+- by the way, pond randomizes times since it's not always communicating with
+  the same server. because to send a message, it connects to the recipient's
+  server.
+- metadata-free multi-client email storage. hiding metadata drom an imap
+  server for metadate-secure transport mechanisms.
+- we can't do the pond thing because we're hiding from the server, not just
+  a network observer.
+- added pickling sequence number. this means that the constructor has to
+  now pass in a file where it'll be saved. this should be per mailbox, in
+  mailpile. hm. this will fail silently. hope that's not too big of a
+  problem.
+- we are now pickled and depickling send and delete queues. need to call
+  with file in mailpile.
 
 ## notes from meeting 2/17/15
 ### Threats

@@ -9,22 +9,22 @@
 - you know actually run with multiple clients
 
 ## todo
-- implement scheduler and updates on schedule
-  - have all functionalities operate on that schedule
-- add functionality for delete and change folders
 - subject lines: random string. doesn't need to be saved because you can tell
   as new client.
   - cool but not necessary: a string that's possible in imap but not smtp
 - handle key management
-- solve the multi-client systems problem - index as a log or a lock. Your Favorite
-    Method, really.
+- solve the multi-client systems problem - index as a log or a lock. Your
+  Favorite Method, really.
   - then every t, delete log, because you don't want deleted messages saved.
 - figure out if imap is running over ssl or the other way around in imap_ssl
   (I think it's the former)
 - maybe pull pack to gmail folder and such if it's gone over smtorp.
 - pickle and load the send-to-imap-from-smtorp queue.
-- instead of calling timed_imap_exchange from noop, call after noop in the
-  run method of ImapMailSource. if we want control to work that way.
+- switch from pushing and pulling single messages to pushing up k and pulling down k-1
+- add functionality for delete and change folders
+- when a new message comes in, if it's the index and a new version, update
+  based on that. this will ensure that we always have the most recent 
+  version.
 
 ## some notes
 - assuming that all IMAP clients are running the protocol
@@ -305,7 +305,18 @@ HiddenServicePort 25 localhost:33412
   surprisingly easy, it just like worked with the setattr mechanism? I
   also pass in a parameter of how often the tick is called, in the
   constructor.
-
+- fake message contains a "message is fake" header
+- using python to interface with gmail
+  - https://yuji.wordpress.com/2011/06/22/python-imaplib-imap-example-with-gmail/
+- pushing and pulling up only one at a time: stop network timing attacks.
+- pushing and pulling a set: stop attackers with access to the imap server
+- by the way, IMAP4_SSL's open method creates a socket, then wraps the
+  socket in ssl.
+- I should make sure index saves are consistent across all timed actions,
+  because otherwise that's a side channel.
+- scheduling algorithm 1: 6 up, 4 down. 1 per time stamp.
+- WAIT. is there any reason to bring up and down multiple per tick? I'm
+  pretty convinced there's not.
 
 ## notes from meeting 2/17/15
 ### Threats

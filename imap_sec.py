@@ -5,6 +5,8 @@ import json
 import sys
 import traceback
 import threading
+import hashlib
+import random
 
 import imap_scheduler
 
@@ -18,6 +20,7 @@ CRYPTOBLOBS = "CRYPTOBLOBS"
 INDEX = "INDEX"
 ENCRYPTED = "ENCRYPTED"
 SEQUENCE_NUMBER = "SEQUENCE_NUMBER"
+FAKE_MESSAGES = "FAKE_MESSAGES"
 GMAIL_ALL_MAIL = "[Gmail]/All Mail"
 
 parent = imaplib.IMAP4_SSL
@@ -34,6 +37,12 @@ DEBUG_SCHEDULER = False
 INITIAL_DT = 30.0
 DT = 60.0
 
+def uid_for_constructed_message(message_as_string):
+    return hashlib.md5(message_as_string).hexdigest()
+
+def fake_message_with_random_contents_as_string():
+    return "TODO"
+
 # we need to keep track of imap state
 class IMAP4_SSL(imaplib.IMAP4_SSL):
     pass
@@ -48,6 +57,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         self.rollback_detected = False
         self._scheduler = imap_scheduler.ImapScheduler()
         self.send_queue = []
+        self.delete_queue = []
         self.timer_tick = timer_tick
         # start a worker that sends every DT. make the first
         # call after time INITIAL_DT
@@ -135,6 +145,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         # TODO: decrypt old_message_str
         return old_message_str
 
+    # pushes up the index to the cryptoblobs folder
     def append_index(self, table):
         message = Message()
         message['Subject'] = INDEX
@@ -224,26 +235,62 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             self.pull_down_next_message()
             # pleeeease don't forget to call create_cryptoblobs...
 
+    def fake_message_created_with_id(uid):
+        if not FAKE_MESSAGES in self.mapping:
+            self.mapping[FAKE_MESSAGES] = []
+        self.mapping[FAKE_MESSAGES].append(uid)
+        self.save_index()
+
+    def fake_message_deleted_with_id(uid):
+        self.mapping[FAKE_MESSAGES].remove(uid)
+        self.save_index()
+
     def push_up_next_message(self):
+        message_contents = ""
+        folder = ""
+        uid = ""
         if len(self.send_queue) >= 1:
             if DEBUG_IMAP_FROM_SMTORP or DEBUG_SCHEDULER:
                 print "pushing up next message"
             (message_contents, folder, uid) = self.send_queue[0]
             self.send_queue = self.send_queue[1:]
-            self.add_message_to_folder_internal(message_contents,
-                folder, uid, False)
-            self._scheduler.message_was_pushed()
         else:
             # push up a fake message
-            # save the fact that it's fake somewhere
             if DEBUG_SCHEDULER:
-                print "TODO(imap_sec): push up fake message"
+                print "push up a fake message"
+            # construct fake message
+            folder = CRYPTOBLOBS
+            # will contain a "message is fake header"
+            message_contents = fake_message_with_random_contents_as_string()
+            uid = uid_for_constructed_message(message_contents)
+            # append onto index's list of fake messages
+            self.fake_message_created_with_id(uid)
+
+        self.add_message_to_folder_internal(message_contents,
+                folder, uid, False)
+        self._scheduler.message_was_pushed()
 
     def pull_down_next_message(self):
         # check messages to delete and pull down one of those.
         # otherwise, pull down a fake message.
+        if len(self.delete_queue) >= 1:
+            raise NotImplementedError("No code should call this")
+        else:
+            # pull down a fake message
+            # choose which fake message to pull down
+            self.save_index() # this will sync the index to make sure
+                              # we know about all fake messages
+            if FAKE_MESSAGES not in self.mapping \
+                or len(self.mapping[FAKE_MESSAGES]) == 0:
+                if DEBUG_SCHEDULER:
+                    print "no fake messages to pull down"
+                return
+            delete_uid = random.choice(self.mapping[FAKE_MESSAGES])
+            self.fake_message_deleted_with_id(delete_uid)
+
+        self.create_cryptoblobs_or_load_index()
+        self.delete_message_from_actual_folder_uid(delete_uid, CRYPTOBLOBS)
         self._scheduler.message_was_pulled()
-        print "TODO(imap_sec): pull down message, real or fake"
 
     # message_contents is the message as a string. get by calling str(message)
     # where message is a Message object.

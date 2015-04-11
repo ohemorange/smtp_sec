@@ -8,6 +8,8 @@ import threading
 import hashlib
 import random
 import pickle
+import scrypt # sudo -H pip install scrypt
+from crypticle import Crypticle
 
 import imap_scheduler
 
@@ -33,6 +35,7 @@ IMAP4_SSL_PORT = imaplib.IMAP4_SSL_PORT
 DEBUG_IMAP_FROM_GMAIL = False
 DEBUG_IMAP_FROM_SMTORP = False
 DEBUG_SCHEDULER = True
+NOOP_ENCRYPTION = False
 
 # TODO: read these from a config, or set based on algorithm.
 INITIAL_DT = 30.0
@@ -66,41 +69,63 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # if local send/delete queue file isn't specified and we're shut down before
     # all messages that came in from SMTorP are sent, we can't resend/delete
     # when the next session starts.
+    # please specify a passphrase. leaving this to the caller.
     def __init__(self, host='',port=imaplib.IMAP4_SSL_PORT,
                  keyfile=None, certfile=None, timer_tick=120,
                  local_store_file=None, local_send_queue_file=None,
-                 local_delete_queue_file=None):
+                 local_delete_queue_file=None, passphrase="secret"):
         if DEBUG_SCHEDULER or DEBUG_IMAP_FROM_GMAIL or DEBUG_IMAP_FROM_SMTORP:
             print "initializing IMAP4_SSL(imap_sec)", host, port
         imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
-        self.mapping = None
+        
+        self.mapping = None # this will be loaded in load_cryptoblobs
         self.selected_mailbox = "INBOX"
+        
         # load locally stored index number
         self.local_store_file = local_store_file
+        self.load_last_index_number_from_disk()
+
+        self.rollback_detected = False
+        self._scheduler = imap_scheduler.ImapScheduler()
+        
+        self.passphrase = passphrase
+        self.derive_key_from_passphrase()
+
+        self.local_send_queue_file = local_send_queue_file
+        self.load_send_queue_from_disk()
+        self.local_delete_queue_file = local_delete_queue_file
+        self.load_delete_queue_from_disk()
+
+        self.imap_keyfile = imap_keyfile
+        self.load_imap_keyfile_from_disk
+
+        self.timer_tick = timer_tick
+        
+        if DEBUG_SCHEDULER:
+            print "initting IMAP4_SSL", self
+
+    def derive_key_from_passphrase(self):
+        # TODO: pick a random salt, store it somewhere that the client
+        # can pull it down
+        self.encryption_key = scrypt.hash(self.passphrase, "random_salt")
+
+    def load_last_index_number_from_disk(self):
         if self.local_store_file:
             self.last_index_number = pickle.load(open(self.local_store_file, "rb"))
         else:
             self.last_index_number = 0
-        self.rollback_detected = False
-        self._scheduler = imap_scheduler.ImapScheduler()
-        self.send_queue = []
-        self.delete_queue = []
-        self.local_send_queue_file = local_send_queue_file
-        if local_send_queue_file:
-            # load send queue from file
-            self.load_send_queue_from_disk()
-        self.local_delete_queue_file = local_delete_queue_file
-        if local_delete_queue_file:
-            self.load_delete_queue_from_disk()
-        self.timer_tick = timer_tick
-        if DEBUG_SCHEDULER:
-            print "initting IMAP4_SSL", self
 
     def load_send_queue_from_disk(self):
-        self.send_queue = pickle.load(open(self.local_send_queue_file, "rb"))
+        if self.local_send_queue_file:
+            self.send_queue = pickle.load(open(self.local_send_queue_file, "rb"))
+        else:
+            self.send_queue = []
 
     def load_delete_queue_from_disk(self):
-        self.delete_queue = pickle.load(open(self.local_delete_queue_file, "rb"))
+        if self.local_delete_queue_file:
+            self.delete_queue = pickle.load(open(self.local_delete_queue_file, "rb"))
+        else:
+            self.delete_queue = []
 
     def save_send_queue_to_disk(self):
         if self.local_send_queue_file != None:
@@ -155,47 +180,52 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             return self.mapping
         return table
 
-    def fetch_and_load_index(self, index_id):
+    def decrypt_string(self, data):
+        # decrypt string, check that it decrypted correctly
+        if NOOP_ENCRYPTION:
+            return data
+        else:
+            crypt = Crypticle(self.encryption_key)
+            return crypt.loads(data)
+            # returns None if it failed
+
+    def encrypt_string(self, data):
+        # encrypt string, add auth
+        if NOOP_ENCRYPTION:
+            return data
+        else:
+            crypt = Crypticle(self.encryption_key)
+            return crypt.dumps(data)
+
+    def fetch_and_load_index(self):
+        # 1. fetch index
+        index_id = self.find_index_uid_in_folder(CRYPTOBLOBS)
         imaplib.IMAP4_SSL.select(self, mailbox=CRYPTOBLOBS)
         # fetches the text of message with id index_id
         typ, data = imaplib.IMAP4_SSL.uid(self, "FETCH", index_id, '(BODY[TEXT])')
-        # TODO: decrypt message
         imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
-        # TODO: check index integrity
-        # TODO: combine with self.mapping in a proper way that handles
-        # like deletion from the pulled down one or whatever
-        unpacked = self.unpack_index_contents(data)
-        output = {}
-        for key in unpacked:
-            if not key in self.mapping:
-                self.mapping[key] = 
-        # TODO: trace through this whole mess properly. graph out
-        # how I want to actually go about loading the index. because I'm
-        # currently just overwriting it from the last thing I pushed? idek.
-        # this is probably a race condition
-        return self.unpack_index_contents(data)
 
-    def decrypt_and_validate_updated_index(self, encrypted_index_body):
-        if DEBUG_SCHEDULER:
-            print "decrypt_and_validate_updated_index"
-        # TODO: decrypt body
-        decrypted_index_body_text = encrypted_index_body
+        # 2. decrypt or return None if it fails to decrypt
+        decrypted = self.decrypt_string(data)
+        if not decrypted:
+            return
 
-        changed_table = self.unpack_index_contents(decrypted_index_body_text)
-        if changed_table[SEQUENCE_NUMBER] < self.last_index_number:
-            return False # detect rollback
-        self.last_index_number = changed_table[SEQUENCE_NUMBER]
-        # save to the local store
+        # 3. unjsonify, check for rollback, and verify
+        unpacked_table = self.unpack_index_contents(decrypted)
+        if not unpacked_table:
+            return
+
+        # 4. replace current index and sequence number in memory
+        self.mapping = unpacked_table
+        self.last_index_number = unpacked_table[SEQUENCE_NUMBER]
+
+        # 5. save new sequence number to disk
         self.save_index_sequence_number_to_disk()
-        self.mapping = changed_table
-        return True
-
 
     def encrypt_and_append_message(self, message):
         message['ORIGINAL-FOLDER'] = self.selected_mailbox
         new_body = str(message)
-        # TODO: encrypt message
-        self.append_encrypted_message(new_body)
+        self.append_encrypted_message(self.encrypt_string(new_body))
 
     def append_encrypted_message(self, encrypted_message_body):
         message = Message()
@@ -207,8 +237,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
     def decrypt_and_unpack_message(self, message):
         old_message_str = message.get_payload()
-        # TODO: decrypt old_message_str
-        return old_message_str
+        return self.decrypt_string(old_message_str)
 
     # pushes up the index to the cryptoblobs folder
     def append_index(self, table):
@@ -217,8 +246,9 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         message['From'] = "foo@bar.com"
         message['To'] = "foo@bar.com"
         message.set_payload(json.dumps(table)+"\n")
-        # TODO: encrypt message
-        typ, data = imaplib.IMAP4_SSL.append(self, CRYPTOBLOBS, None, None, str(message))
+        encrypted_string = self.encrypt_string(str(message))
+        typ, data = imaplib.IMAP4_SSL.append(self, CRYPTOBLOBS, None,
+            None, encrypted_string)
         if DEBUG_IMAP_FROM_GMAIL:
             print "append_index", typ, data
 
@@ -234,12 +264,11 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 print "no local store file"
 
     # assumes cryptoblobs and index already exist
+    # this method only pushes up. we should have already updated from the
+    # new one by pulling down.
     def save_index(self):
-        index_id = self.find_index_uid_in_folder(CRYPTOBLOBS)
         if DEBUG_IMAP_FROM_GMAIL:
             print "old index id", index_id
-        # get information from old index
-        self.mapping = self.fetch_and_load_index(index_id)
         if DEBUG_SCHEDULER:
             print "old index", self.mapping
         # delete original index
@@ -271,23 +300,26 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             imaplib.IMAP4_SSL.create(self, CRYPTOBLOBS)
             self.append_index({SEQUENCE_NUMBER: 1})
         # unload the index
-        index_id = self.find_index_uid_in_folder(CRYPTOBLOBS)
-        if DEBUG_SCHEDULER:
-            print "found index id", index_id
-        self.mapping = self.fetch_and_load_index(index_id)
+        self.fetch_and_load_index()
         if DEBUG_IMAP_FROM_GMAIL or DEBUG_SCHEDULER:
             print "loaded index", self.mapping
 
     def login(self, user, password):
-        imaplib.IMAP4_SSL.login(self, user, password)
+        a = imaplib.IMAP4_SSL.login(self, user, password)
         self.create_cryptoblobs_or_load_index()
+        return a
+
+    # implicitly called be the constructor
+    def open(self, host = '', port = IMAP4_SSL_PORT):
+        a = imaplib.IMAP4_SSL.open(self, host, port)
+        # print "opening mailbox", host, port()
+        return a 
 
     # ********************************************************** #
     # the following methods are called by mailpile
     # ********************************************************** #
 
     def list(self, directory='""', pattern='*'):
-        self.create_cryptoblobs_or_load_index()
         typ, data = imaplib.IMAP4_SSL.list(self, directory, pattern)
         if DEBUG_IMAP_FROM_GMAIL:
             print "list", data
@@ -296,14 +328,12 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def noop(self):
         if DEBUG_SCHEDULER:
             print "noop", self
-        self.create_cryptoblobs_or_load_index()
         typ, data = imaplib.IMAP4_SSL.noop(self)
         # print "noop", data
         return typ, data
 
     # switches which mailbox we're prodding for updates in
     def select(self, mailbox='INBOX', readonly=False):
-        self.create_cryptoblobs_or_load_index()
         self.selected_mailbox = mailbox.strip('"')
         typ, data = imaplib.IMAP4_SSL.select(self, mailbox, readonly)
         if DEBUG_IMAP_FROM_GMAIL:
@@ -323,7 +353,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         else:
             # pull down (delete) message from imap
             self.pull_down_next_message()
-            # pleeeease don't forget to call create_cryptoblobs...
 
     def push_up_next_message(self):
         message_contents = ""
@@ -366,8 +395,9 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         else:
             # pull down a fake message
             # choose which fake message to pull down
-            self.save_index() # this will sync the index to make sure
-                              # we know about all fake messages
+            self.fetch_and_load_index()
+            # this will sync the index to make sure we know about all
+            # fake messages
             if FAKE_MESSAGES not in self.mapping \
                 or len(self.mapping[FAKE_MESSAGES]) == 0:
                 if DEBUG_SCHEDULER:
@@ -377,7 +407,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             if DEBUG_SCHEDULER:
                 print "pulling down fake message", delete_uid
 
-        self.create_cryptoblobs_or_load_index()
         self.delete_message_from_actual_folder_uid(delete_uid, CRYPTOBLOBS)
         self._scheduler.message_was_pulled()
 
@@ -412,7 +441,11 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             print "host", self.host
             print "port", self.port
 
-        self.create_cryptoblobs_or_load_index()
+        # TODO: make these next calls atomic by deleting the index.
+        # and elsewhere, use index presence to test for a lock.
+        # get the most recent index, because the folder might have just
+        # been created by someone else
+        self.fetch_and_load_index()
 
         if DEBUG_SCHEDULER:
             print "folder in self.mapping", folder in self.mapping
@@ -435,7 +468,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # command=FETCH fetches a specific message?
     # it can also be SORT and THREAD.
     def uid(self, command, *args):
-        self.create_cryptoblobs_or_load_index()
         typ, data = imaplib.IMAP4_SSL.uid(self, command, *args)
         # print "got data", data
         if data == [None]:
@@ -451,8 +483,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 folder = args[2]
             if DEBUG_IMAP_FROM_GMAIL:
                 print "in folder", folder
-            # TODO: actually handle case where this is the index that's been
-            # updated by another client
             message_contents = data[0][1].strip()
             messageified = Message(message_contents)
             subject = messageified['Subject'].strip().strip('"')
@@ -464,18 +494,11 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 # this could be the index, which means that
                 # another client has updated the index
                 if subject == INDEX and folder == CRYPTOBLOBS:
-                    # TODO currently ignoring index updates, because we're
-                    # the ones who made them. change for multiple clients.
+                    # ignore index updates. we only update the index
+                    # on our own request. inoming updates are for
+                    # messages only.
                     return False, []
-                    if DEBUG_IMAP_FROM_GMAIL:
-                        print "found the index", data
-                    # 
-                    # deal with the changed contents of the index?
-                    # for now, just copy the index into the local store
-                    # the scan will just give us the updated messages in cryptoblobs
-                    ok = self.decrypt_and_validate_updated_index(messageified.get_payload())
-                    # not sure we currently actually have to deal with changes in the index
-                    # this is a fantastic UI choice.
+                    # TODO: return it as a fake message so we set flags correctly
                     if ok:
                         messageified.set_payload("Everything is awesome.")
                     else:
@@ -488,6 +511,9 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                     # returns a string
                     # TODO we need to know if we're the ones who just put this there.
                     # if so, ignore for now, maybe change this later.
+                    # this definitely has to change. this means another client
+                    # put it up here. we should then grab the current index,
+                    # check that it's all kosher, and if so then save it down here.
                     return False, []
                     unpacked_message = self.decrypt_and_unpack_message(messageified)
                     data[0][1] = unpacked_message
@@ -527,12 +553,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def store(self, message_set, command, flags):
         a = imaplib.IMAP4_SSL.store(self, message_set, command, flags)
         print "store", a
-        return a
-
-    def open(self, host = '', port = IMAP4_SSL_PORT):
-        a = imaplib.IMAP4_SSL.open(self, host, port)
-        # print "opening mailbox", host, port
-        return a    
+        return a   
 
     def fetch(self, message_set, message_parts):
         a = imaplib.IMAP4_SSL.fetch(self, message_set, message_parts)
@@ -542,11 +563,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def capability(self):
         typ, data = imaplib.IMAP4_SSL.capability(self)
         # print "capability", data
-        return typ, data
-
-    def login(self, user, password):
-        typ, data = imaplib.IMAP4_SSL.login(self, user, password)
-        # print "login", data
         return typ, data
 
     def search(self, charset, *criteria):

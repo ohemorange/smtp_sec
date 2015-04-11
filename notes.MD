@@ -348,6 +348,26 @@ HiddenServicePort 25 localhost:33412
   in the batch. discuss. todo.
 - just have FAKE_MESSAGES be a folder name. and then if we ever translate
   down from the index, will have to just ignore that or something.
+- calling create_cryptoblobs at the end of login. this means that we should
+  never be logged in without it having been created. should be fine?
+- COOL fixed up a bunch of synchronization stuff. mainly with fetching and
+  saving the index. I'm not repeating myself, just look at the code, it's
+  commented.
+- we're going with bcrypt/passphrase.
+  - which means we should probably have a method for "delete everything 
+    and start over." which honestly would have made my life easier all
+    this time but whatever.
+  - we could also encrypt the local stuff with the key derived from the
+    passphrase. don't think it matters too much though tbh.
+-  > If (1), I'd suggest Scrypt(hash=HChaCha20, kdf=Shake255)
+  - David Leon Gil, email to messaging@moderncrypto.org
+  - ok, so the best practice would be to store the salt somewhere. we'll
+    call that a TODO.
+- not-going-to-happen-todo: use a different string equals to prevent
+  timing attacks
+  - http://rdist.root.org/2010/01/07/timing-independent-array-comparison/
+- using crypticle - no more noop encryption! yay!
+
 
 ## notes from meeting 2/17/15
 ### Threats

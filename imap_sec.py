@@ -38,10 +38,6 @@ DEBUG_SCHEDULER = False
 DEBUG_EXTRAS = True
 NOOP_ENCRYPTION = False
 
-# TODO: read these from a config, or set based on algorithm.
-INITIAL_DT = 30.0
-DT = 60.0
-
 def uid_for_constructed_message(message_as_string):
     if DEBUG_SCHEDULER:
         print "in uid_for_constructed_message"
@@ -406,9 +402,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         return typ, data
     
     def timed_imap_exchange(self):
-        # restart timer
-        # threading.Timer(DT, self.timed_imap_exchange).start()
-        # do things
         if DEBUG_SCHEDULER:
             print "imap timer tick"
 

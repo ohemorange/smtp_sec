@@ -12,7 +12,6 @@
 - subject lines: random string. doesn't need to be saved because you can tell
   as new client.
   - cool but not necessary: a string that's possible in imap but not smtp
-- handle key management
 - solve the multi-client systems problem - index as a log or a lock. Your
   Favorite Method, really.
   - then every t, delete log, because you don't want deleted messages saved.
@@ -367,7 +366,13 @@ HiddenServicePort 25 localhost:33412
   timing attacks
   - http://rdist.root.org/2010/01/07/timing-independent-array-comparison/
 - using crypticle - no more noop encryption! yay!
-
+- it's the caller's responsibility to handle a passphrase. use the
+  whitelist.io/backup thing, maybe. nmp.
+- http://stackoverflow.com/questions/6209616/get-email-subject-and-sender-using-imaplib
+  - get subject line given id
+- fetching subject line given uid
+  - http://stackoverflow.com/questions/6209616/get-email-subject-and-sender-using-imaplib
+  
 
 ## notes from meeting 2/17/15
 ### Threats

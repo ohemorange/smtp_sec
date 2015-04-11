@@ -32,21 +32,29 @@ IMAP4_SSL_PORT = imaplib.IMAP4_SSL_PORT
 
 DEBUG_IMAP_FROM_GMAIL = False
 DEBUG_IMAP_FROM_SMTORP = False
-DEBUG_SCHEDULER = False
+DEBUG_SCHEDULER = True
 
 # TODO: read these from a config, or set based on algorithm.
 INITIAL_DT = 30.0
 DT = 60.0
 
 def uid_for_constructed_message(message_as_string):
-    return hashlib.md5(message_as_string).hexdigest()
+    if DEBUG_SCHEDULER:
+        print "in uid_for_constructed_message"
+    hashed = hashlib.md5(message_as_string)
+    if DEBUG_SCHEDULER:
+        print "hashed", hashed
+    hexed = hashed.hexdigest()
+    if DEBUG_SCHEDULER:
+        print "hexed", hexed
+    return hexed
 
 def fake_message_with_random_contents_as_string():
     message = Message()
     message['Subject'] = "garbage"
     message['From'] = "foo@bar.com"
     message['To'] = "foo@bar.com"
-    message.set_payload("trash")
+    message.set_payload(str(random.randint(0,10000000000)))
     return str(message)
 
 # we need to keep track of imap state
@@ -68,44 +76,51 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         self.mapping = None
         self.selected_mailbox = "INBOX"
         # load locally stored index number
-        if local_store_file:
-            self.local_store_file = local_store_file
-            self.last_index_number = pickle.load(open(local_store_file, "rb"))
+        self.local_store_file = local_store_file
+        if self.local_store_file:
+            self.last_index_number = pickle.load(open(self.local_store_file, "rb"))
         else:
             self.last_index_number = 0
         self.rollback_detected = False
         self._scheduler = imap_scheduler.ImapScheduler()
         self.send_queue = []
         self.delete_queue = []
+        self.local_send_queue_file = local_send_queue_file
         if local_send_queue_file:
             # load send queue from file
-            self.local_send_queue_file = local_send_queue_file
             self.load_send_queue_from_disk()
+        self.local_delete_queue_file = local_delete_queue_file
         if local_delete_queue_file:
-            self.local_delete_queue_file = local_delete_queue_file
             self.load_delete_queue_from_disk()
         self.timer_tick = timer_tick
-        # start a worker that sends every DT. make the first
-        # call after time INITIAL_DT
-        # threading.Timer(INITIAL_DT, self.timed_imap_exchange).start()
         if DEBUG_SCHEDULER:
             print "initting IMAP4_SSL", self
 
-    def load_send_queue_from_disk():
+    def load_send_queue_from_disk(self):
         self.send_queue = pickle.load(open(self.local_send_queue_file, "rb"))
 
-    def load_delete_queue_from_disk():
+    def load_delete_queue_from_disk(self):
         self.delete_queue = pickle.load(open(self.local_delete_queue_file, "rb"))
 
-    def save_send_queue_to_disk():
-        pickle.dump(self.send_queue, open(self.local_send_queue_file, "wb"))
+    def save_send_queue_to_disk(self):
+        if self.local_send_queue_file != None:
+            if DEBUG_SCHEDULER:
+                print "trying to save send queue to", self.local_send_queue_file
+            pickle.dump(self.send_queue, open(self.local_send_queue_file, "wb"))
 
-    def save_delete_queue_to_disk():
-        pickle.dump(self.delete_queue, open(self.local_delete_queue_file, "wb"))
+    def save_delete_queue_to_disk(self):
+        if self.local_delete_queue_file != None:
+            if DEBUG_SCHEDULER:
+                print "trying to save delete queue to", self.local_delete_queue_file
+            pickle.dump(self.delete_queue, open(self.local_delete_queue_file, "wb"))
 
     def find_index_uid_in_folder(self, folder):
         imaplib.IMAP4_SSL.select(self, mailbox=folder)
-        typ, data = imaplib.IMAP4_SSL.uid(self, 'SEARCH', "SUBJECT", '"'+INDEX+'"')
+        if DEBUG_SCHEDULER:
+            print "folder", folder
+        typ, data = imaplib.IMAP4_SSL.uid(self, 'SEARCH', None, "SUBJECT", '"'+INDEX+'"')
+        if DEBUG_SCHEDULER:
+            print "find_index_uid_in_folder", typ, data
         imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
         if DEBUG_IMAP_FROM_GMAIL:
             print "found index id", data
@@ -147,11 +162,22 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         # TODO: decrypt message
         imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
         # TODO: check index integrity
-        # TODO: combine with self.mapping
+        # TODO: combine with self.mapping in a proper way that handles
+        # like deletion from the pulled down one or whatever
+        unpacked = self.unpack_index_contents(data)
+        output = {}
+        for key in unpacked:
+            if not key in self.mapping:
+                self.mapping[key] = 
+        # TODO: trace through this whole mess properly. graph out
+        # how I want to actually go about loading the index. because I'm
+        # currently just overwriting it from the last thing I pushed? idek.
         # this is probably a race condition
         return self.unpack_index_contents(data)
 
     def decrypt_and_validate_updated_index(self, encrypted_index_body):
+        if DEBUG_SCHEDULER:
+            print "decrypt_and_validate_updated_index"
         # TODO: decrypt body
         decrypted_index_body_text = encrypted_index_body
 
@@ -196,40 +222,60 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         if DEBUG_IMAP_FROM_GMAIL:
             print "append_index", typ, data
 
-    def save_index_sequence_number_to_disk():
-        pickle.dump(table[SEQUENCE_NUMBER], open(self.local_store_file, "wb"))
+    def save_index_sequence_number_to_disk(self):
+        if DEBUG_SCHEDULER:
+            print "save_index_sequence_number_to_disk"
+        if self.local_store_file != None:
+            if DEBUG_SCHEDULER:
+                print "trying to save index sequence number to", self.local_store_file
+            pickle.dump(table[SEQUENCE_NUMBER], open(self.local_store_file, "wb"))
+        else:
+            if DEBUG_SCHEDULER:
+                print "no local store file"
 
     # assumes cryptoblobs and index already exist
-    def save_index(self, table):
+    def save_index(self):
         index_id = self.find_index_uid_in_folder(CRYPTOBLOBS)
         if DEBUG_IMAP_FROM_GMAIL:
             print "old index id", index_id
         # get information from old index
-        self.mapping = self.fetch_and_load_index(index_id) 
+        self.mapping = self.fetch_and_load_index(index_id)
+        if DEBUG_SCHEDULER:
+            print "old index", self.mapping
         # delete original index
         self.delete_index()
         # increment the sequence number
-        table[SEQUENCE_NUMBER] = table[SEQUENCE_NUMBER] + 1
+        self.mapping[SEQUENCE_NUMBER] = self.mapping[SEQUENCE_NUMBER] + 1
         # save the new sequence number to disk
         self.save_index_sequence_number_to_disk()
-        # append new index        
-        self.append_index(table)
+        if DEBUG_SCHEDULER:
+            print "successfully saved index seq number to disk or didn't"
+        # append new index
+        if DEBUG_SCHEDULER:
+            print "new index about to be uploaded", self.mapping
+        self.append_index(self.mapping)
 
     def create_cryptoblobs_or_load_index(self):
         if self.mapping != None:
+            if DEBUG_SCHEDULER:
+                print "self.mapping exists"
             return
         typ, data = imaplib.IMAP4_SSL.list(self)
         names = [line.split()[-1].strip('"') for line in data]
+        if DEBUG_SCHEDULER:
+            print "names", names
         # create cryptoblobs folder if one does not yet exist
         if not CRYPTOBLOBS in names:
-            if DEBUG_IMAP_FROM_GMAIL:
+            if DEBUG_IMAP_FROM_GMAIL or DEBUG_SCHEDULER:
                 print "creating cryptoblobs"
             imaplib.IMAP4_SSL.create(self, CRYPTOBLOBS)
             self.append_index({SEQUENCE_NUMBER: 1})
         # unload the index
         index_id = self.find_index_uid_in_folder(CRYPTOBLOBS)
+        if DEBUG_SCHEDULER:
+            print "found index id", index_id
         self.mapping = self.fetch_and_load_index(index_id)
-        if DEBUG_IMAP_FROM_GMAIL:
+        if DEBUG_IMAP_FROM_GMAIL or DEBUG_SCHEDULER:
             print "loaded index", self.mapping
 
     def login(self, user, password):
@@ -279,16 +325,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             self.pull_down_next_message()
             # pleeeease don't forget to call create_cryptoblobs...
 
-    def fake_message_created_with_id(uid):
-        if not FAKE_MESSAGES in self.mapping:
-            self.mapping[FAKE_MESSAGES] = []
-        self.mapping[FAKE_MESSAGES].append(uid)
-        self.save_index()
-
-    def fake_message_deleted_with_id(uid):
-        self.mapping[FAKE_MESSAGES].remove(uid)
-        self.save_index()
-
     def push_up_next_message(self):
         message_contents = ""
         folder = ""
@@ -304,12 +340,18 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             if DEBUG_SCHEDULER:
                 print "push up a fake message"
             # construct fake message
-            folder = CRYPTOBLOBS
-            # will contain a "message is fake header"
+            folder = FAKE_MESSAGES
+            # just put into a FAKE_MESSAGES pseudo-folder in cryptoblobs!
             message_contents = fake_message_with_random_contents_as_string()
+            if DEBUG_SCHEDULER:
+                print "fake message:\n", message_contents
             uid = uid_for_constructed_message(message_contents)
             # append onto index's list of fake messages
-            self.fake_message_created_with_id(uid)
+            if DEBUG_SCHEDULER:
+                print "uid", uid
+
+        if DEBUG_SCHEDULER:
+            print "folder, uid", folder, uid
 
         self.add_message_to_folder_internal(message_contents,
                 folder, uid, False)
@@ -332,7 +374,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                     print "no fake messages to pull down"
                 return
             delete_uid = random.choice(self.mapping[FAKE_MESSAGES])
-            self.fake_message_deleted_with_id(delete_uid)
+            if DEBUG_SCHEDULER:
+                print "pulling down fake message", delete_uid
 
         self.create_cryptoblobs_or_load_index()
         self.delete_message_from_actual_folder_uid(delete_uid, CRYPTOBLOBS)
@@ -350,9 +393,10 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # just pulled the message down from IMAP and are reuploading it.
     # TODO: check to make sure this actually works. because if it
     # doesn't, there's no fault tolerance going on...
+    # folder is a pseudo-folder.
     def add_message_to_folder_internal(self, message_contents, folder,
         uid, schedule_upload):
-        if DEBUG_IMAP_FROM_SMTORP:
+        if DEBUG_IMAP_FROM_SMTORP or DEBUG_SCHEDULER:
             print "add_message_to_folder", self, "schedule for later", schedule_upload
         if schedule_upload:
             # place it on the queue, deal with it later
@@ -361,7 +405,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             self.save_send_queue_to_disk()
             return
         # update it in the index
-        if DEBUG_IMAP_FROM_SMTORP:
+        if DEBUG_IMAP_FROM_SMTORP or DEBUG_SCHEDULER:
             # print "message_contents", message_contents
             print "folder", folder
             print "uid", uid
@@ -370,12 +414,15 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
         self.create_cryptoblobs_or_load_index()
 
+        if DEBUG_SCHEDULER:
+            print "folder in self.mapping", folder in self.mapping
+
         if not folder in self.mapping:
             self.mapping[folder] = []
         self.mapping[folder].append(uid)
 
         # save the index
-        self.save_index(self.mapping)
+        self.save_index()
 
         # turn it into a Message object
         messageified = Message(message_contents)

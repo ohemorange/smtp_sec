@@ -29,6 +29,7 @@
 - add local_store_file in mailpile. also local delete and send queue files.
 - think through what happens when we're the second client to sign up
   - the server should not be able to sign up as a client
+- deal with the nonsense going on in unpack_index_contents, fetch_and_load_index, and decrypt_and_validate_updated_index.
 
 ## some notes
 - assuming that all IMAP clients are running the protocol
@@ -341,6 +342,12 @@ HiddenServicePort 25 localhost:33412
   problem.
 - we are now pickled and depickling send and delete queues. need to call
   with file in mailpile.
+- **** should send on next tick probabilistically? because if they're in
+  the imap server and also watching the network, they'll know which one
+  in the server it is. well not if I mix it. but still they'll know it's
+  in the batch. discuss. todo.
+- just have FAKE_MESSAGES be a folder name. and then if we ever translate
+  down from the index, will have to just ignore that or something.
 
 ## notes from meeting 2/17/15
 ### Threats

@@ -80,6 +80,9 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         if DEBUG_SCHEDULER or DEBUG_IMAP_FROM_GMAIL \
             or DEBUG_IMAP_FROM_SMTORP or DEBUG_EXTRAS:
             print "initializing IMAP4_SSL(imap_sec)", host, port, passphrase
+            print "local_store_file", local_store_file
+            print "local_send_queue_file", local_send_queue_file
+            print "local_delete_queue_file", local_delete_queue_file
         imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
 
         self.mapping = None # this will be loaded in load_cryptoblobs
@@ -127,19 +130,30 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
     def load_last_index_number_from_disk(self):
         if self.local_store_file:
-            self.last_index_number = pickle.load(open(self.local_store_file, "rb"))
+            try:
+                self.last_index_number = pickle.load(open(self.local_store_file, "rb"))
+                if DEBUG_EXTRAS:
+                    print "loaded index number", self.last_index_number
+            except:
+                self.last_index_number = 0
         else:
             self.last_index_number = 0
 
     def load_send_queue_from_disk(self):
         if self.local_send_queue_file:
-            self.send_queue = pickle.load(open(self.local_send_queue_file, "rb"))
+            try:
+                self.send_queue = pickle.load(open(self.local_send_queue_file, "rb"))
+            except:
+                self.send_queue = []
         else:
             self.send_queue = []
 
     def load_delete_queue_from_disk(self):
         if self.local_delete_queue_file:
-            self.delete_queue = pickle.load(open(self.local_delete_queue_file, "rb"))
+            try:
+                self.delete_queue = pickle.load(open(self.local_delete_queue_file, "rb"))
+            except:
+                self.delete_queue = []
         else:
             self.delete_queue = []
 
@@ -350,7 +364,10 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         if self.local_store_file != None:
             if DEBUG_SCHEDULER:
                 print "trying to save index sequence number to", self.local_store_file
-            pickle.dump(table[SEQUENCE_NUMBER], open(self.local_store_file, "wb"))
+            pickle_file = open(self.local_store_file, "wb")
+            if DEBUG_EXTRAS:
+                print "opened file", pickle_file
+            pickle.dump(self.mapping[SEQUENCE_NUMBER], pickle_file)
         else:
             if DEBUG_SCHEDULER:
                 print "no local store file"
@@ -658,12 +675,12 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             subject = messageified['Subject'].strip().strip('"')
             if DEBUG_IMAP_FROM_GMAIL:
                 print "subject", subject
-            if folder == CRYPTOBLOBS or subject == ENCRYPTED or subject == INDEX:
+            if folder == CRYPTOBLOBS or ENCRYPTED in subject or INDEX in subject:
                 if DEBUG_IMAP_FROM_GMAIL:
                     print "probably not a real message"
                 # this could be the index, which means that
                 # another client has updated the index
-                if subject == INDEX and folder == CRYPTOBLOBS:
+                if INDEX in subject and folder == CRYPTOBLOBS:
                     # ignore index updates. we only update the index
                     # on our own request. inoming updates are for
                     # messages only.
@@ -677,7 +694,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                     # it's probably fine to just have this ui component here,
                     # because it means the server has updated it, and wants us
                     # to grab the rolled back one.
-                elif subject == ENCRYPTED and folder == CRYPTOBLOBS:
+                elif ENCRYPTED in subject and folder == CRYPTOBLOBS:
                     # returns a string
                     # TODO we need to know if we're the ones who just put this there.
                     # if so, ignore for now, maybe change this later.

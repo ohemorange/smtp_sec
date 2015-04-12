@@ -6,16 +6,15 @@
 
 ## to test: definitely
 - you know actually run with multiple clients
-- pull down from the scheduler
-- local caches of files - call with filenames from mailpile.
-  - add local_store_file in mailpile. also local delete and send queue files.
 
 ## todo: definitely
 - switch from pushing and pulling single messages to pushing up k and pulling down k-1. up by putting up k and down k-1. (mixing step)
 - clean up the incoming messages / in cryptoblobs section. the only thing
   that should be happening there is if we see an "ENCRYPTED" message that we
   don't have in the index.
-- think about deleting messages multi-client-wise.
+  - need to figure out the whole flow of updates and when to actually
+    grab it and such.
+  - think about deleting messages multi-client-wise.
 
 ## todo: maybe
 - maybe pull pack to gmail folder and such if it's gone over smtorp.
@@ -407,6 +406,12 @@ HiddenServicePort 25 localhost:33412
 - don't bother caching scheduler information, assume that a few extra
   messages here and there on startup or down are fine. amortized it'll all
   work out! :) by caching I mean storing locally in a file.
+- added local cache files to config.py:init. called in imap.py.
+- local caches of files - call with filenames from mailpile.
+  - add local_store_file in mailpile. also local delete and send queue files.
+  - this is tested and working. well at leas the index number part. I'm just
+    going to assume the send queue part is working.
+
 
 ## notes from meeting 2/17/15
 ### Threats

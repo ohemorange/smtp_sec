@@ -20,9 +20,9 @@ class ImapScheduler:
         self.want_to_delete_messages += 1
 
     # return True for push, False for pull
-    # TODO
+    # TODO: update to an algorithm that takes
+    # state into account
     def next_time_point_action_is_push(self):
-        return True
         # 6 up, 4 down
         # 0
         if self.running_total_ticks % 10 == 0:

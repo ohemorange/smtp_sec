@@ -4,31 +4,29 @@
 - imap_sec: add_message_to_folder
 - mailutils: prepare message
 
-## to test
-- what if a filter's set up and it comes in that way?
+## to test: definitely
 - you know actually run with multiple clients
+- pull down from the scheduler
+- local caches of files - call with filenames from mailpile.
+  - add local_store_file in mailpile. also local delete and send queue files.
 
-## todo
-- subject lines: random string. doesn't need to be saved because you can tell
-  as new client.
-  - cool but not necessary: a string that's possible in imap but not smtp
-- solve the multi-client systems problem - index as a log or a lock. Your
-  Favorite Method, really.
-  - then every t, delete log, because you don't want deleted messages saved.
-- figure out if imap is running over ssl or the other way around in imap_ssl
-  (I think it's the former)
+## todo: definitely
+- switch from pushing and pulling single messages to pushing up k and pulling down k-1. up by putting up k and down k-1. (mixing step)
+- clean up the incoming messages / in cryptoblobs section. the only thing
+  that should be happening there is if we see an "ENCRYPTED" message that we
+  don't have in the index.
+- think about deleting messages multi-client-wise.
+
+## todo: maybe
 - maybe pull pack to gmail folder and such if it's gone over smtorp.
-- pickle and load the send-to-imap-from-smtorp queue.
-- switch from pushing and pulling single messages to pushing up k and pulling down k-1
 - add functionality for delete and change folders
-- when a new message comes in, if it's the index and a new version, update
-  based on that. this will ensure that we always have the most recent 
-  version.
-- up by putting up k and down k-1. (mixing step)
-- add local_store_file in mailpile. also local delete and send queue files.
-- think through what happens when we're the second client to sign up
-  - the server should not be able to sign up as a client
-- deal with the nonsense going on in unpack_index_contents, fetch_and_load_index, and decrypt_and_validate_updated_index.
+- support adding folders for origin-local messages
+- add some sort of "validate message" function. easy b/c we stored
+  the hash of the message in the index.
+
+## to test: maybe
+- what if a filter's set up and it comes in that way?
+
 
 ## some notes
 - assuming that all IMAP clients are running the protocol
@@ -372,7 +370,43 @@ HiddenServicePort 25 localhost:33412
   - get subject line given id
 - fetching subject line given uid
   - http://stackoverflow.com/questions/6209616/get-email-subject-and-sender-using-imaplib
-  
+- subject lines: random string. doesn't need to be saved because you can tell
+  as new client.
+  - cool but not necessary: a string that's possible in imap but not smtp
+  - the point of this is to tell which are your special messages and which
+    are real messages
+  - this is not necessary, because you can just not put real messages into
+    cryptoblobs that don't have the prescribed subject line. and we're only
+    looking into cryptoblobs. if I decide I want to solve the problem of
+    dealing with gmail's multiple folder nonsense, I can maybe deal with
+    that later. or just do it the prescribed way.
+- ok, so looks like the best way to do this is with an INDEX_LOCK message.
+  try to delete it - if we succeed, we have it. if we don't, try acquiring
+  it again.
+- figure out if imap is running over ssl or the other way around in imap_ssl 
+  - it's the former. the imap open methods opens a socket, wraps it, and
+    uses that. 
+- pickle and load the send-to-imap-from-smtorp queue.
+- think through what happens when we're the second client to sign up
+  - the server should not be able to sign up as a client
+  - what happens is that you need a passphrase, then salt will be in there,
+    and you have the normal authentication. that should cover all bases.
+- if we have a log, then every t, delete log, because you don't want deleted
+  messages saved.
+- we promise not to do anything to the cryptoblobs folder without properly
+  acquiring the lock.
+  - add_message_to_folder_internal: acquire and release
+  - delete_message_from_pseudo_folder: acquire and release
+  - pull_down_next_message: acquire, pass to delete_me...
+- solve the multi-client systems problem - index as a log or a lock. Your
+  Favorite Method, really.
+  - implement the solution I came up with.
+  - DONE
+  - appears to be working???
+- GLORIOUS DAY deletion and even on schedule is work work working!!
+- don't bother caching scheduler information, assume that a few extra
+  messages here and there on startup or down are fine. amortized it'll all
+  work out! :) by caching I mean storing locally in a file.
 
 ## notes from meeting 2/17/15
 ### Threats

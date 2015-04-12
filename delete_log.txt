@@ -1,0 +1,58 @@
+
+mailpile> run
+noop <imap_sec.IMAP4_SSL instance at 0x7ff28ee381b8>
+about to try timed imap exchange
+imap timer tick
+down
+trying to acquire index lock
+find_lock_uid_in_folder folder CRYPTOBLOBS
+find_lock_uid_in_folder OK ['8']
+found lock id ['8']
+fetch_and_load_index
+find_index_uid_in_folder folder CRYPTOBLOBS
+find_index_uid_in_folder OK ['6']
+found index id ['6']
+subject_data [('2 (UID 6 BODY[HEADER.FIELDS (SUBJECT)] {28}', 'Subject: INDEX 242040151\r\n\r\n'), ')']
+stripped Subject: INDEX 242040151
+save_salt_and_related_information 242040151
+saved salt and related information.
+key_derived_from_passphrase secret 242040151
+�y����+X9n�� on_key #��q���y7����ksq�29F�����7�'��q�S�O�
+             �J
+crypt created perfectly well <crypticle.Crypticle object at 0x7ff290e094d0>
+called loads c07aebe428904bcbf652592465d42fe9cf2b7a480c230997cb84daeb2304425beabb26d904d31f58a4c70226572e9a94149ddecbb166808c2a110bddef3e10d331a465268ffa5ae9489813c8cd1e44cd34d3de87039492c8b8c97d237976481c03b5bfaecbf450f69995a16acf1a2fc8d5fab3f395ac5b17074492fadbfd1345d56e47513551f957200716a7bc249a79ef114539d1383e337989e893f13e6149cec6eebe5a916030de3508f6e72a3d1978aebdda46aa481bafa8b4e4c484f1b9
+decrypt dataloads data pickle::S'{"SEQUENCE_NUMBER": 3, "FAKE_MESSAGES": ["ec2d57dbc6f4ff7a5ecbaa760299eee8", "c0963d1eed2579e927d88b8a04eed9e5"]}'
+p1
+.
+out {"SEQUENCE_NUMBER": 3, "FAKE_MESSAGES": ["ec2d57dbc6f4ff7a5ecbaa760299eee8", "c0963d1eed2579e927d88b8a04eed9e5"]}
+decryption succeeded
+unpack_index_contents {"SEQUENCE_NUMBER": 3, "FAKE_MESSAGES": ["ec2d57dbc6f4ff7a5ecbaa760299eee8", "c0963d1eed2579e927d88b8a04eed9e5"]}
+returning unpacked index {u'SEQUENCE_NUMBER': 3, u'FAKE_MESSAGES': [u'ec2d57dbc6f4ff7a5ecbaa760299eee8', u'c0963d1eed2579e927d88b8a04eed9e5']}
+save_index_sequence_number_to_disk
+no local store file
+pulling down fake message c0963d1eed2579e927d88b8a04eed9e5
+delete_message_from_pseudo_folder c0963d1eed2579e927d88b8a04eed9e5 FAKE_MESSAGES
+already have index lock
+fetch_and_load_index
+find_index_uid_in_folder folder CRYPTOBLOBS
+find_index_uid_in_folder OK ['6']
+found index id ['6']
+subject_data [('2 (UID 6 BODY[HEADER.FIELDS (SUBJECT)] {28}', 'Subject: INDEX 242040151\r\n\r\n'), ')']
+stripped Subject: INDEX 242040151
+save_salt_and_related_information 242040151
+saved salt and related information.
+key_derived_from_passphrase secret 242040151
+�y����+X9n�� on_key #��q���y7����ksq�29F�����7�'��q�S�O�
+             �J
+crypt created perfectly well <crypticle.Crypticle object at 0x7ff290e09d90>
+called loads c07aebe428904bcbf652592465d42fe9cf2b7a480c230997cb84daeb2304425beabb26d904d31f58a4c70226572e9a94149ddecbb166808c2a110bddef3e10d331a465268ffa5ae9489813c8cd1e44cd34d3de87039492c8b8c97d237976481c03b5bfaecbf450f69995a16acf1a2fc8d5fab3f395ac5b17074492fadbfd1345d56e47513551f957200716a7bc249a79ef114539d1383e337989e893f13e6149cec6eebe5a916030de3508f6e72a3d1978aebdda46aa481bafa8b4e4c484f1b9
+decrypt data loads data pickle::S'{"SEQUENCE_NUMBER": 3, "FAKE_MESSAGES": ["ec2d57dbc6f4ff7a5ecbaa760299eee8", "c0963d1eed2579e927d88b8a04eed9e5"]}'
+p1
+.
+out {"SEQUENCE_NUMBER": 3, "FAKE_MESSAGES": ["ec2d57dbc6f4ff7a5ecbaa760299eee8", "c0963d1eed2579e927d88b8a04eed9e5"]}
+decryption succeeded
+unpack_index_contents {"SEQUENCE_NUMBER": 3, "FAKE_MESSAGES": ["ec2d57dbc6f4ff7a5ecbaa760299eee8", "c0963d1eed2579e927d88b8a04eed9e5"]}
+returning unpacked index {u'SEQUENCE_NUMBER': 3, u'FAKE_MESSAGES': [u'ec2d57dbc6f4ff7a5ecbaa760299eee8', u'c0963d1eed2579e927d88b8a04eed9e5']}
+save_index_sequence_number_to_disk
+no local store file
+folder in self.mapping True

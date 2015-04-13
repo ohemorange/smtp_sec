@@ -35,6 +35,7 @@ IMAP4_SSL_PORT = imaplib.IMAP4_SSL_PORT
 
 LOCK_RETRY_DELAY = 2
 
+# Some flags that are helpful for debugging
 DEBUG_IMAP_FROM_GMAIL = False
 DEBUG_IMAP_FROM_SMTORP = False
 DEBUG_SCHEDULER = False

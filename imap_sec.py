@@ -37,18 +37,18 @@ LOCK_RETRY_DELAY = 2
 
 DEBUG_IMAP_FROM_GMAIL = False
 DEBUG_IMAP_FROM_SMTORP = False
-DEBUG_SCHEDULER = True
-DEBUG_EXTRAS = True
+DEBUG_SCHEDULER = False
+DEBUG_EXTRAS = False
 NOOP_ENCRYPTION = False
 
 def hash_of_message_as_string(message_as_string):
-    if DEBUG_SCHEDULER:
-        print "in uid_for_constructed_message"
+    if DEBUG_SCHEDULER or DEBUG_IMAP_FROM_GMAIL:
+        print "in hash_of_message_as_string"
     hashed = hashlib.md5(message_as_string)
-    if DEBUG_SCHEDULER:
+    if DEBUG_SCHEDULER or DEBUG_IMAP_FROM_GMAIL:
         print "hashed", hashed
     hexed = hashed.hexdigest()
-    if DEBUG_SCHEDULER:
+    if DEBUG_SCHEDULER or DEBUG_IMAP_FROM_GMAIL:
         print "hexed", hexed
     return hexed
 
@@ -169,27 +169,30 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 print "trying to save delete queue to", self.local_delete_queue_file
             pickle.dump(self.delete_queue, open(self.local_delete_queue_file, "wb"))
 
+    def quote(self, item):
+        return '"'+item+'"'
+
     def find_index_uid_in_folder(self, folder):
-        imaplib.IMAP4_SSL.select(self, mailbox=folder)
+        imaplib.IMAP4_SSL.select(self, mailbox=self.quote(folder))
         if DEBUG_SCHEDULER or DEBUG_EXTRAS:
             print "find_index_uid_in_folder folder", folder
-        typ, data = imaplib.IMAP4_SSL.uid(self, 'SEARCH', None, "SUBJECT", '"'+INDEX+'"')
+        typ, data = imaplib.IMAP4_SSL.uid(self, 'SEARCH', None, "SUBJECT", self.quote(INDEX))
         if DEBUG_SCHEDULER or DEBUG_EXTRAS:
             print "find_index_uid_in_folder", typ, data
-        imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
+        imaplib.IMAP4_SSL.select(self, mailbox=self.quote(self.selected_mailbox))
         if DEBUG_IMAP_FROM_GMAIL or DEBUG_EXTRAS:
             print "found index id", data
         return data[0].split()[0]
 
     def get_message_uid_given_hash_in_subject(self, hash_of_message):
         folder = "CRYPTOBLOBS"
-        imaplib.IMAP4_SSL.select(self, mailbox=folder)
+        imaplib.IMAP4_SSL.select(self, mailbox=self.quote(folder))
         if DEBUG_SCHEDULER or DEBUG_EXTRAS:
             print "get_message_uid_given_hash_in_subject folder", folder
-        typ, data = imaplib.IMAP4_SSL.uid(self, 'SEARCH', None, "SUBJECT", '"'+hash_of_message+'"')
+        typ, data = imaplib.IMAP4_SSL.uid(self, 'SEARCH', None, "SUBJECT", self.quote(hash_of_message))
         if DEBUG_SCHEDULER or DEBUG_EXTRAS:
             print "get_message_uid_given_hash_in_subject", typ, data
-        imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
+        imaplib.IMAP4_SSL.select(self, mailbox=self.quote(self.selected_mailbox))
         if DEBUG_IMAP_FROM_GMAIL or DEBUG_EXTRAS:
             print "found message id", data
         return data[0].split()[0]
@@ -197,14 +200,16 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def delete_message_from_actual_folder_uid(self, index_id, folder):
         if DEBUG_EXTRAS:
             print "delete_message_from_actual_folder_uid", index_id, folder
-        imaplib.IMAP4_SSL.select(self, mailbox=folder)
+        a, b = imaplib.IMAP4_SSL.select(self, mailbox=self.quote(folder))
+        if DEBUG_IMAP_FROM_GMAIL:
+            print "selected folder", a, b
         typ, data = imaplib.IMAP4_SSL.uid(self, "STORE", str(index_id), "+FLAGS", r'(\Deleted)')
         if DEBUG_IMAP_FROM_GMAIL:
             print "delete response", typ, data
         typ, response = imaplib.IMAP4_SSL.expunge(self)
         if DEBUG_IMAP_FROM_GMAIL:
             print "expunge response", typ, response
-        imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
+        imaplib.IMAP4_SSL.select(self, mailbox=self.quote(self.selected_mailbox))
         return typ, response
 
     def delete_index(self):
@@ -223,7 +228,11 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         if DEBUG_EXTRAS:
             print "unpack_index_contents", decrypted_index_body_text
         table = json.loads(decrypted_index_body_text)
+        if DEBUG_IMAP_FROM_GMAIL:
+            print "unpacked index", table
         if table[SEQUENCE_NUMBER] < self.last_index_number:
+            if DEBUG_IMAP_FROM_GMAIL:
+                print "rollback_detected"
             self.rollback_detected = True
             return self.mapping
         if DEBUG_EXTRAS:
@@ -269,14 +278,14 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
         # 1. fetch index and index subject
         index_id = self.find_index_uid_in_folder(CRYPTOBLOBS)
-        imaplib.IMAP4_SSL.select(self, mailbox=CRYPTOBLOBS)
+        imaplib.IMAP4_SSL.select(self, mailbox=self.quote(CRYPTOBLOBS))
         # fetches the text of message with id index_id
         typ, data = imaplib.IMAP4_SSL.uid(self, "FETCH", index_id,\
             '(BODY[TEXT])')
         # fetches the subject of message with id index_id
         ok, subject_data = imaplib.IMAP4_SSL.uid(self, "FETCH", index_id,\
             '(BODY[HEADER.FIELDS (SUBJECT)])')
-        imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
+        imaplib.IMAP4_SSL.select(self, mailbox=self.quote(self.selected_mailbox))
 
         # 1.5. save salt and related information
         if DEBUG_EXTRAS:
@@ -373,13 +382,13 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 print "no local store file"
 
     def find_lock_uid_in_folder(self, folder):
-        imaplib.IMAP4_SSL.select(self, mailbox=folder)
+        imaplib.IMAP4_SSL.select(self, mailbox=self.quote(folder))
         if DEBUG_SCHEDULER or DEBUG_EXTRAS:
             print "find_lock_uid_in_folder folder", folder
-        typ, data = imaplib.IMAP4_SSL.uid(self, 'SEARCH', None, "SUBJECT", '"'+LOCK+'"')
+        typ, data = imaplib.IMAP4_SSL.uid(self, 'SEARCH', None, "SUBJECT", self.quote(LOCK))
         if DEBUG_SCHEDULER or DEBUG_EXTRAS:
             print "find_lock_uid_in_folder", typ, data
-        imaplib.IMAP4_SSL.select(self, mailbox=self.selected_mailbox)
+        imaplib.IMAP4_SSL.select(self, mailbox=self.quote(self.selected_mailbox))
         if DEBUG_IMAP_FROM_GMAIL or DEBUG_EXTRAS:
             print "found lock id", data
         if data[0] == '':
@@ -420,7 +429,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # new one by pulling down.
     def save_index(self):
         if DEBUG_IMAP_FROM_GMAIL:
-            print "old index id", index_id
+            print "old index id"
         if DEBUG_SCHEDULER:
             print "old index", self.mapping
         # delete original index
@@ -495,8 +504,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def select(self, mailbox='INBOX', readonly=False):
         self.selected_mailbox = mailbox.strip('"')
         typ, data = imaplib.IMAP4_SSL.select(self, mailbox, readonly)
-        if DEBUG_IMAP_FROM_GMAIL:
-            print "select", mailbox, data
+        # if DEBUG_IMAP_FROM_GMAIL:
+        #     print "select", mailbox, data
         return typ, data
     
     def timed_imap_exchange(self):
@@ -594,7 +603,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             self.save_send_queue_to_disk()
             return
         # update it in the index
-        if DEBUG_IMAP_FROM_SMTORP or DEBUG_SCHEDULER:
+        if DEBUG_IMAP_FROM_SMTORP or DEBUG_SCHEDULER or DEBUG_IMAP_FROM_GMAIL:
             # print "message_contents", message_contents
             print "folder", folder
             print "uid", uid
@@ -605,12 +614,23 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         self.acquire_index_lock()
         self.fetch_and_load_index()
 
-        if DEBUG_SCHEDULER:
+        if DEBUG_IMAP_FROM_GMAIL:
+            print "self.mapping", self.mapping
+            # print "self.mapping[folder]", self.mapping[folder]
+            # print "self.mapping[folder][uid]", self.mapping[folder][uid]
+
+        if DEBUG_SCHEDULER or DEBUG_IMAP_FROM_GMAIL:
             print "folder in self.mapping", folder in self.mapping
 
         if not folder in self.mapping:
+            if DEBUG_IMAP_FROM_GMAIL:
+                print "folder isn't in self.mapping"
             self.mapping[folder] = {}
+
         self.mapping[folder][uid] = hash_of_message_as_string(message_contents)
+
+        if DEBUG_IMAP_FROM_GMAIL:
+            print "about to try saving index"
 
         # save the index
         self.save_index()
@@ -656,7 +676,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # it can also be SORT and THREAD.
     def uid(self, command, *args):
         typ, data = imaplib.IMAP4_SSL.uid(self, command, *args)
-        # print "got data", data
+        if DEBUG_EXTRAS:
+            print "got data from uid", data
         if data == [None]:
             if DEBUG_IMAP_FROM_GMAIL:
                 print "args", args
@@ -675,12 +696,12 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             subject = messageified['Subject'].strip().strip('"')
             if DEBUG_IMAP_FROM_GMAIL:
                 print "subject", subject
-            if folder == CRYPTOBLOBS or ENCRYPTED in subject or INDEX in subject:
+            if folder == CRYPTOBLOBS or ENCRYPTED in subject or INDEX in subject or LOCK in subject:
                 if DEBUG_IMAP_FROM_GMAIL:
                     print "probably not a real message"
                 # this could be the index, which means that
                 # another client has updated the index
-                if INDEX in subject and folder == CRYPTOBLOBS:
+                if (INDEX in subject or LOCK in subject) and folder == CRYPTOBLOBS:
                     # ignore index updates. we only update the index
                     # on our own request. inoming updates are for
                     # messages only.
@@ -715,6 +736,9 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 # assume this is the first time we've fetched it
                 # (as in we wouldn't be fetching it unless it's changed on the server)
                 # delete it off the server
+                if DEBUG_EXTRAS:
+                    print "actual message", subject
+
                 self.delete_message_from_actual_folder_uid(uid, folder)
 
                 self.add_message_to_folder_internal(message_contents, folder, uid, False)

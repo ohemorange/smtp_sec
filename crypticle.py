@@ -48,13 +48,11 @@ class Crypticle(object):
         return data + sig
 
     def decrypt(self, data):
-        print "decrypt data", data
         """verify HMAC-SHA256 signature and decrypt data with AES-CBC"""
         aes_key, hmac_key = self.keys
         sig = data[-SIG_SIZE:]
         data = data[:-SIG_SIZE]
         if hmac.new(hmac_key, data, hashlib.sha256).digest() != sig:
-            print "decryption failed"
             return None
             #raise AuthenticationError("message authentication failed")
         iv_bytes = data[:AES_BLOCK_SIZE]
@@ -68,10 +66,8 @@ class Crypticle(object):
         return (self.encrypt(self.PICKLE_PAD + pickler.dumps(obj))).encode("hex")
 
     def loads(self, data, pickler=pickle):
-        print "called loads", data
         """decrypt and unpickle a python object"""
         data = self.decrypt(data.decode("hex"))
-        print "loads data", data
         # simple integrity check to verify that we got meaningful data
         assert data.startswith(self.PICKLE_PAD), "unexpected header"
         return pickler.loads(data[len(self.PICKLE_PAD):])

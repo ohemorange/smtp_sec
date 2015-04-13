@@ -3,6 +3,9 @@
 - imapmailsource:add_side_message
 - imap_sec: add_message_to_folder
 - mailutils: prepare message
+- mail_source/__init__.py: sleeptime()
+  - this is how often we rescan mailboxes
+  - and the actual interval is default 900, set in defaults.py
 
 ## to test: definitely
 - you know actually run with multiple clients

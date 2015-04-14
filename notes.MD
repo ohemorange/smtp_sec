@@ -18,6 +18,11 @@
   - need to figure out the whole flow of updates and when to actually
     grab it and such.
   - think about deleting messages multi-client-wise.
+- watch out for index saves as a side channel
+- intercept "which messages are here" to deal with multiple client message
+  fetching
+- resilience: after polling for like minutes and also using index sequence
+  number that hasn't changed or index not there, replace the lock
 
 ## todo: maybe
 - maybe pull pack to gmail folder and such if it's gone over smtorp.
@@ -415,6 +420,11 @@ HiddenServicePort 25 localhost:33412
   - this is tested and working. well at leas the index number part. I'm just
     going to assume the send queue part is working.
 
+## notes from meeting 4/14
+- intercept "which messages are here" to deal with multiple client message
+  fetching
+- resilience: after polling for like minutes and also using index sequence
+  number that hasn't changed or index not there, replace the lock
 
 ## notes from meeting 2/17/15
 ### Threats

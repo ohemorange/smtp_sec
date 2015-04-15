@@ -6,6 +6,8 @@
 - mail_source/__init__.py: sleeptime()
   - this is how often we rescan mailboxes
   - and the actual interval is default 900, set in defaults.py
+- ./mailpile/www/default/html/jsapi/setup/magic.js
+  - this should be the how often we check gmail number. default 300.
 
 ## to test: definitely
 - you know actually run with multiple clients
@@ -425,6 +427,19 @@ HiddenServicePort 25 localhost:33412
   fetching
 - resilience: after polling for like minutes and also using index sequence
   number that hasn't changed or index not there, replace the lock
+
+## notes from week of 4/14
+- Ok, so here's a problem.
+  - It says:
+    - what folders are there?
+    - which messages are in this folder?
+    - ok, I know about these, but can I have these (one by one)?
+  - Now, think about All Mail. If I put ANYTHING in CRYPTOBLOBS, it also goes into
+    All Mail.
+  - What if... I just use All Mail instead of cryptoblobs? Or what if I have
+    new messages come into the inbox? Then I won't be able to delete them
+    from All Mail...
+- so it's not keeping itself alive, it was just doing that because it thought it failed (in basemailsource:run). have to go find that flag now (keepalive - set in defaults.py). I had it just ignore mail reception errors (in mail_source/__init__.py), which at least got it to go through all the messages, which is nice. then I could also just not have it return things from cryptoblobs, which will make it even better. Changed keepalive to True.
 
 ## notes from meeting 2/17/15
 ### Threats

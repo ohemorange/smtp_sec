@@ -36,10 +36,11 @@ IMAP4_SSL_PORT = imaplib.IMAP4_SSL_PORT
 LOCK_RETRY_DELAY = 2
 
 # Some flags that are helpful for debugging
-DEBUG_IMAP_FROM_GMAIL = False
+DEBUG_IMAP_FROM_GMAIL = True
 DEBUG_IMAP_FROM_SMTORP = False
 DEBUG_SCHEDULER = False
-DEBUG_EXTRAS = False
+DEBUG_EXTRAS = True
+PRINT_INDEX = True
 NOOP_ENCRYPTION = False
 
 def hash_of_message_as_string(message_as_string):
@@ -125,8 +126,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             if DEBUG_EXTRAS:
                 print "creating self.encryption_key"
             self.encryption_key = scrypt.hash(self.passphrase, self.random_salt)
-        if DEBUG_EXTRAS:
-            print "self.encryption_key", self.encryption_key
         return self.encryption_key
 
     def load_last_index_number_from_disk(self):
@@ -226,18 +225,12 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # this method checks and sets the rollback_detected flag
     # if rollback is detected, it returns the current index
     def unpack_index_contents(self, decrypted_index_body_text):
-        if DEBUG_EXTRAS:
-            print "unpack_index_contents", decrypted_index_body_text
         table = json.loads(decrypted_index_body_text)
-        if DEBUG_IMAP_FROM_GMAIL:
-            print "unpacked index", table
         if table[SEQUENCE_NUMBER] < self.last_index_number:
             if DEBUG_IMAP_FROM_GMAIL:
                 print "rollback_detected"
             self.rollback_detected = True
             return self.mapping
-        if DEBUG_EXTRAS:
-            print "returning unpacked index", table
         return table
 
     def decrypt_string(self, data):
@@ -249,8 +242,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             if DEBUG_EXTRAS:
                 print "crypt created perfectly well", crypt
             out = crypt.loads(data)
-            if DEBUG_EXTRAS:
-                print "out", out
             return out
             # returns None if it failed
 
@@ -317,6 +308,10 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         self.mapping = unpacked_table
         self.last_index_number = unpacked_table[SEQUENCE_NUMBER]
 
+        if PRINT_INDEX:
+            print "Index:"
+            print self.mapping
+
         # 5. save new sequence number to disk
         self.save_index_sequence_number_to_disk()
 
@@ -352,8 +347,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         encrypted_contents = self.encrypt_string(json.dumps(table))
         message.set_payload(encrypted_contents)
         str_message = str(message)
-        if DEBUG_EXTRAS:
-            print "str_message", str_message
         typ, data = imaplib.IMAP4_SSL.append(self, CRYPTOBLOBS, None, \
             None, str_message)
         if DEBUG_IMAP_FROM_GMAIL or DEBUG_EXTRAS:
@@ -505,8 +498,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def select(self, mailbox='INBOX', readonly=False):
         self.selected_mailbox = mailbox.strip('"')
         typ, data = imaplib.IMAP4_SSL.select(self, mailbox, readonly)
-        # if DEBUG_IMAP_FROM_GMAIL:
-        #     print "select", mailbox, data
+        if DEBUG_IMAP_FROM_GMAIL:
+            print "select", mailbox, data
         return typ, data
     
     def timed_imap_exchange(self):
@@ -749,6 +742,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         elif command == "SEARCH":
             if DEBUG_IMAP_FROM_GMAIL:
                 print "search", data
+            # TODO: return fake information
         if DEBUG_IMAP_FROM_GMAIL:
             print "uid", command#, _parse_imap(a)
         # _parse_imap will only work when it's not FETCH.

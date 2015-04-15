@@ -440,6 +440,12 @@ HiddenServicePort 25 localhost:33412
     new messages come into the inbox? Then I won't be able to delete them
     from All Mail...
 - so it's not keeping itself alive, it was just doing that because it thought it failed (in basemailsource:run). have to go find that flag now (keepalive - set in defaults.py). I had it just ignore mail reception errors (in mail_source/__init__.py), which at least got it to go through all the messages, which is nice. then I could also just not have it return things from cryptoblobs, which will make it even better. Changed keepalive to True.
+- Switching back to inbox messaging.
+- we don't need the lock for processing an incoming message (in inbox)
+  because clients should really be able to handle the message disappearing
+  between the search and the uid call.
+- note for production-ready: should probably fetch messages in pieces
+
 
 ## notes from meeting 2/17/15
 ### Threats

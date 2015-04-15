@@ -184,6 +184,12 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             print "found index id", data
         return data[0].split()[0]
 
+    def get_list_of_uids_given_subject_line(self, subject_line, folder):
+        imaplib.IMAP4_SSL.select(self, mailbox=self.quote(folder))
+        typ, data = imaplib.IMAP4_SSL.uid(self, 'SEARCH', None, "SUBJECT", self.quote(subject_line))
+        imaplib.IMAP4_SSL.select(self, mailbox=self.quote(self.selected_mailbox))
+        return data[0].split()
+
     def get_message_uid_given_hash_in_subject(self, hash_of_message):
         folder = "CRYPTOBLOBS"
         imaplib.IMAP4_SSL.select(self, mailbox=self.quote(folder))
@@ -664,92 +670,102 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         self.delete_message_from_actual_folder_uid(actual_uid, CRYPTOBLOBS)
         self.release_index_lock()
 
+    def delete_message_from_all_other_folders(self, message_contents):
+        # TODO this only works for this exact setup, with gmail. if
+        # you want to use it for something else, have fun! if you're
+        # doing gmail, delete from all mail last.
+        folder = GMAIL_ALL_MAIL
+
+        # find the uid of the message in gmail by searching for its subject
+        messageified = Message(message_contents)
+        subject = messageified['Subject'].strip().strip('"')
+        uids = self.get_list_of_uids_given_subject_line(subject, folder)
+
+        # look through the results to find which one is the right one
+        for potential_uid in uids:
+            # fetch that message
+            imaplib.IMAP4_SSL.select(self, mailbox=self.quote(folder))
+            typ, data = imaplib.IMAP4_SSL.uid(self, 'FETCH', uid, '(BODY[])')
+            imaplib.IMAP4_SSL.select(self, mailbox=self.quote(self.selected_mailbox))
+            new_contents = data[0].split()[0]
+            if new_contents == message_contents:
+                # use that uid
+                new_uid = potential_uid
+                break
+
+        # delete that uid from all mail
+        self.delete_message_from_actual_folder_uid(new_uid, folder)
+
+    def process_new_inbox_message(self, uid):
+        # execute acquire for entire message
+        typ, data = imaplib.IMAP4_SSL.uid(self, "FETCH", uid, '(BODY[])')
+        message_contents = data[0][1].strip()
+        
+        # cache locally
+        # TODO
+        
+        # delete from inbox
+        self.delete_message_from_actual_folder_uid(uid, INBOX)
+        
+        # delete from everywhere else
+        self.delete_message_from_all_other_folders(message_contents)
+        
+        # encrypt and upload to CB
+        self.add_message_to_folder_internal(message_contents, INBOX, uid, False)
+        
+
     # asks for and receives email
     # command=SEARCH returns a list of the uids in the current mailbox
     # command=FETCH fetches a specific message?
     # it can also be SORT and THREAD.
+    # do not call with the folder as an argument
     def uid(self, command, *args):
-        typ, data = imaplib.IMAP4_SSL.uid(self, command, *args)
-        if DEBUG_EXTRAS:
-            print "got data from uid", data
-        if data == [None]:
-            if DEBUG_IMAP_FROM_GMAIL:
-                print "args", args
+        folder = self.selected_mailbox
+        original_uid = args[0]
         command = command.upper()
-        if command == "FETCH" and "BODY" in args[1]:
-            if DEBUG_IMAP_FROM_GMAIL:
-                print "args", args
-            uid = args[0]
-            folder = self.selected_mailbox
-            if len(args) >= 3:
-                folder = args[2]
-            if DEBUG_IMAP_FROM_GMAIL:
-                print "in folder", folder
-            message_contents = data[0][1].strip()
-            messageified = Message(message_contents)
-            subject = messageified['Subject'].strip().strip('"')
-            if DEBUG_IMAP_FROM_GMAIL:
-                print "subject", subject
-            if folder == CRYPTOBLOBS or ENCRYPTED in subject or INDEX in subject or LOCK in subject:
-                if DEBUG_IMAP_FROM_GMAIL:
-                    print "probably not a real message"
-                # this could be the index, which means that
-                # another client has updated the index
-                if (INDEX in subject or LOCK in subject) and folder == CRYPTOBLOBS:
-                    # ignore index updates. we only update the index
-                    # on our own request. inoming updates are for
-                    # messages only.
-                    return False, []
-                    # TODO: return it as a fake message so we set flags correctly
-                    if ok:
-                        messageified.set_payload("Everything is awesome.")
-                    else:
-                        messageified.set_payload("Everything is not awesome.")
-                    data[0][1] = str(messageified)
-                    # it's probably fine to just have this ui component here,
-                    # because it means the server has updated it, and wants us
-                    # to grab the rolled back one.
-                elif ENCRYPTED in subject and folder == CRYPTOBLOBS:
-                    # returns a string
-                    # TODO we need to know if we're the ones who just put this there.
-                    # if so, ignore for now, maybe change this later.
-                    # this definitely has to change. this means another client
-                    # put it up here. we should then grab the current index,
-                    # check that it's all kosher, and if so then save it down here.
-                    return False, []
-                    unpacked_message = self.decrypt_and_unpack_message(messageified)
-                    data[0][1] = unpacked_message
-                    # TODO: do we need to know which folder it belonged in originally?
-                    # maybe select the folder
-                else:
-                    # we're in all mail and the subject is encrypted or cryptoblobs
-                    # should probably actually uniquely identify here
-                    # TODO
-                    return False, []
+
+        # if this is a search
+        if command == "SEARCH":
+            # if it's inbox
+            if folder == INBOX:
+                # just pass the comment through
+                typ, data = imaplib.IMAP4_SSL.uid(self, command, *args)
+            # elif it's all mail
+            elif folder == GMAIL_ALL_MAIL:
+                # the answer is no. nothing is here.
+                typ, data = True, ['']
+            # else (if it's anything else)
             else:
-                # assume this is the first time we've fetched it
-                # (as in we wouldn't be fetching it unless it's changed on the server)
-                # delete it off the server
-                if DEBUG_EXTRAS:
-                    print "actual message", subject
+                # fetch the index
+                self.fetch_and_load_index()
+                # return the result based on the index
+                # folder should really be in self.mapping.
+                # if it's not, we have a bug. so just assume it's there.
+                uids = " ".join(self.mapping[folder].keys())
+                typ, data = True, [uids]
+        # elif this is a fetch
+        elif command == "FETCH":
+            # if this is from the inbox
+            if folder == INBOX:
+                # process it entirely
+                self.process_new_inbox_message(original_uid)
+            # now it's not in the inbox
+            # get the index
+            self.fetch_and_load_index()
+            # look up hash
+            hash_of_message = self.mapping[folder][original_uid]
+            # search for hash
+            proper_uid = self.get_message_uid_given_hash_in_subject(hash_of_message)
+            # use uid of that message
+            # execute command with that uid
+            args_copy = list(*args)
+            args_copy[0] = proper_uid
+            args_copy_tuple = tuple(args_copy)
+            typ, data = imaplib.IMAP4_SSL.uid(self, command, *args_copy_tuple)
+        # just pass it through
+        else:
+            typ, data = imaplib.IMAP4_SSL.uid(self, command, *args)
 
-                self.delete_message_from_actual_folder_uid(uid, folder)
-
-                self.add_message_to_folder_internal(message_contents, folder, uid, False)
-
-                # just return the original message to the local client,
-                # I'm sure nothing could ever go wrong with thaaaat
-        elif command == "SEARCH":
-            if DEBUG_IMAP_FROM_GMAIL:
-                print "search", data
-            # TODO: return fake information
-        if DEBUG_IMAP_FROM_GMAIL:
-            print "uid", command#, _parse_imap(a)
-        # _parse_imap will only work when it's not FETCH.
-        # from mailbox import Mailbox, Message
-        #Message(data)
-        #if 
-        # print "returning data", data
         return typ, data
 
     # ******************************************************** #

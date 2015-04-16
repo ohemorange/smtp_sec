@@ -57,7 +57,9 @@ def hash_of_message_as_string(message_as_string):
     return hexed
 
 def uid_for_constructed_message(message_as_string):
-    return hash_of_message_as_string(message_as_string)
+    a = hash_of_message_as_string(message_as_string)
+    s = '11111111111111111111111111111111'
+    return str(int(int(a,16)&int(s,2)))
 
 def fake_message_with_random_contents_as_string():
     message = Message()

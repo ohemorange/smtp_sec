@@ -11,27 +11,21 @@
 
 ## to test: definitely
 - you know actually run with multiple clients
+- sending over tor, not on starbucks wifi
 
 ## todo: definitely
 - switch from pushing and pulling single messages to pushing up k and pulling down k-1. up by putting up k and down k-1. (mixing step)
-- clean up the incoming messages / in cryptoblobs section. the only thing
-  that should be happening there is if we see an "ENCRYPTED" message that we
-  don't have in the index.
-  - need to figure out the whole flow of updates and when to actually
-    grab it and such.
-  - think about deleting messages multi-client-wise.
-- watch out for index saves as a side channel
-- intercept "which messages are here" to deal with multiple client message
-  fetching
+
+## todo: probably
 - resilience: after polling for like minutes and also using index sequence
   number that hasn't changed or index not there, replace the lock
 
 ## todo: maybe
-- maybe pull pack to gmail folder and such if it's gone over smtorp.
 - add functionality for delete and change folders
 - support adding folders for origin-local messages
 - add some sort of "validate message" function. easy b/c we stored
   the hash of the message in the index.
+- watch out for index saves as a side channel
 
 ## to test: maybe
 - what if a filter's set up and it comes in that way?
@@ -451,7 +445,14 @@ SMTP connection to: rwq5q4vh3aphekjj.onion:25 as (anon)
 connect: ('rwq5q4vh3aphekjj.onion', 25)
   - in smtp_client.py (set sys.debug sendmail)
 - I think (hope) tor might just not be working on starbucks wifi
-
+- clean up the incoming messages / in cryptoblobs section. the only thing
+  that should be happening there is if we see an "ENCRYPTED" message that we
+  don't have in the index.
+  - need to figure out the whole flow of updates and when to actually
+    grab it and such.
+  - think about deleting messages multi-client-wise.
+- intercept "which messages are here" to deal with multiple client message
+  fetching
 
 ## notes from meeting 2/17/15
 ### Threats

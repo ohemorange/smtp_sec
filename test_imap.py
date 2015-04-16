@@ -4,6 +4,9 @@ i.login("functorkitten","ocamldavewalker")
 
 i.select("INBOX")
 i.uid("SEARCH",None,"ALL")
+
+i.uid("FETCH","202",'(RFC822.SIZE FLAGS)')
+
 i.uid("FETCH","185","(BODY[TEXT])")
 
 i.select(mailbox="[Gmail]/All Mail")

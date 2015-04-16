@@ -445,6 +445,7 @@ HiddenServicePort 25 localhost:33412
   because clients should really be able to handle the message disappearing
   between the search and the uid call.
 - note for production-ready: should probably fetch messages in pieces
+- index and lock also being deleted from all mail now
 
 
 ## notes from meeting 2/17/15

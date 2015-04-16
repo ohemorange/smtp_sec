@@ -21,11 +21,13 @@ class IMAP4(imaplib.IMAP4):
 
 CRYPTOBLOBS = "CRYPTOBLOBS"
 INDEX = "INDEX"
+INBOX = "INBOX"
 ENCRYPTED = "ENCRYPTED"
 SEQUENCE_NUMBER = "SEQUENCE_NUMBER"
 FAKE_MESSAGES = "FAKE_MESSAGES"
 LOCK = "LOCK"
 GMAIL_ALL_MAIL = "[Gmail]/All Mail"
+OK = "OK"
 
 parent = imaplib.IMAP4_SSL
 
@@ -65,6 +67,22 @@ def fake_message_with_random_contents_as_string():
     message.set_payload(str(random.randint(0,10000000000)))
     return str(message)
 
+def replace_item_in_tuple(d, replacement, x, y):
+    ld = list(d)
+    ldd = list(d[x])
+    ldd[y] = replacement
+    ld[x] = tuple(ldd)
+    ldt = tuple(ld)
+    return ldt
+
+def delete_item_from_tuple(d, x, y):
+    ld = list(d)
+    ldd = list(d[x])
+    ldd.pop(y)
+    ld[x] = tuple(ldd)
+    ldt = tuple(ld)
+    return ldt
+
 # we need to keep track of imap state
 class IMAP4_SSL(imaplib.IMAP4_SSL):
     pass
@@ -88,7 +106,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         imaplib.IMAP4_SSL.__init__(self, host, port, keyfile, certfile)
 
         self.mapping = None # this will be loaded in load_cryptoblobs
-        self.selected_mailbox = "INBOX"
+        self.selected_mailbox = INBOX
         
         # load locally stored index number
         self.local_store_file = local_store_file
@@ -191,17 +209,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         return data[0].split()
 
     def get_message_uid_given_hash_in_subject(self, hash_of_message):
-        folder = "CRYPTOBLOBS"
-        imaplib.IMAP4_SSL.select(self, mailbox=self.quote(folder))
-        if DEBUG_SCHEDULER or DEBUG_EXTRAS:
-            print "get_message_uid_given_hash_in_subject folder", folder
-        typ, data = imaplib.IMAP4_SSL.uid(self, 'SEARCH', None, "SUBJECT", self.quote(hash_of_message))
-        if DEBUG_SCHEDULER or DEBUG_EXTRAS:
-            print "get_message_uid_given_hash_in_subject", typ, data
-        imaplib.IMAP4_SSL.select(self, mailbox=self.quote(self.selected_mailbox))
-        if DEBUG_IMAP_FROM_GMAIL or DEBUG_EXTRAS:
-            print "found message id", data
-        return data[0].split()[0]
+        return self.get_list_of_uids_given_subject_line(hash_of_message, CRYPTOBLOBS)[0]
 
     def delete_message_from_actual_folder_uid(self, index_id, folder):
         if DEBUG_EXTRAS:
@@ -221,12 +229,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def delete_index(self):
         index_id = self.find_index_uid_in_folder(CRYPTOBLOBS)
         self.delete_message_from_actual_folder_uid(index_id, CRYPTOBLOBS)
-        # so you can't actually delete from all mail. to handle this in gmail,
-        # what we SHOULD be doing is moving to trash then deleting from
-        # trash. but then it's gmail specific. not like everything else isn't
-        # already.
-        # index_id_in_all = self.find_index_uid_in_folder(GMAIL_ALL_MAIL)
-        # self.delete_message_from_actual_folder_uid(index_id, GMAIL_ALL_MAIL)
+        self.delete_index_from_all_mail()
 
     # this method checks and sets the rollback_detected flag
     # if rollback is detected, it returns the current index
@@ -337,8 +340,9 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         message.set_payload(str(encrypted_message_body))
         typ, data = parent.append(self, CRYPTOBLOBS, None, None, str(message))
 
-    def decrypt_and_unpack_message(self, message):
-        old_message_str = message.get_payload()
+    def decrypt_and_unpack_message(self, message_contents):
+        messageified = Message(message_contents)
+        old_message_str = messageified.get_payload()
         return self.decrypt_string(old_message_str)
 
     # pushes up the index to the cryptoblobs folder
@@ -416,6 +420,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 continue
             # we successfully found the uid and deleted the message
             self.have_index_lock = True
+            # so also take it out of all mail
+            self.delete_lock_from_all_mail()
             break
 
     def release_index_lock(self):
@@ -489,6 +495,39 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
     def list(self, directory='""', pattern='*'):
         typ, data = imaplib.IMAP4_SSL.list(self, directory, pattern)
+        if typ == OK:
+            # if directory is the top
+            if directory == '""':
+                # find the index of the one to delete
+                for i in range(0, len(data)):
+                    if CRYPTOBLOBS in data[i]:
+                        delete_index = i
+                        break
+                # delete it
+                string_format = data.pop(delete_index)
+
+                # append things from the index, if they're not
+                # already in there as having no children
+                start = string_format.index(CRYPTOBLOBS)
+                before = string_format[:start]
+                after = string_format[start+len(CRYPTOBLOBS):]
+                self.fetch_and_load_index()
+                to_append = []
+                for folder in self.mapping.keys():
+                    # search through lines in data
+                    if folder == SEQUENCE_NUMBER or folder == FAKE_MESSAGES:
+                        continue
+                    found = False
+                    for line in data:
+                        if folder in line:
+                            found = True
+                            break
+                    if not found:
+                        to_append.append(folder)
+                for folder_name in to_append:
+                    string = before + folder_name + after
+                    data.append(string)
+
         if DEBUG_IMAP_FROM_GMAIL:
             print "list", data
         return typ, data
@@ -502,10 +541,15 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
     # switches which mailbox we're prodding for updates in
     def select(self, mailbox='INBOX', readonly=False):
-        self.selected_mailbox = mailbox.strip('"')
-        typ, data = imaplib.IMAP4_SSL.select(self, mailbox, readonly)
+        # don't let it ask for cryptoblobs
+        mb = mailbox
+        if mb.strip('"') == CRYPTOBLOBS:
+            mb = "ASDFKASFKACXMCMCKWDMFOEWEKR"
+        typ, data = imaplib.IMAP4_SSL.select(self, mb, readonly)
+        if typ == OK:
+            self.selected_mailbox = mailbox.strip('"')
         if DEBUG_IMAP_FROM_GMAIL:
-            print "select", mailbox, data
+            print "select", mailbox, mb, data
         return typ, data
     
     def timed_imap_exchange(self):
@@ -670,6 +714,18 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         self.delete_message_from_actual_folder_uid(actual_uid, CRYPTOBLOBS)
         self.release_index_lock()
 
+    # assumes only one of that subject in that folder exists
+    def delete_from_all_mail_by_subject(self, subject_substring):
+        uid = self.get_list_of_uids_given_subject_line(subject_substring, \
+                                                       GMAIL_ALL_MAIL)[0]
+        self.delete_message_from_actual_folder_uid(uid, GMAIL_ALL_MAIL)
+
+    def delete_index_from_all_mail(self):
+        self.delete_from_all_mail_by_subject(INDEX)
+
+    def delete_lock_from_all_mail(self):
+        self.delete_from_all_mail_by_subject(LOCK)
+
     def delete_message_from_all_other_folders(self, message_contents):
         # TODO this only works for this exact setup, with gmail. if
         # you want to use it for something else, have fun! if you're
@@ -685,9 +741,9 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         for potential_uid in uids:
             # fetch that message
             imaplib.IMAP4_SSL.select(self, mailbox=self.quote(folder))
-            typ, data = imaplib.IMAP4_SSL.uid(self, 'FETCH', uid, '(BODY[])')
+            typ, data = imaplib.IMAP4_SSL.uid(self, 'FETCH', potential_uid, '(BODY[])')
             imaplib.IMAP4_SSL.select(self, mailbox=self.quote(self.selected_mailbox))
-            new_contents = data[0].split()[0]
+            new_contents = data[0][1].strip()
             if new_contents == message_contents:
                 # use that uid
                 new_uid = potential_uid
@@ -719,19 +775,15 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # command=FETCH fetches a specific message?
     # it can also be SORT and THREAD.
     # do not call with the folder as an argument
-    def uid(self, command, *args):
+    def uid(self, orig_command, *args):
         folder = self.selected_mailbox
         original_uid = args[0]
-        command = command.upper()
+        command = orig_command.upper()
 
         # if this is a search
         if command == "SEARCH":
-            # if it's inbox
-            if folder == INBOX:
-                # just pass the comment through
-                typ, data = imaplib.IMAP4_SSL.uid(self, command, *args)
-            # elif it's all mail
-            elif folder == GMAIL_ALL_MAIL:
+            # if it's all mail
+            if folder == GMAIL_ALL_MAIL:
                 # the answer is no. nothing is here.
                 typ, data = True, ['']
             # else (if it's anything else)
@@ -739,17 +791,33 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 # fetch the index
                 self.fetch_and_load_index()
                 # return the result based on the index
-                # folder should really be in self.mapping.
-                # if it's not, we have a bug. so just assume it's there.
-                uids = " ".join(self.mapping[folder].keys())
-                typ, data = True, [uids]
+                # if the folder's not in self.mapping, just return empty
+                if not folder in self.mapping:
+                    typ, data = True, ['']
+                else:
+                    uids = " ".join(self.mapping[folder].keys())
+                    typ, data = True, [uids]
+
+                # if it's inbox
+                if folder == INBOX:
+                    # pass the command through
+                    typ_in, data_in = imaplib.IMAP4_SSL.uid(self, command, *args)
+                    if typ_in != OK:
+                        return typ_in, data_in
+                    # append to index results
+                    typ = typ_in
+                    data = [" ".join([data_in[0], data[0]]).strip()]
+
         # elif this is a fetch
         elif command == "FETCH":
             # if this is from the inbox
             if folder == INBOX:
-                # process it entirely
-                self.process_new_inbox_message(original_uid)
-            # now it's not in the inbox
+                # check if it's already been processed
+                self.fetch_and_load_index()
+                if not (INBOX in self.mapping and original_uid in self.mapping[INBOX]):
+                    # process it entirely
+                    self.process_new_inbox_message(original_uid)
+            # now it's not a new message from the inbox
             # get the index
             self.fetch_and_load_index()
             # look up hash
@@ -758,10 +826,24 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             proper_uid = self.get_message_uid_given_hash_in_subject(hash_of_message)
             # use uid of that message
             # execute command with that uid
-            args_copy = list(*args)
+            args_copy = list(args)
             args_copy[0] = proper_uid
             args_copy_tuple = tuple(args_copy)
-            typ, data = imaplib.IMAP4_SSL.uid(self, command, *args_copy_tuple)
+            imaplib.IMAP4_SSL.select(self, mailbox=self.quote(CRYPTOBLOBS))
+            t, d = imaplib.IMAP4_SSL.uid(self, command, *args_copy_tuple)
+            imaplib.IMAP4_SSL.select(self, mailbox=self.quote(self.selected_mailbox))
+            # decrypt the message we've received and remessageify it
+            if t != OK:
+                return t, d
+            message_contents = d[0][1].strip()
+            message_as_string = self.decrypt_and_unpack_message(message_contents)
+
+            # replace into the form the caller expects it
+            ldt = replace_item_in_tuple(d, message_as_string, 0, 1)
+
+            typ = t
+            data = ldt
+
         # just pass it through
         else:
             typ, data = imaplib.IMAP4_SSL.uid(self, command, *args)

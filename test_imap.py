@@ -10,3 +10,25 @@ i.select(mailbox="[Gmail]/All Mail")
 i.uid("SEARCH",None,"ALL")
 i.uid("FETCH",820,'(BODY[])')
 
+
+for i in range(0, len(data)):
+    if CRYPTOBLOBS in data[i]:
+        delete_index = i
+        break
+
+
+for folder in i.mapping.keys():
+    # search through lines in data
+    if folder == SEQUENCE_NUMBER or folder == FAKE_MESSAGES:
+        continue	
+    found = False
+    for line in data:
+        if folder in line:
+            found = True
+            break
+    if not found:
+        to_append.append(folder)
+
+for folder_name in to_append:
+    string = before + folder_name + after
+    data.append(string)

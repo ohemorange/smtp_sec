@@ -543,11 +543,36 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def select(self, mailbox='INBOX', readonly=False):
         # don't let it ask for cryptoblobs
         mb = mailbox
+        folder = mb.strip('"')
+        if folder == GMAIL_ALL_MAIL or folder == CRYPTOBLOBS or folder == FAKE_MESSAGES or folder == SEQUENCE_NUMBER:
+            self.selected_mailbox = folder
+            return OK, ['0']
+        # add the number from the index
+        typ, data = imaplib.IMAP4_SSL.select(self, mb, readonly)
+        if typ == OK:
+            self.selected_mailbox = folder
+            self.fetch_and_load_index()
+            if folder in self.mapping:
+                count = len(self.mapping[folder])
+                the_sum = count + int(data[0])
+                data[0] = str(the_sum)
+        return typ, data
+
+        nonsense = "ASDFKASFKACXMCMCKWDMFOEWEKR"
         if mb.strip('"') == CRYPTOBLOBS:
-            mb = "ASDFKASFKACXMCMCKWDMFOEWEKR"
+            mb = nonsense
         typ, data = imaplib.IMAP4_SSL.select(self, mb, readonly)
         if typ == OK:
             self.selected_mailbox = mailbox.strip('"')
+        if mb == nonsense:
+            # replace CRYPTOBLOBS
+            string_format = data[0]
+            if nonsense in string_format:
+                start = string_format.index(nonsense)
+                before = string_format[:start]
+                after = string_format[start+len(nonsense):]
+                new_string = before + CRYPTOBLOBS + after
+                data[0] = new_string
         if DEBUG_IMAP_FROM_GMAIL:
             print "select", mailbox, mb, data
         return typ, data

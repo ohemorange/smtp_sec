@@ -1,0 +1,2 @@
+opened file <open file '/home/user/.local/share/Mailpile/default/mailpile.in', mode 'wb' at 0x7f8da67df390>
+<type 'exceptions.TypeError'>

@@ -40,7 +40,7 @@ LOCK_RETRY_DELAY = 2
 # Some flags that are helpful for debugging
 DEBUG_IMAP_FROM_GMAIL = False
 DEBUG_IMAP_FROM_SMTORP = False
-DEBUG_SCHEDULER = False
+DEBUG_SCHEDULER = True
 DEBUG_EXTRAS = False
 DEBUG_METHODS_ARGS_RETURNS = True
 PRINT_INDEX = True
@@ -352,7 +352,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def decrypt_and_unpack_message(self, message_contents):
         if DEBUG_METHODS_ARGS_RETURNS:
             print "decrypt_and_unpack_message"
-            print message_contents
         messageified = Message(message_contents)
         old_message_str = messageified.get_payload()
         a = self.decrypt_string(old_message_str)
@@ -427,12 +426,16 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             # find lock id
             lock_id = self.find_lock_uid_in_folder(CRYPTOBLOBS)
             if lock_id == None:
+                if DEBUG_SCHEDULER:
+                    print 'lock not in there'
                 time.sleep(LOCK_RETRY_DELAY)
                 continue
             # try to delete
             # if we fail, we haven't acquired the lock
             typ, data = self.delete_message_from_actual_folder_uid(lock_id, CRYPTOBLOBS)
             if data[0] == None: # otherwise it's ['NUM_MESSAGES_BEFORE_DELETION']
+                if DEBUG_SCHEDULER:
+                    print "failed to delete"
                 time.sleep(LOCK_RETRY_DELAY)
                 continue
             # we successfully found the uid and deleted the message
@@ -531,31 +534,30 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 string_format = data.pop(delete_index)
 
             # if directory is the top
-            # if directory == '""' or directory == "":
-            #     # append things from the index, if they're not
-            #     # already in there as having no children
-            #     # start = string_format.index(CRYPTOBLOBS)
-            #     # before = string_format[:start]
-            #     # after = string_format[start+len(CRYPTOBLOBS):]
-            #     before = '(\\HasNoChildren) "/" "'
-            #     after = '"'
-            #     self.fetch_and_load_index()
-            #     to_append = []
-            #     for folder in self.mapping.keys():
-            #         # search through lines in data
-            #         if folder == SEQUENCE_NUMBER or folder == FAKE_MESSAGES:
-            #             continue
-            #         found = False
-            #         for line in data:
-            #             if folder in line:
-            #                 found = True
-            #                 break
-            #         if not found:
-            #             to_append.append(folder)
-            #     for folder_name in to_append:
-            #         string = before + folder_name + after
-            #         data.append(string)
-            #     print data
+            if directory == '""' or directory == "":
+                # append things from the index, if they're not
+                # already in there as having no children
+                # start = string_format.index(CRYPTOBLOBS)
+                # before = string_format[:start]
+                # after = string_format[start+len(CRYPTOBLOBS):]
+                before = '(\\HasNoChildren) "/" "'
+                after = '"'
+                self.fetch_and_load_index()
+                to_append = []
+                for folder in self.mapping.keys():
+                    # search through lines in data
+                    if folder == SEQUENCE_NUMBER or folder == FAKE_MESSAGES:
+                        continue
+                    found = False
+                    for line in data:
+                        if folder in line:
+                            found = True
+                            break
+                    if not found:
+                        to_append.append(folder)
+                for folder_name in to_append:
+                    string = before + folder_name + after
+                    data.append(string)
 
         if DEBUG_IMAP_FROM_GMAIL or DEBUG_METHODS_ARGS_RETURNS:
             print "list data", typ, data
@@ -882,7 +884,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                     self.process_new_inbox_message(original_uid)
             # now it's not a new message from the inbox
             # get the index
-            print "meow"
             self.fetch_and_load_index()
             # look up hash
             hash_of_message = self.mapping[folder][original_uid]
@@ -913,7 +914,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             typ, data = imaplib.IMAP4_SSL.uid(self, command, *args)
 
         if DEBUG_METHODS_ARGS_RETURNS:
-            print "uid data", orig_command, args, typ, data
+            print "uid results", orig_command, args, typ
         return typ, data
 
     # ******************************************************** #

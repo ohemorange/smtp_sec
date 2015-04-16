@@ -446,6 +446,11 @@ HiddenServicePort 25 localhost:33412
   between the search and the uid call.
 - note for production-ready: should probably fetch messages in pieces
 - index and lock also being deleted from all mail now
+- SendMail: from eportnoy@princeton.edu (xi4sncve-phaqccpjh63eqb15fw), to ['foo@rwq5q4vh3aphekjj.onion'] via rwq5q4vh3aphekjj.onion:25
+SMTP connection to: rwq5q4vh3aphekjj.onion:25 as (anon)
+connect: ('rwq5q4vh3aphekjj.onion', 25)
+  - in smtp_client.py (set sys.debug sendmail)
+- I think (hope) tor might just not be working on starbucks wifi
 
 
 ## notes from meeting 2/17/15

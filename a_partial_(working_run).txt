@@ -1,0 +1,259 @@
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+uid SEARCH (None, 'ALL')
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+uid results SEARCH (None, 'ALL') OK ['']
+select "[Gmail]/Important"
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+select data "[Gmail]/Important" OK ['0']
+response
+code FLAGS
+selected mailbox [Gmail]/Important
+typ FLAGS
+data ['(\\Answered \\Flagged \\Draft \\Deleted \\Seen $Phishing $NotPhishing)']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+response
+code EXISTS
+selected mailbox [Gmail]/Important
+typ EXISTS
+data ['0']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+response
+code RECENT
+selected mailbox [Gmail]/Important
+typ RECENT
+data ['0']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+response
+code UIDVALIDITY
+selected mailbox [Gmail]/Important
+typ UIDVALIDITY
+data ['9']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+uid SEARCH (None, 'ALL')
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+uid results SEARCH (None, 'ALL') OK ['']
+select "[Gmail]/Spam"
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+select data "[Gmail]/Spam" OK ['0']
+response
+code FLAGS
+selected mailbox [Gmail]/Spam
+typ FLAGS
+data ['(\\Answered \\Flagged \\Draft \\Deleted \\Seen $Phishing $NotPhishing)']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+response
+code EXISTS
+selected mailbox [Gmail]/Spam
+typ EXISTS
+data ['0']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+response
+code RECENT
+selected mailbox [Gmail]/Spam
+typ RECENT
+data ['0']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+response
+code UIDVALIDITY
+selected mailbox [Gmail]/Spam
+typ UIDVALIDITY
+data ['3']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+uid SEARCH (None, 'ALL')
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+uid results SEARCH (None, 'ALL') OK ['']
+select "[Gmail]/Starred"
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+select data "[Gmail]/Starred" OK ['0']
+response
+code FLAGS
+selected mailbox [Gmail]/Starred
+typ FLAGS
+data ['(\\Answered \\Flagged \\Draft \\Deleted \\Seen $Phishing $NotPhishing)']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+response
+code EXISTS
+selected mailbox [Gmail]/Starred
+typ EXISTS
+data ['0']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+response
+code RECENT
+selected mailbox [Gmail]/Starred
+typ RECENT
+data ['0']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+response
+code UIDVALIDITY
+selected mailbox [Gmail]/Starred
+typ UIDVALIDITY
+data ['4']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+uid SEARCH (None, 'ALL')
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+uid results SEARCH (None, 'ALL') OK ['']
+select "[Gmail]/Trash"
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+select data "[Gmail]/Trash" OK ['3']
+response
+code FLAGS
+selected mailbox [Gmail]/Trash
+typ FLAGS
+data ['(\\Answered \\Flagged \\Draft \\Deleted \\Seen $Phishing $NotPhishing)']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+response
+code EXISTS
+selected mailbox [Gmail]/Trash
+typ EXISTS
+data ['3']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+response
+code RECENT
+selected mailbox [Gmail]/Trash
+typ RECENT
+data ['0']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+response
+code UIDVALIDITY
+selected mailbox [Gmail]/Trash
+typ UIDVALIDITY
+data ['2']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+uid SEARCH (None, 'ALL')
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+uid results SEARCH (None, 'ALL') OK ['']
+imap timer tick
+up
+acquire_index_lock
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 26, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+saving index
+release_index_lock
+_last_rescan_completed: True
+_last_rescan_failed: False
+sleeptime: 300
+select "INBOX"
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 27, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'3985301824': u'3ac5e448707424b98db4b210ed8ae140', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+select data "INBOX" OK ['4']
+response
+code FLAGS
+selected mailbox INBOX
+typ FLAGS
+data ['(\\Answered \\Flagged \\Draft \\Deleted \\Seen $Phishing $NotPhishing)']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 27, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'3985301824': u'3ac5e448707424b98db4b210ed8ae140', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+response
+code EXISTS
+selected mailbox INBOX
+typ EXISTS
+data ['0']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 27, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'3985301824': u'3ac5e448707424b98db4b210ed8ae140', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+response
+code RECENT
+selected mailbox INBOX
+typ RECENT
+data ['0']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 27, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'3985301824': u'3ac5e448707424b98db4b210ed8ae140', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+response
+code UIDVALIDITY
+selected mailbox INBOX
+typ UIDVALIDITY
+data ['1']
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 27, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'3985301824': u'3ac5e448707424b98db4b210ed8ae140', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+
+
+mailpile> 
+
+mailpile> 
+
+mailpile> 
+
+mailpile> imap timer tick
+up
+acquire_index_lock
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 27, u'FAKE_MESSAGES': {u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'3985301824': u'3ac5e448707424b98db4b210ed8ae140', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+saving index
+release_index_lock
+
+
+mailpile> 
+
+mailpile> imap timer tick
+down
+acquire_index_lock
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 28, u'FAKE_MESSAGES': {u'2735433574': u'a3a3e3fd75e26134845dbee3a30b6766', u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'3985301824': u'3ac5e448707424b98db4b210ed8ae140', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+acquire_index_lock
+fetch_and_load_index
+Index:
+{u'SMTorP': {u'2417279519': u'31897df3551d7172023b7bfd9014c21f', u'2676846392': u'506ebbd96ffedff5ffdc38619f8d6f38'}, u'INBOX': {u'209': u'0e9d650d138211bfad7bba02c46b1129', u'212': u'6b237a6d98b1ee41f646e641c09d7277', u'210': u'edc8a06b9952ed8e02c037ccc87bff59', u'211': u'08aec1c2ddddaf475218d26d1173bca3'}, u'SEQUENCE_NUMBER': 28, u'FAKE_MESSAGES': {u'2735433574': u'a3a3e3fd75e26134845dbee3a30b6766', u'255166020': u'6a53124fe1600caec5c44b740f358644', u'1217463536': u'e3e6d8bf4dda5b41fa90827b489104f0', u'3906871282': u'670e9c81389b932de9069e38e8de1ff2', u'1967991567': u'765dbe1a14314ca1cee2bf67754d2b0f', u'1517235951': u'ecb1468142196547038814a95a6f2eef', u'911405612': u'd8540442fe005c8760bb8a5e3652f22c', u'3985301824': u'3ac5e448707424b98db4b210ed8ae140', u'1675935161': u'70905974040f5c28aefdb29e63e4bdb9'}}
+get_message_uid_given_hash_in_subject 70905974040f5c28aefdb29e63e4bdb9
+saving index
+release_index_lock
+
+
+mailpile> 

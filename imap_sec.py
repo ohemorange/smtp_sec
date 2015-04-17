@@ -25,6 +25,8 @@ INBOX = "INBOX"
 ENCRYPTED = "ENCRYPTED"
 SEQUENCE_NUMBER = "SEQUENCE_NUMBER"
 FAKE_MESSAGES = "FAKE_MESSAGES"
+SMTorP = "SMTorP"
+NEXT_UID = "NEXT_UID"
 LOCK = "LOCK"
 GMAIL_ALL_MAIL = "[Gmail]/All Mail"
 OK = "OK"
@@ -60,10 +62,22 @@ def hash_of_message_as_string(message_as_string):
         print "hexed", hexed
     return hexed
 
-def uid_for_constructed_message(message_as_string):
-    a = hash_of_message_as_string(message_as_string)
-    s = '11111111111111111111111111111111'
-    return str(int(int(a,16)&int(s,2)))
+def uid_for_constructed_message(message_as_string, folder):
+    if folder == FAKE_MESSAGES:
+        a = hash_of_message_as_string(message_as_string)
+        s = '11111111111111111111111111111111'
+        return str(int(int(a,16)&int(s,2)))
+    if folder == SMTorP:
+        self.fetch_and_load_index()
+        if not NEXT_UID in self.mapping:
+            self.mapping[NEXT_UID] = {}
+        if not folder in self.mapping[NEXT_UID]:
+            self.mapping[NEXT_UID][folder] = 1
+        out = self.mapping[NEXT_UID][folder]
+        self.mapping[NEXT_UID][folder] += 1
+        return str(out)
+    # it shouldn't be anything else
+
 
 def fake_message_with_random_contents_as_string():
     message = Message()
@@ -600,7 +614,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 to_append = []
                 for folder in self.mapping.keys():
                     # search through lines in data
-                    if folder == SEQUENCE_NUMBER or folder == FAKE_MESSAGES:
+                    if folder == SEQUENCE_NUMBER or folder == FAKE_MESSAGES\
+                       or folder == NEXT_UID:
                         continue
                     found = False
                     for line in data:
@@ -631,7 +646,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         # don't let it ask for cryptoblobs
         mb = mailbox
         folder = mb.strip('"')
-        if folder in [GMAIL_ALL_MAIL, CRYPTOBLOBS, FAKE_MESSAGES, SEQUENCE_NUMBER]:
+        if folder in [GMAIL_ALL_MAIL, CRYPTOBLOBS, FAKE_MESSAGES, SEQUENCE_NUMBER, NEXT_UID]:
             self.selected_mailbox = folder
             return OK, ['0']
         # add the number from the index
@@ -704,7 +719,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             message_contents = fake_message_with_random_contents_as_string()
             if DEBUG_SCHEDULER:
                 print "fake message:\n", message_contents
-            uid = uid_for_constructed_message(message_contents)
+            uid = uid_for_constructed_message(message_contents, FAKE_MESSAGES)
             # append onto index's list of fake messages
             if DEBUG_SCHEDULER:
                 print "uid", uid
@@ -1036,13 +1051,32 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             print "selected mailbox", self.selected_mailbox
         folder = self.selected_mailbox
         typ, data = imaplib.IMAP4_SSL.response(self, code)
+
+        self.fetch_and_load_index()
+        # this is a pseudo-only folder
+        if data[0] == None and folder in self.mapping:
+            if code == "FLAGS":
+                data = ['(\\Answered \\Flagged \\Draft \\Deleted \\Seen $Phishing $NotPhishing)']
+            elif code == "RECENT":
+                data = ['0'] # I don't think this is used.
+            elif code == "UIDVALIDITY":
+                data = ['1']
+            elif code == "EXISTS":
+                # this is a count
+                count = len(self.mapping[folder])
+                data[0] = str(count)
+
+        # for a hybrid folder, add the two counts
+        if data[0] != None and folder in self.mapping:
+            if code == "EXISTS":
+                count = len(self.mapping[folder])
+                the_sum = count + int(data[0])
+                data[0] = str(the_sum)
+
         if DEBUG_RESPONSES:
             print "typ", typ
             print "data", data
 
-        if data[0] == None and folder in self.mapping:
-            if code == "FLAGS":
-                
         return typ, data
 
     def _get_tagged_response(self, tag):

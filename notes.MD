@@ -16,8 +16,6 @@
 
 ## todo: definitely
 - switch from pushing and pulling single messages to pushing up k and pulling down k-1. up by putting up k and down k-1. (mixing step)
-- so. mailbox_info. it's apparently checking to make sure this folder
-  actually exists. oh boy.
 
 ## todo: probably
 
@@ -463,6 +461,15 @@ connect: ('rwq5q4vh3aphekjj.onion', 25)
     in encrypted? anyone can decrypt it, I'd rather the system be consistent.
     - that's a nice eventual todo: make the system more reliable
 - rescan doesn't automatically get new folders
+- so, there are some untagged responses that we have to worry about.
+  mailpile asks for ('FLAGS', 'EXISTS', 'RECENT', 'UIDVALIDITY'), but only
+  ever checks EXISTS and UIDVALIDITY. EXISTS is easy enough, but UIDVALIDITY
+  requires some state to generate for new folders, plus checking... oh boy.
+- "A client can only assume, at the time that it obtains the next unique identifier value, that messages arriving after that time will have a UID greater than or equal to that value."
+- "It is alright to use a constant such as 1, but only if it guaranteed that unique identifiers will never be reused, even in the case of a mailbox being deleted (or renamed) and a new mailbox by the same name created at some future time."
+- since I'm not actually handling pseudo-folder deletion, it's fineee.
+- so. mailbox_info. it's apparently checking to make sure this folder
+  actually exists. oh boy.
 
 ## notes from meeting 2/17/15
 ### Threats

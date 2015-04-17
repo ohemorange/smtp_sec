@@ -16,6 +16,9 @@
 
 ## todo: definitely
 - switch from pushing and pulling single messages to pushing up k and pulling down k-1. up by putting up k and down k-1. (mixing step)
+  - to do this, we have to switch from using the hash, because that would
+    be consistent over time. so instead, generate a random string.
+- have a timed cache for some fetch_and_load_index calls (cache_ok flag)
 
 ## todo: probably
 

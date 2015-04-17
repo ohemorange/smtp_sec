@@ -11,14 +11,15 @@
 
 ## to test: definitely
 - you know actually run with multiple clients
-- sending over tor, not on starbucks wifi
+- from smtorp, on startup. then send, make sure we still get it.
+- delete everything. send from smtorp. gear, rescan. make sure all is well.
 
 ## todo: definitely
 - switch from pushing and pulling single messages to pushing up k and pulling down k-1. up by putting up k and down k-1. (mixing step)
+- so. mailbox_info. it's apparently checking to make sure this folder
+  actually exists. oh boy.
 
 ## todo: probably
-- resilience: after polling for like minutes and also using index sequence
-  number that hasn't changed or index not there, replace the lock
 
 ## todo: maybe
 - add functionality for delete and change folders
@@ -453,6 +454,15 @@ connect: ('rwq5q4vh3aphekjj.onion', 25)
   - think about deleting messages multi-client-wise.
 - intercept "which messages are here" to deal with multiple client message
   fetching
+- when deleting fake message, all delete from all mail
+- resilience: after polling for like minutes and also using index sequence
+  number that hasn't changed or index not there, replace the lock
+  - exponential backoff for testing index
+- tested lock recovery also normal lock operation
+  - it's better to have a previous version of the index and extra messages
+    in encrypted? anyone can decrypt it, I'd rather the system be consistent.
+    - that's a nice eventual todo: make the system more reliable
+- rescan doesn't automatically get new folders
 
 ## notes from meeting 2/17/15
 ### Threats

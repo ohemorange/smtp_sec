@@ -1,0 +1,45 @@
+response
+code FLAGS
+selected mailbox INBOX
+typ FLAGS
+data ['(\\Answered \\Flagged \\Draft \\Deleted \\Seen $Phishing $NotPhishing)']
+
+response
+code EXISTS
+selected mailbox INBOX
+typ EXISTS
+data ['0']
+
+response
+code RECENT
+selected mailbox INBOX
+typ RECENT
+data ['0']
+
+response
+code UIDVALIDITY
+selected mailbox INBOX
+typ UIDVALIDITY
+data ['1']
+
+
+response
+code FLAGS
+selected mailbox SMTorP
+typ FLAGS
+data [None]
+response
+code EXISTS
+selected mailbox SMTorP
+typ EXISTS
+data [None]
+response
+code RECENT
+selected mailbox SMTorP
+typ RECENT
+data [None]
+response
+code UIDVALIDITY
+selected mailbox SMTorP
+typ UIDVALIDITY
+data [None]

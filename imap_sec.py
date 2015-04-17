@@ -35,15 +35,18 @@ CRLF = imaplib.CRLF
 
 IMAP4_SSL_PORT = imaplib.IMAP4_SSL_PORT
 
+TOTAL_LOCK_RECOVERY_TIME = 60.0 # this may need to be dependent on mix num
 LOCK_RETRY_DELAY = 2
 
 # Some flags that are helpful for debugging
 DEBUG_IMAP_FROM_GMAIL = False
 DEBUG_IMAP_FROM_SMTORP = False
-DEBUG_SCHEDULER = True
+DEBUG_SCHEDULER = False
 DEBUG_EXTRAS = False
 DEBUG_METHODS_ARGS_RETURNS = True
 PRINT_INDEX = True
+DEBUG_LOCK = False
+DEBUG_RESPONSES = True
 NOOP_ENCRYPTION = False
 
 def hash_of_message_as_string(message_as_string):
@@ -420,14 +423,61 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             if DEBUG_EXTRAS:
                 print "already have index lock"
             return
+        try_time = 0
+        timeout = TOTAL_LOCK_RECOVERY_TIME
         while True:
+            if DEBUG_LOCK:
+                print "try_time", try_time, "out of", timeout
             if DEBUG_EXTRAS:
                 print "trying to acquire index lock"
             # find lock id
             lock_id = self.find_lock_uid_in_folder(CRYPTOBLOBS)
             if lock_id == None:
-                if DEBUG_SCHEDULER:
+                if DEBUG_SCHEDULER or DEBUG_LOCK:
                     print 'lock not in there'
+                try_time += LOCK_RETRY_DELAY
+                # if it's been too long
+                if try_time >= timeout:
+                    # is the index there?
+                    try:
+                        prev_sequence_num = self.mapping[SEQUENCE_NUMBER]
+                        self.fetch_and_load_index() # TODO: ensure that this excepts
+                        # the index is there.
+                        if DEBUG_LOCK:
+                            print "the index is there"
+                        # if the index sequence number hasn't changed
+                        if prev_sequence_num == self.mapping[SEQUENCE_NUMBER]:
+                            # just get the lock
+                            if DEBUG_LOCK:
+                                print "index number hasn't changed"
+                            # make sure it's not in all mail
+                            try:
+                                self.delete_lock_from_all_mail()
+                            except:
+                                pass
+                            self.have_index_lock = True
+                            return
+                        # if it has
+                        else:
+                            # double timeout (exponential backoff)
+                            timeout = 2 * timeout
+                    except:
+                        # index isn't there. our turn!
+                        # make sure index is also gone from all mail
+                        try:
+                            self.delete_index_from_all_mail()
+                        except:
+                            pass
+                        # make sure it's not in all mail
+                        try:
+                            self.delete_lock_from_all_mail()
+                        except:
+                            pass
+                        # put up the index
+                        self.save_index_without_deleting()
+                        # we have the lock now
+                        self.have_index_lock = True
+                        return
                 time.sleep(LOCK_RETRY_DELAY)
                 continue
             # try to delete
@@ -436,6 +486,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             if data[0] == None: # otherwise it's ['NUM_MESSAGES_BEFORE_DELETION']
                 if DEBUG_SCHEDULER:
                     print "failed to delete"
+                try_time = 0 # someone else just touched it, so reset
                 time.sleep(LOCK_RETRY_DELAY)
                 continue
             # we successfully found the uid and deleted the message
@@ -452,6 +503,18 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             self.have_index_lock = False
             self.append_lock()
 
+    def save_index_without_deleting(self):
+        # increment the sequence number
+        self.mapping[SEQUENCE_NUMBER] = self.mapping[SEQUENCE_NUMBER] + 1
+        # save the new sequence number to disk
+        self.save_index_sequence_number_to_disk()
+        if DEBUG_SCHEDULER:
+            print "successfully saved index seq number to disk or didn't"
+        # append new index
+        if DEBUG_SCHEDULER:
+            print "new index about to be uploaded", self.mapping
+        self.append_index(self.mapping)
+
     # assumes cryptoblobs and index already exist
     # this method only pushes up. we should have already updated from the
     # new one by pulling down.
@@ -464,16 +527,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             print "old index", self.mapping
         # delete original index
         self.delete_index()
-        # increment the sequence number
-        self.mapping[SEQUENCE_NUMBER] = self.mapping[SEQUENCE_NUMBER] + 1
-        # save the new sequence number to disk
-        self.save_index_sequence_number_to_disk()
-        if DEBUG_SCHEDULER:
-            print "successfully saved index seq number to disk or didn't"
-        # append new index
-        if DEBUG_SCHEDULER:
-            print "new index about to be uploaded", self.mapping
-        self.append_index(self.mapping)
+        self.save_index_without_deleting()
 
     def create_cryptoblobs_or_load_index(self):
         if DEBUG_EXTRAS or DEBUG_METHODS_ARGS_RETURNS:
@@ -582,9 +636,12 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             return OK, ['0']
         # add the number from the index
         typ, data = imaplib.IMAP4_SSL.select(self, mb, readonly)
-        if typ == OK:
+        if typ == OK or (typ == "NO" and folder in self.mapping):
             self.selected_mailbox = folder
             self.fetch_and_load_index()
+            if typ == "NO":
+                data = ['0']
+                typ = OK
             if folder in self.mapping:
                 count = len(self.mapping[folder])
                 the_sum = count + int(data[0])
@@ -680,15 +737,21 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             delete_uid = random.choice(self.mapping[FAKE_MESSAGES].keys())
         if DEBUG_SCHEDULER:
             print "pulling down fake message", delete_uid
+        hash_of_message = self.mapping[FAKE_MESSAGES][delete_uid]
         self.delete_message_from_pseudo_folder(delete_uid, FAKE_MESSAGES)
+        self.delete_message_from_all_other_folders_given_subject(hash_of_message)
         self._scheduler.message_was_pulled()
 
     # message_contents is the message as a string. get by calling str(message)
     # where message is a Message object.
     def add_message_to_folder(self, message_contents, folder, uid):
+        if DEBUG_METHODS_ARGS_RETURNS:
+            print "add_message_to_folder", folder, uid
         # we've called this from an external class, so it can't be the index.
         self.add_message_to_folder_internal(message_contents, folder,
             uid, True)
+        if DEBUG_METHODS_ARGS_RETURNS:
+            print "added message to folder", folder, uid
 
     # schedule_upload should be True for messages coming from a
     # metadata-secure source. it should probably be False if we've
@@ -786,6 +849,16 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def delete_lock_from_all_mail(self):
         self.delete_from_all_mail_by_subject(LOCK)
 
+    def delete_message_from_all_other_folders_given_subject(self, subject):
+        folder = GMAIL_ALL_MAIL
+
+        uids = self.get_list_of_uids_given_subject_line(subject, folder)
+
+        new_uid = uids[0]
+
+        # delete that uid from all mail
+        self.delete_message_from_actual_folder_uid(new_uid, folder)
+
     def delete_message_from_all_other_folders(self, message_contents):
         # TODO this only works for this exact setup, with gmail. if
         # you want to use it for something else, have fun! if you're
@@ -795,6 +868,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         # find the uid of the message in gmail by searching for its subject
         messageified = Message(message_contents)
         subject = messageified['Subject'].strip().strip('"')
+
         uids = self.get_list_of_uids_given_subject_line(subject, folder)
 
         # look through the results to find which one is the right one
@@ -809,9 +883,12 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 new_uid = potential_uid
                 break
 
+        if not new_uid:
+            return
+
         # delete that uid from all mail
         self.delete_message_from_actual_folder_uid(new_uid, folder)
-
+        
     def process_new_inbox_message(self, uid):
         if DEBUG_METHODS_ARGS_RETURNS:
             print "process_new_inbox_message", uid
@@ -850,7 +927,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             # if it's all mail
             if folder == GMAIL_ALL_MAIL:
                 # the answer is no. nothing is here.
-                typ, data = True, ['']
+                typ, data = OK, ['']
             # else (if it's anything else)
             else:
                 # fetch the index
@@ -858,10 +935,10 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 # return the result based on the index
                 # if the folder's not in self.mapping, just return empty
                 if not folder in self.mapping:
-                    typ, data = True, ['']
+                    typ, data = OK, ['']
                 else:
                     uids = " ".join(self.mapping[folder].keys())
-                    typ, data = True, [uids]
+                    typ, data = OK, [uids]
 
                 # if it's inbox
                 if folder == INBOX:
@@ -914,7 +991,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             typ, data = imaplib.IMAP4_SSL.uid(self, command, *args)
 
         if DEBUG_METHODS_ARGS_RETURNS:
-            print "uid results", orig_command, args, typ
+            print "uid results", orig_command, args, typ, data
         return typ, data
 
     # ******************************************************** #
@@ -938,7 +1015,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
     def search(self, charset, *criteria):
         a = imaplib.IMAP4_SSL.search(self, charset, *criteria)
-        print "search", a
         return a
 
     # places all metadata into message
@@ -949,10 +1025,25 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     def append(self, mailbox, flags, date_time, message):
         typ, data = imaplib.IMAP4_SSL.append(self, mailbox, \
             flags, date_time, message)
-        print "append", data
         return typ, data
 
     # ********************************************************* #
+
+    def response(self, code):
+        if DEBUG_RESPONSES:
+            print "response"
+            print "code", code
+            print "selected mailbox", self.selected_mailbox
+        folder = self.selected_mailbox
+        typ, data = imaplib.IMAP4_SSL.response(self, code)
+        if DEBUG_RESPONSES:
+            print "typ", typ
+            print "data", data
+
+        if data[0] == None and folder in self.mapping:
+            if code == "FLAGS":
+                
+        return typ, data
 
     def _get_tagged_response(self, tag):
         a = imaplib.IMAP4_SSL._get_tagged_response(self, tag)

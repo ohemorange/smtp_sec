@@ -32,6 +32,7 @@
     that.
   - added a mechanism to not actually release the index lock during a
     mix operation.
+  - tested with k = mix_num, and with k = mix_num - 1
 - have a timed cache for some fetch_and_load_index calls (cache_ok flag)
 - figure out some setup for testing with two mail accounts and mailpile
   instances.

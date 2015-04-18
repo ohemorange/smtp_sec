@@ -40,7 +40,7 @@ IMAP4_SSL_PORT = imaplib.IMAP4_SSL_PORT
 TOTAL_LOCK_RECOVERY_TIME = 60.0 # this may need to be dependent on mix num
 LOCK_RETRY_DELAY = 2
 
-MIX_NUMBER = 10
+MIX_NUMBER = 5
 
 # Some flags that are helpful for debugging
 DEBUG_IMAP_FROM_GMAIL = False
@@ -309,12 +309,16 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         if DEBUG_EXTRAS:
             print "saved salt and related information."
 
-    def fetch_and_load_index(self):
+    def fetch_and_load_index(self, refetch_index=True):
         if DEBUG_EXTRAS or DEBUG_METHODS_ARGS_RETURNS:
             print "fetch_and_load_index"
 
-        if DEBUG_TURN_OFF_INDEX_REFETCH:
+        if DEBUG_TURN_OFF_INDEX_REFETCH or not refetch_index:
             if self.mapping:
+                if PRINT_INDEX:
+                    print "Index:"
+                    print self.mapping
+
                 return self.mapping
 
 
@@ -777,7 +781,6 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             print "pulling down fake message", delete_uid
         hash_of_message = self.mapping[FAKE_MESSAGES][delete_uid]
         self.delete_message_from_pseudo_folder(delete_uid, FAKE_MESSAGES)
-        self.delete_message_from_all_other_folders_given_subject(hash_of_message)
         self._scheduler.message_was_pulled()
 
     # message_contents is the message as a string. get by calling str(message)
@@ -791,7 +794,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         if DEBUG_METHODS_ARGS_RETURNS:
             print "added message to folder", folder
 
-    def choose_k_messages_to_fetch_then_delete(self, k):
+    def choose_k_messages_to_fetch_then_delete(self, k, extra=None):
         # combine uids from real folders
         combined = []
         for folder in self.mapping:
@@ -799,8 +802,16 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 continue
             uids = self.mapping[folder].keys()
             combined.extend([(folder, x) for x in uids])
-        num = min(k, len(combined))
-        return random.sample(combined, num)
+        # choose one more than you should
+        num = min(k+1, len(combined))
+        sample = random.sample(combined, num)
+        # if extra is not none and in there, delete extra
+        if extra and extra in sample:
+            sample.remove(extra)
+        # else, delete the last one
+        else:
+            sample = sample[:-1]
+        return sample
 
     # <schedule_upload> should be True for messages coming from a
     # metadata-secure source. it should probably be False if we've
@@ -810,7 +821,9 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
     # going on...
     # <folder> is a pseudo-folder.
     def add_message_to_folder_internal(self, message_contents, folder,
-        uid, schedule_upload, generate_uid=False, mix=True, release_lock=True):
+        uid, schedule_upload, generate_uid=False, mix=True, \
+        release_lock=True, refetch_index=True):
+        uid = str(uid)
         if DEBUG_IMAP_FROM_SMTORP or DEBUG_SCHEDULER:
             print "add_message_to_folder", self, "schedule for later", schedule_upload
         if schedule_upload:
@@ -829,7 +842,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
         # these calls are atomic
         self.acquire_index_lock()
-        self.fetch_and_load_index()
+        self.fetch_and_load_index(refetch_index=refetch_index)
 
         selected_cache = self.selected_mailbox
 
@@ -842,17 +855,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         saved_messages_and_data = [(uid, folder, message_contents)]
 
         if mix:
-            # choose k messages to fetch then delete
-            chosen_folder_uid_pairs = self.choose_k_messages_to_fetch_then_delete(MIX_NUMBER)
-
-            print "uids to mix with", chosen_folder_uid_pairs
-
-            # fetch and delete each of those messages
-            for folder, uid in chosen_folder_uid_pairs:
-                self.select(folder)
-                message_contents = self.uid("FETCH",uid,"(BODY[TEXT])")[1][0][1].strip()
-                saved_messages_and_data.append((uid, folder, message_contents))
-                self.delete_message_from_pseudo_folder(uid, folder, mix_num=0, release_lock=False)
+            self.choose_fetch_delete_and_save_k_messages(MIX_NUMBER, saved_messages_and_data)
 
         # now we have k+1 tuples in saved_messages_and_data, none of which
         # are in the index or in actual folder
@@ -873,37 +876,76 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
         self.release_index_lock(release_lock)
 
+    def choose_fetch_delete_and_save_k_messages(self, k, saved_messages_and_data, \
+        extra=None):
+        # choose k messages to fetch then delete
+        chosen_folder_uid_pairs = self.choose_k_messages_to_fetch_then_delete(k, extra=extra)
+
+        if extra:
+            # insert it into chosen_folder_uid_pairs
+            position = random.randint(0, len(chosen_folder_uid_pairs))
+            chosen_folder_uid_pairs.insert(position, extra)
+
+        # fetch and delete each of those messages
+        for folder, uid in chosen_folder_uid_pairs:
+            self.select(folder)
+            message_contents = self.uid("FETCH",uid,"(BODY[TEXT])")[1][0][1].strip()
+            if (folder, uid) != extra:
+                saved_messages_and_data.append((uid, folder, message_contents))
+            self.delete_message_from_pseudo_folder(uid, folder, mix=False, release_lock=False)
+
     def delete_message_from_pseudo_folder(self, delete_uid, folder, \
-            mix_num=MIX_NUMBER, release_lock=True):
+            mix=True, release_lock=True, refetch_index=True):
+        delete_uid = str(delete_uid)
         if DEBUG_EXTRAS:
             print "delete_message_from_pseudo_folder", delete_uid, folder
         # these calls are atomic
         self.acquire_index_lock()
-        self.fetch_and_load_index() # this should be redundant
+        self.fetch_and_load_index(refetch_index=refetch_index) # this should be redundant
 
         if DEBUG_SCHEDULER:
             print "delete folder in self.mapping", folder in self.mapping
             print "uid in there where we want it", delete_uid in self.mapping[folder]
 
-        # delete_uid is the old uid that's not meaningful to us
-        # we want the hash of the message, because it'll be in the
-        # subject string, and we can use that to find the actual
-        # uid to delete.
-        hash_of_message = self.mapping[folder][delete_uid]
+        selected_cache = self.selected_mailbox
 
-        actual_uid = self.get_message_uid_given_hash_in_subject(hash_of_message)
+        saved_messages_and_data = []
 
-        del self.mapping[folder][delete_uid]
+        if mix:
+            self.choose_fetch_delete_and_save_k_messages(MIX_NUMBER, \
+                saved_messages_and_data, extra=(folder,delete_uid))
 
-        if DEBUG_SCHEDULER:
-            print "removed from mapping", self.mapping
+        # now we have k tuples in saved_messages_and_data, none of which
+        # are in the index or in actual folder
+        for uid, folder, message_contents in saved_messages_and_data:
+            unique_subject = get_new_unique_subject()
+            self.mapping[folder][uid] = unique_subject
+
+            # reupload message to the cryptoblobs folder
+            self.encrypt_and_append_message(message_contents, unique_subject)
+
+        if not mix:
+            # delete_uid is the old uid that's not meaningful to us
+            # we want the hash of the message, because it'll be in the
+            # subject string, and we can use that to find the actual
+            # uid to delete.
+            hash_of_message = self.mapping[folder][delete_uid]
+
+            actual_uid = self.get_message_uid_given_hash_in_subject(hash_of_message)
+
+            del self.mapping[folder][delete_uid]
+
+            # reupload message to the cryptoblobs folder
+            self.delete_message_from_actual_folder_uid(actual_uid, CRYPTOBLOBS)
+            self.delete_from_all_mail_by_subject(hash_of_message)
+
+        # clean up
+        self.selected_mailbox = selected_cache
+        imaplib.IMAP4_SSL.select(self, mailbox=self.quote(self.selected_mailbox))
 
         # save the index
         self.save_index()
 
-        # reupload message to the cryptoblobs folder
-        self.delete_message_from_actual_folder_uid(actual_uid, CRYPTOBLOBS)
-        self.delete_from_all_mail_by_subject(hash_of_message)
         self.release_index_lock(release_lock)
 
     # assumes only one of that subject in that folder exists
@@ -961,6 +1003,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         self.delete_message_from_actual_folder_uid(new_uid, folder)
         
     def process_new_inbox_message(self, uid):
+        uid = str(uid)
         if DEBUG_METHODS_ARGS_RETURNS:
             print "process_new_inbox_message", uid
         # execute acquire for entire message
@@ -1027,16 +1070,15 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
 
         # elif this is a fetch
         elif command == "FETCH":
+            # get the index
+            self.fetch_and_load_index()
             # if this is from the inbox
             if folder == INBOX:
                 # check if it's already been processed
-                self.fetch_and_load_index()
                 if not (INBOX in self.mapping and original_uid in self.mapping[INBOX]):
                     # process it entirely
                     self.process_new_inbox_message(original_uid)
             # now it's not a new message from the inbox
-            # get the index
-            self.fetch_and_load_index()
             # look up hash
             hash_of_message = self.mapping[folder][original_uid]
             # search for hash

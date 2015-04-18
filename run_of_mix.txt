@@ -1,0 +1,301 @@
+
+mailpile> 
+
+mailpile> 
+
+mailpile> select "INBOX"
+fetch_and_load_index
+select data "INBOX" OK ['4']
+fetch_and_load_index
+fetch_and_load_index
+fetch_and_load_index
+fetch_and_load_index
+imap timer tick
+up
+acquire_index_lock
+fetch_and_load_index
+select FAKE_MESSAGES
+uid FETCH (u'3437023743', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00cc59e7609e2128350dfde8b4bd83c4
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'3437023743', '(BODY[TEXT])') OK (('21 (UID 159 FLAGS (\\Seen) BODY[TEXT] {416}', 'From nobody Fri Apr 17 19:58:54 2015\nSubject: garbage\nFrom: foo@bar.com\nTo: foo@bar.com\nORIGINAL-FOLDER: INBOX\n\n1300800795'), ')', '21 (UID 159 FLAGS (\\Seen))')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00cc59e7609e2128350dfde8b4bd83c4
+saving index
+release_index_lock
+select SMTorP
+fetch_and_load_index
+select data SMTorP OK ['12']
+uid FETCH (u'11', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 009c907797a7500022350e5660beea6d
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'11', '(BODY[TEXT])') OK (('25 (UID 194 BODY[TEXT] {1568}', 'From nobody Fri Apr 17 20:08:25 2015\nContent-Type: multipart/mixed; boundary="===============4577747098053122044=="\nMIME-Version: 1.0\nSubject: changed uidvalidity of smtorp\nFrom: Erica Portnoy <ebportnoy@gmail.com>\nTo: foo@rwq5q4vh3aphekjj.onion\nDate: Sat, 18 Apr 2015 00:05:35 -0000\nMessage-Id: <20150418000535-26232-63699-mailpile@chrubuntu>\nOpenPGP: id=15220288E159EF715D8963B475E0065C51D428CE; preference=signencrypt\nORIGINAL-FOLDER: INBOX\n\n--===============4577747098053122044==\nContent-Type: text/plain; charset="us-ascii"\nContent-Transfer-Encoding: 7bit\n\nmaybe this will work\n\n\n-- \nSent using Mailpile, Free Software from www.mailpile.is\n--===============4577747098053122044==--\n'), ')')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 009c907797a7500022350e5660beea6d
+saving index
+release_index_lock
+select FAKE_MESSAGES
+uid FETCH (u'733077511', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00d016bceb31f165bc6af248257d85e6
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'733077511', '(BODY[TEXT])') OK (('29 (UID 222 FLAGS (\\Seen) BODY[TEXT] {416}', 'From nobody Fri Apr 17 20:16:45 2015\nSubject: garbage\nFrom: foo@bar.com\nTo: foo@bar.com\nORIGINAL-FOLDER: INBOX\n\n8824969452'), ')', '29 (UID 222 FLAGS (\\Seen))')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00d016bceb31f165bc6af248257d85e6
+saving index
+release_index_lock
+select SMTorP
+fetch_and_load_index
+select data SMTorP OK ['11']
+uid FETCH (u'9', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 003dba12fe97496ba593a73d07276fe1
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'9', '(BODY[TEXT])') OK (('18 (UID 138 BODY[TEXT] {1504}', 'From nobody Fri Apr 17 19:52:07 2015\nContent-Type: multipart/mixed; boundary="===============8999333122295624129=="\nMIME-Version: 1.0\nSubject: I don\'t understand\nFrom: Erica Portnoy <functorkitten@gmail.com>\nTo: foo@rwq5q4vh3aphekjj.onion\nDate: Fri, 17 Apr 2015 23:51:45 -0000\nMessage-Id: <20150417235145-25325-71425-mailpile@chrubuntu>\nOpenPGP: id=2D7980262BBE2BA1EAFB552E48649C27BCF8F5C9; preference=signencrypt\nORIGINAL-FOLDER: INBOX\n\n--===============8999333122295624129==\nContent-Type: text/plain; charset="us-ascii"\nContent-Transfer-Encoding: 7bit\n\nwhy\n\n\n-- \nSent using Mailpile, Free Software from www.mailpile.is\n--===============8999333122295624129==--\n'), ')')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 003dba12fe97496ba593a73d07276fe1
+saving index
+release_index_lock
+select FAKE_MESSAGES
+uid FETCH (u'532957377', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 006a0402307f6e9d688c04292c3ecb96
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'532957377', '(BODY[TEXT])') OK (('23 (UID 191 FLAGS (\\Seen) BODY[TEXT] {416}', 'From nobody Fri Apr 17 20:08:11 2015\nSubject: garbage\nFrom: foo@bar.com\nTo: foo@bar.com\nORIGINAL-FOLDER: [Gmail]/Starred\n\n5201517966'), ')', '23 (UID 191 FLAGS (\\Seen))')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 006a0402307f6e9d688c04292c3ecb96
+saving index
+release_index_lock
+
+
+mailpile> 
+
+mailpile> 
+
+mailpile> select FAKE_MESSAGES
+uid FETCH (u'2594525578', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00e021c6f9eaa05dcb358bda2d6d2646
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'2594525578', '(BODY[TEXT])') OK (('5 (UID 46 FLAGS (\\Seen) BODY[TEXT] {384}', 'From nobody Fri Apr 17 18:29:05 2015\nSubject: garbage\nFrom: foo@bar.com\nTo: foo@bar.com\nORIGINAL-FOLDER: INBOX\n\n40021187'), ')', '5 (UID 46 FLAGS (\\Seen))')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00e021c6f9eaa05dcb358bda2d6d2646
+saving index
+release_index_lock
+select SMTorP
+fetch_and_load_index
+select data SMTorP OK ['10']
+uid FETCH (u'6', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 0066623e3b108fe1c87a5187ca6bd0de
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'6', '(BODY[TEXT])') OK (('13 (UID 121 BODY[TEXT] {1504}', 'From nobody Fri Apr 17 19:35:45 2015\nContent-Type: multipart/mixed; boundary="===============6131736569007493889=="\nMIME-Version: 1.0\nSubject: more prints\nFrom: Erica Portnoy <functorkitten@gmail.com>\nTo: foo@rwq5q4vh3aphekjj.onion\nDate: Fri, 17 Apr 2015 23:35:18 -0000\nMessage-Id: <20150417233518-24283-69736-mailpile@chrubuntu>\nOpenPGP: id=2D7980262BBE2BA1EAFB552E48649C27BCF8F5C9; preference=signencrypt\nORIGINAL-FOLDER: INBOX\n\n--===============6131736569007493889==\nContent-Type: text/plain; charset="us-ascii"\nContent-Transfer-Encoding: 7bit\n\nwho knows\n\n\n-- \nSent using Mailpile, Free Software from www.mailpile.is\n--===============6131736569007493889==--\n'), ')')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 0066623e3b108fe1c87a5187ca6bd0de
+saving index
+release_index_lock
+select SMTorP
+fetch_and_load_index
+select data SMTorP OK ['9']
+uid FETCH (u'3', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00fb40289ccca6db773e9933b0956129
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'3', '(BODY[TEXT])') OK (('7 (UID 79 BODY[TEXT] {1600}', 'From nobody Fri Apr 17 18:58:07 2015\nContent-Type: multipart/mixed; boundary="===============2781588056227215258=="\nMIME-Version: 1.0\nSubject: from smtorp after restart and existing folder take two\nFrom: Erica Portnoy <functorkitten@gmail.com>\nTo: foo@rwq5q4vh3aphekjj.onion\nDate: Fri, 17 Apr 2015 22:57:28 -0000\nMessage-Id: <20150417225728-23102-38498-mailpile@chrubuntu>\nOpenPGP: id=2D7980262BBE2BA1EAFB552E48649C27BCF8F5C9; preference=signencrypt\nORIGINAL-FOLDER: INBOX\n\n--===============2781588056227215258==\nContent-Type: text/plain; charset="us-ascii"\nContent-Transfer-Encoding: 7bit\n\nwhyy\n\n\n-- \nSent using Mailpile, Free Software from www.mailpile.is\n--===============2781588056227215258==--\n'), ')')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00fb40289ccca6db773e9933b0956129
+saving index
+release_index_lock
+select FAKE_MESSAGES
+uid FETCH (u'4115789622', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 000ffe3239bee9b61d8645618860e8f2
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'4115789622', '(BODY[TEXT])') OK (('6 (UID 76 FLAGS (\\Seen) BODY[TEXT] {416}', 'From nobody Fri Apr 17 18:57:37 2015\nSubject: garbage\nFrom: foo@bar.com\nTo: foo@bar.com\nORIGINAL-FOLDER: INBOX\n\n6277410624'), ')', '6 (UID 76 FLAGS (\\Seen))')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 000ffe3239bee9b61d8645618860e8f2
+saving index
+release_index_lock
+select FAKE_MESSAGES
+uid FETCH (u'2842661599', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 0086b27a37a714f4bab3d0ada56da5cb
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'2842661599', '(BODY[TEXT])') OK (('6 (UID 89 FLAGS (\\Seen) BODY[TEXT] {416}', 'From nobody Fri Apr 17 19:08:43 2015\nSubject: garbage\nFrom: foo@bar.com\nTo: foo@bar.com\nORIGINAL-FOLDER: INBOX\n\n4922879572'), ')', '6 (UID 89 FLAGS (\\Seen))')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 0086b27a37a714f4bab3d0ada56da5cb
+saving index
+release_index_lock
+saving index
+release_index_lock
+imap timer tick
+up
+acquire_index_lock
+fetch_and_load_index
+select FAKE_MESSAGES
+uid FETCH (u'3891212519', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00a3d55c5d082ec57bdfb8676fdf0f46
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'3891212519', '(BODY[TEXT])') OK (('13 (UID 148 FLAGS (\\Seen) BODY[TEXT] {416}', 'From nobody Fri Apr 17 19:56:11 2015\nSubject: garbage\nFrom: foo@bar.com\nTo: foo@bar.com\nORIGINAL-FOLDER: INBOX\n\n7809321070'), ')', '13 (UID 148 FLAGS (\\Seen))')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00a3d55c5d082ec57bdfb8676fdf0f46
+saving index
+release_index_lock
+select SMTorP
+fetch_and_load_index
+select data SMTorP OK ['12']
+uid FETCH (u'4', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00717dcbf4b4fe1354e107e0963add6c
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'4', '(BODY[TEXT])') OK (('7 (UID 99 BODY[TEXT] {1600}', 'From nobody Fri Apr 17 19:17:10 2015\nContent-Type: multipart/mixed; boundary="===============7408118984869652904=="\nMIME-Version: 1.0\nSubject: print statements\nFrom: Erica Portnoy <functorkitten@gmail.com>\nTo: foo@rwq5q4vh3aphekjj.onion\nDate: Fri, 17 Apr 2015 23:16:37 -0000\nMessage-Id: <20150417231636-23928-19786-mailpile@chrubuntu>\nOpenPGP: id=2D7980262BBE2BA1EAFB552E48649C27BCF8F5C9; preference=signencrypt\nORIGINAL-FOLDER: INBOX\n\n--===============7408118984869652904==\nContent-Type: text/plain; charset="us-ascii"\nContent-Transfer-Encoding: 7bit\n\nbecause it\'s not fetching this dynamically\n\n\n-- \nSent using Mailpile, Free Software from www.mailpile.is\n--===============7408118984869652904==--\n'), ')')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00717dcbf4b4fe1354e107e0963add6c
+saving index
+release_index_lock
+select INBOX
+fetch_and_load_index
+select data INBOX OK ['4']
+uid FETCH (u'214', '(BODY[TEXT])')
+fetch_and_load_index
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00907d2145806dce2cffec8b092c5bad
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'214', '(BODY[TEXT])') OK (('1 (UID 4 BODY[TEXT] {5824}', 'From nobody Fri Apr 17 17:47:08 2015\nDelivered-To: functorkitten@gmail.com\nReceived: by 10.28.131.19 with SMTP id f19csp207338wmd;\n Fri, 17 Apr 2015 14:46:19 -0700 (PDT)\nX-Received: by 10.55.31.5 with SMTP id f5mr9923611qkf.42.1429307178728;\n Fri, 17 Apr 2015 14:46:18 -0700 (PDT)\nReturn-Path: <eportnoy@princeton.edu>\nReceived: from Princeton.EDU (ppa04.Princeton.EDU. [128.112.128.215])\n by mx.google.com with ESMTPS id e81si12869285qhc.130.2015.04.17.14.46.18\n for <functorkitten@gmail.com>\n (version=TLSv1 cipher=RC4-SHA bits=128/128);\n Fri, 17 Apr 2015 14:46:18 -0700 (PDT)\nReceived-SPF: pass (google.com: domain of eportnoy@princeton.edu designates\n 128.112.128.215 as permitted sender) client-ip=128.112.128.215; \nAuthentication-Results: mx.google.com;\n spf=pass (google.com: domain of eportnoy@princeton.edu designates\n 128.112.128.215 as permitted sender) smtp.mail=eportnoy@princeton.edu\nReceived: from csgsmtp200l.Princeton.EDU (csgsmtp200l.Princeton.EDU\n [128.112.130.131])\n by ppa04.princeton.edu (8.14.5/8.14.5) with ESMTP id t3HLkHao024784\n (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)\n for <functorkitten@gmail.com>; Fri, 17 Apr 2015 17:46:17 -0400\nReceived: from mail-qg0-f54.google.com (mail-qg0-f54.google.com\n [209.85.192.54]) (authenticated authid=eportnoy bits=0)\n by csgsmtp200l.Princeton.EDU (8.13.8/8.12.9) with ESMTP id t3HLkCZo019163\n (version=TLSv1/SSLv3 cipher=RC4-SHA bits=128 verify=NOT)\n for <functorkitten@gmail.com>; Fri, 17 Apr 2015 17:46:17 -0400\nReceived: by qgfi89 with SMTP id i89so28234634qgf.1\n for <functorkitten@gmail.com>; Fri, 17 Apr 2015 14:46:12 -0700 (PDT)\nX-Received: by 10.140.151.15 with SMTP id 15mr6038305qhx.104.1429307172176;\n Fri, 17 Apr 2015 14:46:12 -0700 (PDT)\nMIME-Version: 1.0\nReceived: by 10.140.93.77 with HTTP; Fri, 17 Apr 2015 14:45:52 -0700 (PDT)\nFrom: Erica Portnoy <eportnoy@princeton.edu>\nDate: Fri, 17 Apr 2015 17:45:52 -0400\nMessage-ID: <CACf4RgKmGbpC0yTJ1_gX243W12T8nmDmb4e3o7AFt9hUndGguw@mail.gmail.com>\nSubject: hello\nTo: Erica Portnoy <functorkitten@gmail.com>\nContent-Type: multipart/alternative; boundary=001a113746cc45cd780513f282ea\nX-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10432:5.13.68, 1.0.33,\n 0.0.0000\n definitions=2015-04-17_08:2015-04-17,2015-04-17,1970-01-01 signatures=0\nX-Proofpoint-Spam-Details: rule=quarantine_notspam policy=quarantine score=1\n spamscore=1\n suspectscore=1 phishscore=0 adultscore=0 bulkscore=0 classifier=spam\n adjust=0 reason=mlx scancount=1 engine=7.0.1-1402240000\n definitions=main-1504170191\nORIGINAL-FOLDER: INBOX\n\n--001a113746cc45cd780513f282ea\nContent-Type: text/plain; charset=UTF-8\n\none\r\n\n--001a113746cc45cd780513f282ea\nContent-Type: text/html; charset=UTF-8\n\n<div dir="ltr">one<br></div>\r\n\n--001a113746cc45cd780513f282ea--\n'), ')')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00907d2145806dce2cffec8b092c5bad
+saving index
+release_index_lock
+select INBOX
+fetch_and_load_index
+select data INBOX OK ['3']
+uid FETCH (u'215', '(BODY[TEXT])')
+fetch_and_load_index
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 000950aa0047235d145a2c5cb6882e7e
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'215', '(BODY[TEXT])') OK (('1 (UID 10 BODY[TEXT] {5824}', 'From nobody Fri Apr 17 17:49:13 2015\nDelivered-To: functorkitten@gmail.com\nReceived: by 10.28.131.19 with SMTP id f19csp207856wmd;\n Fri, 17 Apr 2015 14:47:58 -0700 (PDT)\nX-Received: by 10.140.201.74 with SMTP id w71mr6299038qha.51.1429307277650;\n Fri, 17 Apr 2015 14:47:57 -0700 (PDT)\nReturn-Path: <eportnoy@princeton.edu>\nReceived: from Princeton.EDU (ppa01.Princeton.EDU. [128.112.128.213])\n by mx.google.com with ESMTPS id o16si12925233qko.28.2015.04.17.14.47.57\n for <functorkitten@gmail.com>\n (version=TLSv1 cipher=RC4-SHA bits=128/128);\n Fri, 17 Apr 2015 14:47:57 -0700 (PDT)\nReceived-SPF: pass (google.com: domain of eportnoy@princeton.edu designates\n 128.112.128.213 as permitted sender) client-ip=128.112.128.213; \nAuthentication-Results: mx.google.com;\n spf=pass (google.com: domain of eportnoy@princeton.edu designates\n 128.112.128.213 as permitted sender) smtp.mail=eportnoy@princeton.edu\nReceived: from csgsmtp200l.Princeton.EDU (csgsmtp200l.Princeton.EDU\n [128.112.130.131])\n by ppa01.princeton.edu (8.14.5/8.14.5) with ESMTP id t3HLlu0U022341\n (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)\n for <functorkitten@gmail.com>; Fri, 17 Apr 2015 17:47:56 -0400\nReceived: from mail-qk0-f176.google.com (mail-qk0-f176.google.com\n [209.85.220.176]) (authenticated authid=eportnoy bits=0)\n by csgsmtp200l.Princeton.EDU (8.13.8/8.12.9) with ESMTP id t3HLlpoB019888\n (version=TLSv1/SSLv3 cipher=RC4-SHA bits=128 verify=NOT)\n for <functorkitten@gmail.com>; Fri, 17 Apr 2015 17:47:56 -0400\nReceived: by qkx62 with SMTP id 62so158356484qkx.0\n for <functorkitten@gmail.com>; Fri, 17 Apr 2015 14:47:51 -0700 (PDT)\nX-Received: by 10.55.21.12 with SMTP id f12mr9738268qkh.87.1429307271405; Fri,\n 17 Apr 2015 14:47:51 -0700 (PDT)\nMIME-Version: 1.0\nReceived: by 10.140.93.77 with HTTP; Fri, 17 Apr 2015 14:47:31 -0700 (PDT)\nFrom: Erica Portnoy <eportnoy@princeton.edu>\nDate: Fri, 17 Apr 2015 17:47:31 -0400\nMessage-ID: <CACf4Rg+hChVcRTWnztt8b6qbLOYb0Tu+QDjQa1xHtvnr9VCdcA@mail.gmail.com>\nSubject: hello\nTo: Erica Portnoy <functorkitten@gmail.com>\nContent-Type: multipart/alternative; boundary=001a1147f3f42fe7ce0513f28869\nX-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10432:5.13.68, 1.0.33,\n 0.0.0000\n definitions=2015-04-17_08:2015-04-17,2015-04-17,1970-01-01 signatures=0\nX-Proofpoint-Spam-Details: rule=quarantine_notspam policy=quarantine score=1\n spamscore=1\n suspectscore=1 phishscore=0 adultscore=0 bulkscore=0 classifier=spam\n adjust=0 reason=mlx scancount=1 engine=7.0.1-1402240000\n definitions=main-1504170191\nORIGINAL-FOLDER: INBOX\n\n--001a1147f3f42fe7ce0513f28869\nContent-Type: text/plain; charset=UTF-8\n\ntwo\r\n\n--001a1147f3f42fe7ce0513f28869\nContent-Type: text/html; charset=UTF-8\n\n<div dir="ltr">two<br></div>\r\n\n--001a1147f3f42fe7ce0513f28869--\n'), ')')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 000950aa0047235d145a2c5cb6882e7e
+saving index
+release_index_lock
+select SMTorP
+fetch_and_load_index
+select data SMTorP OK ['11']
+uid FETCH (u'10', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 006d83fe4ac76235865469185b338a32
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'10', '(BODY[TEXT])') OK (('10 (UID 151 BODY[TEXT] {1504}', 'From nobody Fri Apr 17 19:56:53 2015\nContent-Type: multipart/mixed; boundary="===============7432273524384952497=="\nMIME-Version: 1.0\nSubject: who knows\nFrom: Erica Portnoy <functorkitten@gmail.com>\nTo: foo@rwq5q4vh3aphekjj.onion\nDate: Fri, 17 Apr 2015 23:56:30 -0000\nMessage-Id: <20150417235630-25727-84664-mailpile@chrubuntu>\nOpenPGP: id=2D7980262BBE2BA1EAFB552E48649C27BCF8F5C9; preference=signencrypt\nORIGINAL-FOLDER: INBOX\n\n--===============7432273524384952497==\nContent-Type: text/plain; charset="us-ascii"\nContent-Transfer-Encoding: 7bit\n\nblah\n\n\n-- \nSent using Mailpile, Free Software from www.mailpile.is\n--===============7432273524384952497==--\n'), ')')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 006d83fe4ac76235865469185b338a32
+saving index
+release_index_lock
+select SMTorP
+fetch_and_load_index
+select data SMTorP OK ['10']
+uid FETCH (u'12', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00dc7090eaacc51bddb023e817d3146f
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'12', '(BODY[TEXT])') OK (('15 (UID 212 BODY[TEXT] {1536}', 'From nobody Fri Apr 17 20:13:35 2015\nContent-Type: multipart/mixed; boundary="===============4618054819208061276=="\nMIME-Version: 1.0\nSubject: location moved printing\nFrom: Erica Portnoy <ebportnoy@gmail.com>\nTo: foo@rwq5q4vh3aphekjj.onion\nDate: Sat, 18 Apr 2015 00:13:09 -0000\nMessage-Id: <20150418001309-27020-95443-mailpile@chrubuntu>\nOpenPGP: id=15220288E159EF715D8963B475E0065C51D428CE; preference=signencrypt\nORIGINAL-FOLDER: INBOX\n\n--===============4618054819208061276==\nContent-Type: text/plain; charset="us-ascii"\nContent-Transfer-Encoding: 7bit\n\noh mailpile.\n\n\n-- \nSent using Mailpile, Free Software from www.mailpile.is\n--===============4618054819208061276==--\n'), ')')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00dc7090eaacc51bddb023e817d3146f
+saving index
+release_index_lock
+select FAKE_MESSAGES
+uid FETCH (u'1000511183', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 002d0786a475d14e152a2e7ab99ea697
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'1000511183', '(BODY[TEXT])') OK (('15 (UID 217 FLAGS (\\Seen) BODY[TEXT] {416}', 'From nobody Fri Apr 17 20:15:28 2015\nSubject: garbage\nFrom: foo@bar.com\nTo: foo@bar.com\nORIGINAL-FOLDER: INBOX\n\n4394153333'), ')', '15 (UID 217 FLAGS (\\Seen))')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 002d0786a475d14e152a2e7ab99ea697
+saving index
+release_index_lock
+select SMTorP
+fetch_and_load_index
+select data SMTorP OK ['9']
+uid FETCH (u'9', '(BODY[TEXT])')
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00cb2ba3bfc32cb437bd211e93118cd1
+decrypt_and_unpack_message
+decrypted and_unpacked message
+replace_item_in_tuple
+replaced item_in_tuple
+uid results FETCH (u'9', '(BODY[TEXT])') OK (('21 (UID 258 FLAGS (\\Seen) BODY[TEXT] {1504}', 'From nobody Fri Apr 17 19:52:07 2015\nContent-Type: multipart/mixed; boundary="===============8999333122295624129=="\nMIME-Version: 1.0\nSubject: I don\'t understand\nFrom: Erica Portnoy <functorkitten@gmail.com>\nTo: foo@rwq5q4vh3aphekjj.onion\nDate: Fri, 17 Apr 2015 23:51:45 -0000\nMessage-Id: <20150417235145-25325-71425-mailpile@chrubuntu>\nOpenPGP: id=2D7980262BBE2BA1EAFB552E48649C27BCF8F5C9; preference=signencrypt\nORIGINAL-FOLDER: INBOX\n\n--===============8999333122295624129==\nContent-Type: text/plain; charset="us-ascii"\nContent-Transfer-Encoding: 7bit\n\nwhy\n\n\n-- \nSent using Mailpile, Free Software from www.mailpile.is\n--===============8999333122295624129==--'), ')', '21 (UID 258 FLAGS (\\Seen))')
+acquire_index_lock
+fetch_and_load_index
+get_message_uid_given_hash_in_subject 00cb2ba3bfc32cb437bd211e93118cd1
+saving index

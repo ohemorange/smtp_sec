@@ -23,6 +23,8 @@
 - add some sort of "validate message" function. easy b/c we stored
   the hash of the message in the index.
 - watch out for index saves as a side channel
+- possible optimization: don't need to decrypt and re-encrypt mixed
+  messages
 
 ## to test: maybe
 - what if a filter's set up and it comes in that way?

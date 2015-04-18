@@ -5,14 +5,11 @@
 - mailutils: prepare message
 - mail_source/__init__.py: sleeptime()
   - this is how often we rescan mailboxes
-  - and the actual interval is default 900, set in defaults.py
-- ./mailpile/www/default/html/jsapi/setup/magic.js
+  - taken from ./mailpile/www/default/html/jsapi/setup/magic.js
   - this should be the how often we check gmail number. default 300.
 
 ## to test: definitely
 - you know actually run with multiple clients
-- from smtorp, on startup. then send, make sure we still get it.
-- delete everything. send from smtorp. gear, rescan. make sure all is well.
 
 ## todo: definitely
 - switch from pushing and pulling single messages to pushing up k and pulling down k-1. up by putting up k and down k-1. (mixing step)
@@ -473,6 +470,9 @@ connect: ('rwq5q4vh3aphekjj.onion', 25)
 - since I'm not actually handling pseudo-folder deletion, it's fineee.
 - so. mailbox_info. it's apparently checking to make sure this folder
   actually exists. oh boy.
+- so the message id already exists, which is why mp is giving me trouble.
+- ok. so. when you send it to yourself, it never bothers actually putting
+  it in the new mailbox it came from. awesome.
 
 ## notes from meeting 2/17/15
 ### Threats

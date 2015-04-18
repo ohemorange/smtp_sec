@@ -50,7 +50,7 @@ DEBUG_EXTRAS = False
 DEBUG_METHODS_ARGS_RETURNS = True
 PRINT_INDEX = True
 DEBUG_LOCK = False
-DEBUG_RESPONSES = True
+DEBUG_RESPONSES = False
 DEBUG_TURN_OFF_INDEX_REFETCH = True
 NOOP_ENCRYPTION = False
 
@@ -979,7 +979,11 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                 if not folder in self.mapping:
                     typ, data = OK, ['']
                 else:
-                    uids = " ".join(self.mapping[folder].keys())
+                    uid_strings = self.mapping[folder].keys()
+                    uid_nums = [int(x) for x in uid_strings]
+                    uid_nums.sort()
+                    uid_sorted_strings = [str(x) for x in uid_nums]
+                    uids = " ".join(uid_sorted_strings)
                     typ, data = OK, [uids]
 
                 # if it's inbox
@@ -990,7 +994,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
                         return typ_in, data_in
                     # append to index results
                     typ = typ_in
-                    data = [" ".join([data_in[0], data[0]]).strip()]
+                    data = [" ".join([data[0], data_in[0]]).strip()]
 
         # elif this is a fetch
         elif command == "FETCH":
@@ -1018,6 +1022,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             imaplib.IMAP4_SSL.select(self, mailbox=self.quote(self.selected_mailbox))
             # decrypt the message we've received and remessageify it
             if t != OK or type(d[0]) == type("hi"):
+                if DEBUG_METHODS_ARGS_RETURNS:
+                    print "uid results", t, d
                 return t, d
             message_contents = d[0][1].strip()
             message_as_string = self.decrypt_and_unpack_message(message_contents)
@@ -1087,18 +1093,20 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             elif code == "RECENT":
                 data = ['0'] # I don't think this is used.
             elif code == "UIDVALIDITY":
-                data = ['1']
+                data = ['317']
             elif code == "EXISTS":
                 # this is a count
                 count = len(self.mapping[folder])
                 data[0] = str(count)
-
         # for a hybrid folder, add the two counts
-        if data[0] != None and folder in self.mapping:
+        elif data[0] != None and folder in self.mapping:
             if code == "EXISTS":
                 count = len(self.mapping[folder])
                 the_sum = count + int(data[0])
                 data[0] = str(the_sum)
+
+        if folder == GMAIL_ALL_MAIL and code == "EXISTS":
+            data[0] = '0'
 
         if DEBUG_RESPONSES:
             print "typ", typ

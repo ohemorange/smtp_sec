@@ -10,34 +10,12 @@
 
 ## to test: definitely
 - you know actually run with multiple clients
-
-## todo: definitely
-- switch from pushing and pulling single messages to pushing up k and pulling down k-1. up by putting up k and down k-1. (mixing step)
-  - to do this, we have to switch from using the hash, because that would
-    be consistent over time. so instead, generate a random string.
-  - NOTE: DO NOT overlap the tick interval!!
-  - ok here's how stupid this mail client is. if you delete a folder on
-    the server, it has NO AUTOMATIC WAY OF RECOVERING. that's right folks,
-    it doesn't call that nice helpful list command unless you ask it to.
-  - note the mix number has a lower bound of number of existing messages.
-    - so on create_cryptoblobs, we should push up some fake messages
-  - I think if we do things too quickly we have some problems deleting
-    from all mail, which might be because of select multiplexing problems
-  - ok so first check what happens just as a regular timed thing that's
-    not interrupted by anything else. then after it's all clean, check
-    that nothing's getting corrupted by deleting the local store and
-    downloading from gmail. actually I was just missing a line, this
-    is really all fine.
-  - we should theoretically cache saved_messages_and_data. I'm not doing
-    that.
-  - added a mechanism to not actually release the index lock during a
-    mix operation.
-  - tested with k = mix_num, and with k = mix_num - 1
-- have a timed cache for some fetch_and_load_index calls (cache_ok flag)
-- figure out some setup for testing with two mail accounts and mailpile
-  instances.
+- mixing in mailpile
+- two mail accounts + mailpile instances
 
 ## todo: probably
+- have a timed cache for some fetch_and_load_index calls (cache_ok flag)
+  - currently, I have DEBUG_TURN_OFF_INDEX_REFETCH = True
 
 ## todo: maybe
 - add functionality for delete and change folders
@@ -493,6 +471,27 @@ connect: ('rwq5q4vh3aphekjj.onion', 25)
 - so the message id already exists, which is why mp is giving me trouble.
 - ok. so. when you send it to yourself, it never bothers actually putting
   it in the new mailbox it came from. awesome.
+- switch from pushing and pulling single messages to pushing up k and pulling down k-1. up by putting up k and down k-1. (mixing step)
+  - to do this, we have to switch from using the hash, because that would
+    be consistent over time. so instead, generate a random string.
+  - NOTE: DO NOT overlap the tick interval!!
+  - ok here's how stupid this mail client is. if you delete a folder on
+    the server, it has NO AUTOMATIC WAY OF RECOVERING. that's right folks,
+    it doesn't call that nice helpful list command unless you ask it to.
+  - note the mix number has a lower bound of number of existing messages.
+    - so on create_cryptoblobs, we should push up some fake messages
+  - I think if we do things too quickly we have some problems deleting
+    from all mail, which might be because of select multiplexing problems
+  - ok so first check what happens just as a regular timed thing that's
+    not interrupted by anything else. then after it's all clean, check
+    that nothing's getting corrupted by deleting the local store and
+    downloading from gmail. actually I was just missing a line, this
+    is really all fine.
+  - we should theoretically cache saved_messages_and_data. I'm not doing
+    that.
+  - added a mechanism to not actually release the index lock during a
+    mix operation.
+  - tested with k = mix_num, and with k = mix_num - 1
 
 ## notes from meeting 2/17/15
 ### Threats

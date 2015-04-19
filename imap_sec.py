@@ -66,7 +66,7 @@ def hash_of_message_as_string(message_as_string):
     return hexed
 
 def get_new_unique_subject():
-    return '%032x' % random.randrange(16**30)
+    return '%032x' % random.randrange(16**32)
 
 def fake_message_with_random_contents_as_string():
     message = Message()
@@ -1012,6 +1012,9 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         
         # cache locally
         # TODO
+
+        # encrypt and upload to CB
+        self.add_message_to_folder_internal(message_contents, INBOX, uid, False, mix=False)
         
         # delete from inbox
         self.delete_message_from_actual_folder_uid(uid, INBOX)
@@ -1019,8 +1022,7 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
         # delete from everywhere else
         self.delete_message_from_all_other_folders(message_contents)
         
-        # encrypt and upload to CB
-        self.add_message_to_folder_internal(message_contents, INBOX, uid, False, mix=False)
+        
         
 
     # asks for and receives email

@@ -1,0 +1,192 @@
+\documentclass[pageno]{jpaper}
+
+%replace XXX with the submission number you are given from the ISCA submission site.
+\newcommand{\IWreport}{2015}
+
+\usepackage[normalem]{ulem}
+
+\begin{document}
+
+\title{IMAPS: Secure, Backwards-Compatible Storage for Metadata-Secure Messaging Systems
+\\ \vspace{2 mm} {\large Invisibly Protecting Content and Metadata On Johnny's Behalf}}
+
+\author{Erica Portnoy}
+
+\date{}
+\maketitle
+
+\thispagestyle{empty}
+
+\tableofcontents
+
+\begin{abstract}
+Email, but metadata and content are E2E encrypted. No usability concessions. A non-technical user will have no more trouble using it than they would with https vs. http. Departure from classical message encryption usability theories in that it places no burden on the user.
+\end{abstract}
+
+\section{Introduction}
+% Background information and problem description. What is the general area of research and the specific problem that will be tackled?
+
+One, a Hard Problem in Secure Communication is metadata \cite{hardprob}. Two, usable encryption tools for email is historically hard and still is \cite{johnny}. But https does it just fine. Goal: develop the necessary ecosystem to enable metadata-secure email with no extra effort from the end user.
+
+Give a history of email security/usability/etc. PGP, Why Johnny can't encrypt \cite{johnny}, iMessage, TextSecure and WhatsApp. Introduce the term metadata-secure messaging (MSM).
+
+\section{Related work}
+% Related research. Have there been previous academic papers on this or related topics? Are there companies that have developed related software products? What is the historical context? Be sure to cite related research properly. Include a bibliography at the end of your paper.
+Many combinations of options exist \cite{spreadsheet}. (Figure out how to cite JB's Summary of Knowledge.)
+
+\subsection{Facebook Message Hannover Study}
+What I'm working on for email, but for Facebook. \cite{fahl}
+
+\subsection{Email over Tor}
+Tor Mail, OnionMail
+
+\subsection{Mailpile}
+Their general ideas, storage solutions. \cite{mailpile}
+
+\subsection{Mailpile SMTorP Plugin}
+Explain Tor \cite{tor}, .onion Addresses \cite{smtorp}
+
+\subsection{Pond}
+Pond is a system for forward secure asynchronous messaging that does not leak traffic information "except [to] a global passive attacker." \cite{pond}
+
+Through these tools, the transport mechanism becomes more secure. Yet for all of these, messages are assumed to be transient or remain only on the client device. This is unacceptable behavior to a typical modern user. Modern users expect their emails to be stored on a server and available to them from multiple clients -- from their computers, mobile devices, and on the Web. To ubiquitize secure email, we must develop a storage and synchronization solution that protects messages at rest without compromising the benefits of secure transport protocols.
+
+\section{Threat Model}
+Use trike.
+
+\section{Target User}
+\label{targetuser}
+
+\section{Design Goals and Non-Goals}
+\label{goals}
+
+Some discussion of the usability issues. Garfinkel et al. \cite{garfinkel} talk about ``How to make secure email easier to use,'' and Ruoti et al. talk about dangers in automatic encryption \cite{ruoti}.
+
+\section{Relevant Email Technologies}
+Explain how SMTP and IMAP legacy versions work. Probably with some diagrams!
+\subsection{Mail Sending and Transport}
+SMTP
+
+\subsection{Mail Retrieval, Storage, and Synchronization}
+\subsubsection{POP}
+\subsubsection{IMAP}
+\label{legacyimap}
+
+
+\section{Architecture and Data Flow}
+\label{architecture}
+% Have you defined your overall software architecture? -- describe it in detail and justify your design.
+
+As discussed in Section~\ref{goals}, a permissible IMAPS solution must be built to integrate with legacy systems. An MSM MUA will also accept legacy SMTP traffic, and it must appear to the user that all messages, once received, are the same. While the user experience must remain consistent, there are multiple possibilities for architecting a storage system consistent with the storage needs. To architect such a backend, there are several possibilities:
+
+\begin{enumerate}
+	\item Keep all messages on the local machine only.
+    \item Store messages in a secure, remote, user-controlled filesystem.
+    \item Use the infrastructure of existing IMAP servers.
+\end{enumerate}
+
+The first is unacceptable, given the target user group described in Section~\ref{targetuser}, as this would violate user expectations. To implement the second, we would need to describe a server infrastructure for storing messages and synchronizing across multiple possible clients who have subscribed to updates on messages stored in the system -- which is to say, (a subset of) the functions that the IMAP server is designed to perform. This brings us to our final option, using a modified version of existing IMAP technology, which was described in Section~\ref{legacyimap}.
+
+The core elements of the IMAPS protocol are 
+\begin{enumerate*}[label=(\itshape\arabic*\upshape)]
+\item an IMAPS module used in lieu of a standard IMAP connection agent in an MUA, and
+\item an index file that is stored as a regular message in a legacy IMAP server. \end{enumerate*}
+
+The IMAPS module performs two main functions. First, it ensures that metadata is encrypted along with message contents for all messages to be stored on the IMAP server. Second, it handles the indexing functions, mapping mailboxes to the messages they complain. This is a significant departure from the legacy system, where mailbox names and contents were exposed to the IMAP server. As such, it shifts the burden of tracking, updating, and syncing changes to the index from the server to the client. When one client updates the index, the IMAP server will see that a message has changed, and inform its other clients in the standard method. Such updates may arise from moving messages between mailboxes as they appear to the client to exist, necessitating careful bookkeeping of the index file.
+
+Note that these changes imply that if one client of an IMAP server is IMAPS-compliant, all clients subscribed to that server must also be IMAPS-compliant. Otherwise, all other clients will see only the encrypted messages; this is a necessary and desirable feature of the system.
+
+These changes permit the combination of MSMs and non-MSMs in the same storage system, ensuring an elegant transition to a more secure email.
+
+\subsection{Mail From a Secure Source}
+When email is received from a metadata-free source (SMTorP, DIME, Pond, etc.), it is stored in a ``cryptoblobs'' folder on the IMAP server that the client's IMAPS module has set up. This change is then marked in the index, which is correspondingly updated.
+
+  \begin{tikzpicture}[node distance=2.5cm]
+  \node (alice) [box] {Alice};
+  \node (smtpa) [box, above of=alice] {Alice's metadata-\\ secure server};
+  \node (cloud) [cloud, draw,cloud puffs=10,cloud puff arc=120, aspect=2, inner ysep=1em, right of=smtpa, xshift=1.3cm] {Network};
+  \node (imapb) [box, right of=cloud, xshift=1.3cm] {Bob's metadata-\\secure server};
+
+  \node (bob) [box, below of=imapb] {Bob\\
+  \trimbox{0cm 0cm 0cm -.2cm}{
+  \begin{tikzpicture}
+  \node (imaps) [box, minimum height=.5cm, outer sep=.2] {IMAPS module};
+  \end{tikzpicture}}};
+  \node (bobimap) [box, right of=imapb, xshift=1cm] {Bob's legacy \\ IMAP server \\ \trimbox{0cm 0cm 0cm -.2cm}{
+  \begin{tikzpicture}
+  \node (index) [box, minimum height=.5cm, outer sep=.2] {index};
+  \end{tikzpicture}
+  } };
+
+  \draw [arrow] (alice) -- (smtpa);
+  \draw [arrow] (smtpa) -- (cloud);
+  \draw [arrow] (cloud) -- (imapb);
+  \draw [arrow] (imapb) -- (bob);
+  \draw [arrow] (bob) -| (bobimap);
+
+  \end{tikzpicture}
+
+
+\subsection{Mail From an Insecure Source}
+When an email is received through (legacy) SMTP, it is deleted from the server, encrypted such that it is metadata-secure, and reuploaded to the IMAP server in the same way as an email that was received from a secure source.
+
+  \begin{tikzpicture}[node distance=2.5cm]
+  \node (alice) [box] {Alice};
+  \node (smtpa) [box, above of=alice] {Alice's legacy \\ SMTP server};
+  \node (cloud) [cloud, draw,cloud puffs=10,cloud puff arc=120, aspect=2, inner ysep=1em, right of=smtpa, xshift=1.3cm] {Network};
+  \node (imapb) [box, right of=cloud, xshift=1.4cm] {Bob's legacy \\ IMAP server \\
+      \trimbox{0cm 0cm 0cm -.2cm}{
+          \begin{tikzpicture}
+              \node (index) [box, minimum height=.5cm, outer sep=.2] {index};
+          \end{tikzpicture}
+      } 
+    };
+
+  \node (bob) [box, below of=imapb] {Bob\\
+    \trimbox{0cm 0cm 0cm -.2cm}{
+    \begin{tikzpicture}
+            \node (imaps) [box, minimum height=.5cm, outer sep=.2] {IMAPS module};
+        \end{tikzpicture}}};
+
+  \draw [arrow] (alice) -- (smtpa);
+  \draw [arrow] (smtpa) -- (cloud);
+  \draw [arrow] (cloud) -- (imapb);
+  \draw [arrow] (imapb.260) -- (bob.103);
+  \draw [arrow] (bob.77) -- (imapb.280);
+
+  \end{tikzpicture}
+  
+ 
+\section{Enabling Multiple Clients}
+Structure and usage of the index, how synchronization works.
+
+\section{Scheduled Updates}
+\subsection{Architecture}
+\subsection{Learning Update Schedules}
+\subsection{Usage Measurements}
+
+\section{Attacks and Countermeasures}
+
+\section{Dissemination Considerations}
+As discussed in Section~\ref{architecture}, every client of an IMAP server must upgrade to IMAPS if any client does so. Therefore, for this technology to spread, IMAPS must be available across platforms on initial release, as a standard modern user expects to be able to check his or her email across devices and email clients. 
+
+\section{Summary}
+
+\section{Honor Code}
+\label{honorcode}
+I pledge my honor that this thesis represents my own work in accordance with Princeton University regulations.
+
+\pagebreak
+
+\bstctlcite{bstctl:etal, bstctl:nodash, bstctl:simpurl}
+\bibliographystyle{IEEEtranS}
+\bibliography{references}
+
+\end{document}
+
+
+
+
+
+
+

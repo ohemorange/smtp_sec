@@ -1,0 +1,118 @@
+Translation mechanism - functional detail
+
+Scheduler: Delivering from IMAP client to IMAP server - protecting metadata
+
+UID storage and translation mechanisms - functional detail
+
+Mixing - protecting metadata
+
+Rollback detection - security
+
+Encryption - security
+
+Multiple client synchronization and concurrency handling - functional detail
+
+Deletion - functional detail
+
+Processing messages received at IMAP server - functional detail
+
+Prototype client
+
+
+Technical Details
+- Translation Mechanism
+- UID storage and translation mechanisms
+- Multiple client synchronization and concurrency handling
+- Deletion
+- Processing messages received at IMAP server
+- Index Caching
+
+Security
+- Encryption
+- Rollback detection
+
+Protecting Metadata
+- Scheduler: Delivering from IMAP client to IMAP server
+  - Architecture
+  - Learning Update Schedules
+  	- Exponential backoff?
+  - Usage Measurements?
+- Mixing
+
+Prototype client
+
+Performance
+
+
+
+
+
+
+
+
+
+\subsection{Multiple Client Synchronization and Concurrency}
+Central to IMAP's design is the ability to handle the actions of multiple clients subscribed to the server. The core synchronization feature is the INDEX. Since it resides in the CRYPTOBLOBS folder that all IMAP clients have access to, any client will see the updates to the INDEX made by any other client. Some actions need only be completed by one client though, such as those described in Sections~\ref{initialization} and \ref{processing}. These will be handled by the first client to notice the preconditions for those actions, namely an uninitialized IMAP server or a message in the actual INBOX mailbox.
+
+Given the structure of the IMAP commands, there is no drawback to being either the first or a later client to perform the action. For example, a client of \project that asks how many messages are in the INBOX will be returned the same number in response to a SELECT whether they were the one to process an incoming message or not, and will be returned the same list of pseudo-UIDs in response to a SEARCH ALL.
+
+Some \project actions must be atomic, namely the coupling of appending and deleting messages from mailboxes with fetches of and updates to the INDEX. \project solves this via a LOCK mechanism. A message with SUBJECT line LOCK is deleted from and appended to the CRYPTOBLOBS mailbox to acquire and release a lock, respectively.
+
+Because of this delete/upload lock acquisition mechanism, the IMAP server may sometimes be in a state where the LOCK message does not exist but no client holds the lock, such as if a client crashes or closes down while holding the lock. Optimally, this would not happen, and the lock would be released before closing, but the existing library does not require a method to be called on close, so we cannot rely on a client to release a lock before quitting. Thus, \project includes a mechanism for detecting this inconsistent state and recovering from it by acquiring a lock even if the LOCK message does not exist in the CRYPTOBLOBS mailbox.
+
+The lock recovery mechanism waits until a specified time (currently 60 seconds), checking for the existence of the lock every few (currently 2) seconds within that interval. After the time is completed, \project attempts to fetch the INDEX. If the index is not there, we assume that another client has failed and acquire the lock ourselves. If the index is there but has not been updated during that time (using the SEQUENCE NUMBER to determine this), we again acquire the lock. Yet if the index is there and has been updated, we assume someone else is still using the lock and double the total wait time until our next check.
+
+
+
+
+\subsection{Processing Messages Received at IMAP Server}
+
+When a message is received at the IMAP Server as in Section~\ref{mail-from-insecure}, \project processes the message so it is equivalent to messages that arrived at the client machine from a secure source. To process a message, \project fetches the body of the message, adds it to CRYPTOBLOBS, and deletes it from the INBOX. Note that without any mixing here or during scheduled message exchanges, it is trivial for an IMAP server to keep track of which message in CRYPTOBLOBS corresponds to which message that was received in the INBOX, because the server will see that a message was added to CRYPTOBLOBS and deleted from INBOX at about the same time. The process used for adding the message to CRYPTOBLOBS is equivalent to the process for adding a message from an insecure source, or for adding a scheduled fake message. The process for adding a message to a pseudo-mailbox involves several steps. We update the INDEX, possibly adding the mailbox to the INDEX if it is the first time we have seen it. We generate a UNIQUE SUBJECT number. If the mailbox is of type PSEUDO, we compute the pseudo-UID for the message. As per RFC 3501, the UID assigned is strictly greater than any UID that has been previously assigned in the mailbox. We store in the INDEX the state of the NEXT UID to assign.
+
+\subsection{Initialization}
+
+Upon logging into an IMAP server, \project attempts to select the CRYPTOBLOBS mailbox. If it succeeds, it assumes that this server has been previously initialized by itself or another client. If there is no CRYPTOBLOBS mailbox, it creates one. It then generates a random salt, appends an initial INDEX with SEQUENCE NUMBER 1 and the salt in the subject line of the INDEX, appends a LOCK, and fetches and loads the INDEX.
+
+
+
+\subsection{Deletion}
+Various \project actions include deletion of a message from the CRYPTOBLOBS mailbox. In general, not deleting a message will not leak any data to the IMAP server, since our threat model includes a server than can either refuse to delete or can save a backup version of any message. Yet for practical reasons such as mailbox data usage and lack of clutter, it is generally beneficial to at least attempt to delete a message. Here we must note that IMAP servers may differ in their implementation in regard to the location of messages, potentially complicating deletion protocols. For example, Gmail uses its All Mail mailbox (``label'', in their terms) as a message archive \cite{allmail}. That is, if a message appears in any mailbox, it will also appear in the All Mail mailbox. If it is deleted from All Mail but still exists elsewhere, it will be replaced in All Mail. Thus, to delete a message from any non-All Mail mailbox, it must first be deleted from all other mailboxes then deleted from All Mail. Note that the message will be assigned a different UID for each mailbox that it appears in.
+
+Deleting a message that has already been processed is simple; we may use UNIQUE SUBJECT as in Section~\ref{uid-translation} to find the message in any mailbox, including All Mail. For a message that has arrived in the INBOX though, we must be more careful. To delete such a message from All Mail, we must first search for it (by subject or otherwise), then test all resulting UIDs for exact message equivalence to the message that we intend to delete from the non-All Mail mailbox.
+
+\subsection{Encryption}
+When a message is appended to the CRYPTOBLOBS mailbox, whether it be a processed INBOX message, a fake message created on schedule, or a message from a metadata-secure source, it is encrypted before being uploaded. It is encrypted using the standard method of authenticated encryption, which is to say that a Message Authentication Code calculated on the encrypted message is concatenated to the encrypted message. Data is encrypted using AES-CBC and signed with HMAC-SHA256. The encryption key is derived from the random salt created during initialization (as described in Section~\ref{initialization}) and a passphrase using scrypt \cite{percival2009stronger}. Scrypt is a memory-hard key derivation function that imposes a cost for deriving a key given a guess of a passphrase by using many sequential iterations that cannot be parallelized on specialized hardware.
+
+The passphrase is passed into the \project module at runtime initialization of the class. This leaves handling of the passphrase to the client. They can choose to ask the user for it on each initialization, ask once and save for future use, or a hybrid of the two methods. The user can choose a passphrase, or the client can generate a passphrase and instruct the user to save it. The latter method is currently not supported (although it could be), as it would require a mechanism for merely checking if the server has been initialized without initializing it. If the programmatically-generated passphrase method is used, we suggest displaying it as a ``backup code'' as in Yahoo!'s End-to-End Encryption Extension \cite{yahoo} for usability reasons; users are familiar with the concept of backing up data, but may not be as familiar with keys and passphrases.
+
+
+\subsection{Rollback Detection}
+
+While we cannot rely on the IMAP server for availability, we can detect and decline to accept rollback of any part of the system. Each time that the INDEX is updated by any client, its SEQUENCE NUMBER is incremented. Thus, when a new INDEX is downloaded, the \project module compares the SEQUENCE NUMBER of the received INDEX to the most recent SEQUENCE NUMBER. If the downloaded sequence number is not at least the value of the SEQUENCE NUMBER known to the client, then the new index is not accepted. It saves this in memory, but also stores it to a local file specified by the client of the module. When a client first connects to an IMAP server that has already been initialized, it uses the current INDEX's SEQUENCE NUMBER as the initial number.
+
+Rollback detection for individual messages relies on the rollback detection of the INDEX. When a message is appended to CRYPTOBLOBS, its hash is saved in the INDEX along with its pseudo-UID and UNIQUE SUBJECT. Each time the message body is FETCHed, the body is hashed and compared to the saved hash. If they differ, then the message has been changed. Thus, if the INDEX is current (and since the INDEX is saved in the server under authenticated encryption), an adversary cannot replace the message with a version whose hash is not saved in the current INDEX.
+
+
+
+Attack:
+Client A signs up and makes changes such that the SEQUENCE NUMBER is 10.
+The IMAP server rolls back the entire system to when the SEQUENCE NUMBER was 8.
+Client B signs up and accepts that the initial sequence number is 8.
+Client B makes changes such that the SEQUENCE NUMBER is 12.
+Client A connects to the server, sees that the sequence number is 12 (which is greater than 10), and accepts the INDEX. Client A assumes that Client B made changes that undid the results of INDEXes 9 and 10 before applying updates 11 and 12.
+
+Possible defense:
+When a new client signs up, either manually inspect the contents to ensure that they are in the expected state or display the current sequence number on both an existing client and the new client for a user to compare.
+
+
+
+
+
+
+
+
+
+
+
+
+

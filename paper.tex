@@ -55,7 +55,7 @@ Their general ideas, storage solutions. \cite{mailpile}
 Explain Tor \cite{tor}, .onion Addresses \cite{smtorp}
 
 \subsection{Pond}
-Pond is a system for forward secure asynchronous messaging that does not leak traffic information "except [to] a global passive attacker." \cite{pond}
+Pond is a system for forward secure asynchronous messaging that does not leak traffic information ``except [to] a global passive attacker." \cite{pond}
 
 Through these tools, the transport mechanism becomes more secure. Yet for all of these, messages are assumed to be transient or remain only on the client device. This is unacceptable behavior to a typical modern user. Modern users expect their emails to be stored on a server and available to them from multiple clients -- from their computers, mobile devices, and on the Web. To ubiquitize secure email, we must develop a storage and synchronization solution that protects messages at rest without compromising the benefits of secure transport protocols.
 
@@ -111,6 +111,7 @@ Note that these changes imply that if one client of an IMAP server is \project-c
 
 These changes permit the combination of MSMs and non-MSMs in the same storage system, ensuring an elegant transition to a more secure email.
 
+\label{mail-from-secure}
 \subsection{Mail From a Secure Source}
 When email is received from a metadata-free source (SMTorP, DIME, Pond, etc.), it is stored in a ``cryptoblobs'' mailbox on the IMAP server that the client's \project module has set up. This change is then marked in the INDEX, which is correspondingly updated.
 
@@ -192,12 +193,12 @@ Note that the present prototype implements only a subset of FETCH commands. Part
 
 \subsubsection{FLAGS} The FLAGS command is called for a specific mailbox, to ask which flags are valid inside that mailbox. Since the prototype client neither sets nor checks any message FLAGS itself, \project merely responds with the flags for the INBOX mailbox. A full implementation would allow flags to be set for individual messages within the metadata INDEX, largely reimplementing the IMAP server storage functionality on the client-side using the INDEX.
 
-\subsubsection{UIDVALIDITY} UIDVALIDITY is a mechanism for detecting non-persistence of message UIDs. \project does not allow UIDs to change over time, so as per the RFC, we may return '1' for any mailbox where we are handling UIDs \cite{rfc3501}.
+\subsubsection{UIDVALIDITY} UIDVALIDITY is a mechanism for detecting non-persistence of message UIDs. \project does not allow UIDs to change over time, so as per the RFC, we may return `1' for any mailbox where we are handling UIDs \cite{rfc3501}.
 
 \label{exists}
 \subsubsection{EXISTS} EXISTS is functionally equivalent to the return value of SELECT. The technical definition is the number of messages in the mailbox.
 
-\subsubsection{RECENT} RECENT is requested but ignored by the prototype client, so we return '0'.
+\subsubsection{RECENT} RECENT is requested but ignored by the prototype client, so we return `0'.
 
 \subsubsection{LIST} The LIST command is used to recursively find all mailboxes in the server. The current prototype allows only top-level, no-children PSEUDO mailboxes. Thus, in translating LIST results, \project inserts PSEUDO mailbox results as if they were to exist at the top level. \project also removes HIDDEN folders from the LIST results before returning.
 
@@ -205,7 +206,7 @@ Note that the present prototype implements only a subset of FETCH commands. Part
 \subsection{UID Storage and Lookup}
 While all encrypted messages are stored on the IMAP server in the CRYPTOBLOBS mailbox, the client's view should allow for a more complex representation of which messages are stored in which mailboxes. At a minimum, we would like to support an INBOX mailbox for messages that are received at the IMAP server, and an SMTorP or Pond folder for messages that are received at the client via a metadata-secure transport mechanism. Thus, each message needs an associated UID for its pseudo-mailbox, or the mailbox that the message is in as it appear to the client. But it also has an actual UID, or the UID inside the CRYPTOBLOBS mailbox. This UID is assigned by the IMAP server when \project APPENDs a message to a mailbox on the server. The APPEND command does not, however, return the assigned UID. Therefore we need a separate mechanism for associating a message's pseudo-UID with its actual UID.
 
-To handle this, before appending a message to CRYPTOBLOBS, \project generates a 16-byte random UNIQUE SUBJECT number. This number is placed in the subject line of the appended message, forming an full subject line of the form "ENCRYPTED <UNIQUE SUBJECT>". Then, when the client requests a message via a specific mailbox/UID pair, \project uses the INDEX to look up the UNIQUE SUBJECT for the pseudo-UID in the appropriate mailbox. It then searches for the message in CRYPTOBLOBS with UNIQUE SUBJECT in its subject line, which returns the unique actual UID of the message in the CRYPTOBLOBS mailbox.
+To handle this, before appending a message to CRYPTOBLOBS, \project generates a 16-byte random UNIQUE SUBJECT number. This number is placed in the subject line of the appended message, forming an full subject line of the form ``ENCRYPTED <UNIQUE SUBJECT>". Then, when the client requests a message via a specific mailbox/UID pair, \project uses the INDEX to look up the UNIQUE SUBJECT for the pseudo-UID in the appropriate mailbox. It then searches for the message in CRYPTOBLOBS with UNIQUE SUBJECT in its subject line, which returns the unique actual UID of the message in the CRYPTOBLOBS mailbox.
 
 For example, say the INDEX contains the following entry:
 
@@ -285,15 +286,40 @@ Rollback detection for individual messages relies on the rollback detection of t
 
 \section{Protecting Metadata}
 
+If a message has been received at the client from a secure source as in Section~\ref{mail-from-secure}, we would like to upload it to the IMAP server so that other \project clients can view it, and to achieve user-facing functionality backwards compatibility. Yet if we push a message to the server immediately upon its receipt, we are leaking the time of message receipt to the server. Thus, we need additional mechanisms for ensuring that a server that stores messages cannot determine when a message arrived.
+
 \subsection{Scheduler: Delivering from IMAP Client to IMAP Server}
+The primary mechanism for limiting the amount of data the server can determine regarding message arrive metadata is a scheduling module that determines when a message should be pushed up to or pulled down from the server.
 
+  \begin{tikzpicture}[node distance=8cm]
+  \node (\project) [box, minimum height=2cm] {\project};
 
-Architecture
+  \node (scheduler) [box, minimum height=2cm, right of=\project] {Scheduler};
 
-Learning Update Schedules - Exponential backoff?
+  \draw [arrow] (\project.10) -- node [above] {State information} (scheduler.-190);
+  \draw [arrow] (scheduler.190) -- node [below] {Next action: UP/DOWN} (\project.-10);
  
+  \end{tikzpicture}
+
+This scheduler receives information from the \project module about its state. Namely, it is informed when a message is received at the client or marked for deletion on the server. Instead of immediately performing this action, the \project module will wait until the next timer tick, when it is called to perform its next scheduled action by its client. At that time, it asks the scheduler whether its next action is an UP or DOWN action. The scheduler considers how often messages are being received and how often scheduled communications happen, and returns an UP or DOWN result to keep overall server growth consistent with actual message receipt and deletion rates. The server will be able to see that an UP or DOWN has been performed on schedule, but will gain no more than one bit of metadata on every timer tick.
+
+To implement this one-bit leakage, \project must either push up or pull down a message on each timer tick, whether or not it is has a message to deliver or a deletion scheduled. This condition is satisfied through artifically constructed messages. A constructed message with contents of a random size chosen from a distribution mirroring that of messages usually sent and received of the user is generated, encrypted and packaged as if it were a legitimate message, saved to a FAKE MESSAGES PSEUDO-mailbox, and sent to the server. On deletion, a message from FAKE MESSAGES is chosen at random and deleted in lieu of a legitimate message. These actions appear identical to the server, since the server will see only updates to the INDEX and the append or delete of a message with subject ENCRYPTED <UNIQUE SUBJECT> and encrypted contents.
+
+Even if the user never deletes a message, the scheduler should still periodically return a DOWN bit, so that the contents of the server do not needlessly continuously grow at a high rate. In the case where deletes never occur, one could imagine a schedule of only pushes, timed such that is it similar to the actual receipt rate, say every 20 minutes. This is an unacceptable rate of checking for mail in a modern system, where periodic updates occur an order of magnitude faster. Additionally, since only one message is pushed every $t$ minutes, messages received in a batch of $k$ would be delayed at least $k*t$ minutes.
+
+% Learning Update Schedules - Exponential backoff?
+
 \label{mixing}
 \subsection{Message Mixing}
+The scheduling mechanism is necessary but not sufficient to hide message arrival metadata from the server. Assume a user never deletes messages, for simplicity. Assume also that the server is maliciously attempting to track metadata, and notes the upload time of each message. Consider two messages, R and F. R is a real message, and F a fake. Initially, the server cannot distinguish between the two messages. Since R is real, there is a probability $p=0$ that it will be deleted at any point in the future. The goal of the scheduling algorithm is to send messages to the server at an effective rate similar to the rate of actual message receipt, so the server does not grow needlessly. Then, the number of fake messages will remain about constant, $k$. So at each timer tick where a DOWN occurs, a fake message will have probability $p=1/k$ of being deleted. Therefore, the probability that a message is not deleted after $n$ DOWN ticks is $1/k^n$ (since it must not be deleted at all time ticks), which tends towards 0 as $n$ increases. Thus, a fake message's long-term probability of being deleted is 1. So, after a length of time has passed, any message that was uploaded to the server and has remained there for a long period of time is likely a real message, and the server can therefore merely observe the time it was uploaded.
+
+
+
+
+
+Increase the rate of growth relative to deletion.
+
+
 
 \section{Prototype Client}
 

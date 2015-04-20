@@ -177,6 +177,10 @@ To determine various factors such as how often to update and how large a fake me
 
 \subsection{Size}
 
+Email sizes follow a ``long tail" logarithmic distribution. Sizes below are calculated on a mailbox with a total of 77002 messages.
+
+\includegraphics[width=\textwidth]{message-size-dist}
+
 \subsection{Timing}
   
 \section{Technical Details}
@@ -345,7 +349,12 @@ In this case, we need an $f$ of 64 to achieve merely a $p=0.89$ that a fake mess
 Is this feasible? Certainly with no space constraints, it is, but we must also consider this solution under reasonable constraints. Gmail, a popular email provider, allots 17 GB of space to a user. Assume that a user wants to use this email address for 5 years (a conservative estimate), and that messages average 170 kB (this number is accurate for my personal email account). Then, 100,000 messages will fit into the server. Say that we are comfortable with having 32 fake messages uploaded per delete operation. Even discounting other messages received in the mail server, this only allows 3125 delete operations, which amounts to 1.7 delete operations per day over the five years. This amount to a delay of about 7 hours any time the user would like to delete a message \--- and this is not taking into account the space that real messages will use. While a user without space constraints could certainly choose this method, we will now describe a more feasible solution.
 
 \subsubsection{Mixing}
-We can achieve metadata security while constraining mail server growth to a rate roughly consistent with the number of received messages. To do this, \project implements a mixing mechanism whereby scheduled updates do not simply push and pull a single message, but multiple messages amongst which the true action will be hidden.
+We can achieve metadata security while constraining mail server growth to a rate roughly consistent with the number of received messages. To do this, \project implements a mixing mechanism whereby scheduled updates push and pull not only a single message, but multiple messages among which the true target message will be disguised.
+
+On a scheduled timer tick with action UP, \project selects MIX NUMBER messages from all messages with an entry in the current INDEX, (those being the messages that exist in CRYPTOBLOBS). It then FETCHes those messages from the server, reassigns their UNIQUE SUBJECTs, reuploads the new messages to the server, then deletes the messages that were fetched. When the messages are reuploaded, the new message is randomly inserted in with them, indistinguishable from the other messages. On a DOWN operation, a similar mixing occurs. MIX NUMBER + 1 messages are selected at random. If the message to be deleted is not among them, one of the selected messages is replaced with the message to actually be deleted. \project then fetches all MIX NUMBER + 1 messages, reassigns UNIQUE SUBJECTs, reuploads the MIX NUMBER messages that are not actually marked for deletion, then deletes all chosen messages. If there are fewer than MIX NUMBER messages to choose from, all existing messages are mixed.
+
+
+
 
 
 \section{Prototype Client}

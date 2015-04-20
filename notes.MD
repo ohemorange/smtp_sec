@@ -13,6 +13,14 @@
 - mixing in mailpile
 - two mail accounts + mailpile instances
 
+## things to fix
+- actually fetch the message to be deleted on mix
+- do uploads before deletes
+
+## include in paper
+- screenshots of the thing
+- mixing calculations
+
 ## todo: probably
 - have a timed cache for some fetch_and_load_index calls (cache_ok flag)
   - currently, I have DEBUG_TURN_OFF_INDEX_REFETCH = True

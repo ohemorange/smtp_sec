@@ -171,6 +171,13 @@ When an email is received through (legacy) SMTP, it is deleted from the server, 
 
   \end{tikzpicture}
   
+
+\section{Email Usage Measurements}
+To determine various factors such as how often to update and how large a fake message should be, an implementation of \project should measure and dynamically learn these values for actual incoming messages for each particular user. The usage patterns of a typical American college student are as follows.
+
+\subsection{Size}
+
+\subsection{Timing}
   
 \section{Technical Details}
 
@@ -311,20 +318,40 @@ Even if the user never deletes a message, the scheduler should still periodicall
 
 \label{mixing}
 \subsection{Message Mixing}
-The scheduling mechanism is necessary but not sufficient to hide message arrival metadata from the server. Assume a user never deletes messages, for simplicity. Assume also that the server is maliciously attempting to track metadata, and notes the upload time of each message. Consider two messages, R and F. R is a real message, and F a fake. Initially, the server cannot distinguish between the two messages. Since R is real, there is a probability $p=0$ that it will be deleted at any point in the future. The goal of the scheduling algorithm is to send messages to the server at an effective rate similar to the rate of actual message receipt, so the server does not grow needlessly. Then, the number of fake messages will remain about constant, $k$. So at each timer tick where a DOWN occurs, a fake message will have probability $p=1/k$ of being deleted. Therefore, the probability that a message is not deleted after $n$ DOWN ticks is $1/k^n$ (since it must not be deleted at all time ticks), which tends towards 0 as $n$ increases. Thus, a fake message's long-term probability of being deleted is 1. So, after a length of time has passed, any message that was uploaded to the server and has remained there for a long period of time is likely a real message, and the server can therefore merely observe the time it was uploaded.
+The scheduling mechanism is necessary but not sufficient to hide message arrival metadata from the server. Assume a user never deletes messages, for simplicity. Assume also that the server is maliciously attempting to track metadata, and notes the upload time of each message. Consider two messages, R and F. R is a real message, and F a fake. Initially, the server cannot distinguish between the two messages. Since R is real, there is a probability $p=0$ that it will be deleted at any point in the future. The goal of the scheduling algorithm is to send messages to the server at an effective rate similar to the rate of actual message receipt, so the server does not grow needlessly. Then, the number of fake messages will remain about constant, $k$. So at each timer tick where a DOWN occurs, a fake message will have probability $p=1/k$ of being deleted. Therefore, the probability that a message is not deleted after $n$ DOWN ticks is $(1-1/k)^n$ (since it must not be deleted at all time ticks), which tends towards 0 as $n$ increases. Thus, a fake message's long-term probability of being deleted is 1. So, after a length of time has passed, any message that was uploaded to the server and has remained there for a long period of time is likely a real message, and the server can therefore merely observe the time it was uploaded.
+
+This analysis does not only apply in the theoretical sense. Assume the user had let the system run in a mode where more fake messages are uploaded than are deleted until it was seeded with 5,000 fake messages. After that point, the user wants to keep the size of the mailbox constant, so for each upload (received message), they delete a message as well. Assume also that they would like to spread new messages to other clients of the server within 10 minutes of its receipt (a conservative estimate). Then they must delete a message every 10 minutes as well, which amounts to 144 deletions a day, 52,560 a year, and 262,800 in a five year period, which we conservatively assume is the length of time a user would like to keep an email account for. So $k=5000$ and $n=262800$, giving a probability of a fake message not being deleted of about $1.5\times10^{-23}$, which is certainly distinguishable from $p=1$ for a real message.
+
+\subsubsection{Hiding Among Many}
+We can imagine a solution to this problem where many more fake messages are added than real messages, driving down the probability that a fake message is chosen for deletion until it resembles the probability that a real message is chosen, 0. (Note that even in this case we will still desire scheduled deletions, to disguise deletions of real messages.) Assume for simplicity that fake messages are added at an amortized constant rate. We would like to calculate the probability that a fake message is not deleted after the $n$ DOWN ticks following its upload at time $t$. This is equal to the product of the probabilities that a fake message was not deleted at all ticks between times $t$ and $t+n$. We can compute this based on the probability of deleting a message at a particular time after $i$ deletion intervals. Assume that at each each interval, $c+1$ real messages and $f$ fake messages came in. Then the probability that a message was fake is $f/(c+f+1)$, and $c+f+1$ messages total came in each interval. But one message was deleted each interval, so $c+f$ net messages are added. So after $i$ intervals, $i(c+f)$ messages are in the server total, and an expected $i(c+f)f/(c+f+1)\approx if$ of those are fake. So the probability of a message being deleted at time $i$ given that it is fake is $1/(if)$, and the probability that it is not deleted is $1-1/(if)$. Then if the message was uploaded at time $t$, the probability that it was not deleted at time $n$ is $\displaystyle\prod_{i=t}^{i=t+n}(1-\frac{1}{if})$. This product tends towards 0 as $n$ tends towards infinity, but its slope drops off quickly as $f$ increases.
+
+For example, consider the following graph of the probability of a message being not deleted from when it was added at time $i=250$, until time $i=1000$.
+
+\includegraphics[width=\textwidth]{many_lines_2}
+
+Note that if 32 or 64 messages are added per deletion operation, the probability that a fake message is not deleted remains at 0.96 and 0.98 even after $1000-250=750$ operations. This comparison is shown more clearly in the following graph.
+
+\includegraphics[width=\textwidth]{few-blue-dots-250}
 
 
+Yet we only achieve these high rates after the server has been seeded with an adequate number of fake messages, as demonstrated by altering our parameters to show the results when a fake message is instead added at interval $i=0$.
 
+\includegraphics[width=\textwidth]{fake-message-deletion-over-time}
 
+\includegraphics[width=\textwidth]{fake-message-deletion-probability-vs-num-fake-messages-added}
 
-Increase the rate of growth relative to deletion.
+In this case, we need an $f$ of 64 to achieve merely a $p=0.89$ that a fake message is not deleted (compare, of course, with $p=1$ for a real message under the assumption that no real messages are ever deleted).
 
+Is this feasible? Certainly with no space constraints, it is, but we must also consider this solution under reasonable constraints. Gmail, a popular email provider, allots 17 GB of space to a user. Assume that a user wants to use this email address for 5 years (a conservative estimate), and that messages average 170 kB (this number is accurate for my personal email account). Then, 100,000 messages will fit into the server. Say that we are comfortable with having 32 fake messages uploaded per delete operation. Even discounting other messages received in the mail server, this only allows 3125 delete operations, which amounts to 1.7 delete operations per day over the five years. This amount to a delay of about 7 hours any time the user would like to delete a message \--- and this is not taking into account the space that real messages will use. While a user without space constraints could certainly choose this method, we will now describe a more feasible solution.
+
+\subsubsection{Mixing}
+We can achieve metadata security while constraining mail server growth to a rate roughly consistent with the number of received messages. To do this, \project implements a mixing mechanism whereby scheduled updates do not simply push and pull a single message, but multiple messages amongst which the true action will be hidden.
 
 
 \section{Prototype Client}
 
-\section{Performance}
-\subsection{Scheduler}
+% \section{Performance}
+% \subsection{Scheduler}
 
 
 \section{Attacks and Countermeasures}

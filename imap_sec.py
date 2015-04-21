@@ -48,7 +48,7 @@ DEBUG_IMAP_FROM_SMTORP = False
 DEBUG_SCHEDULER = False
 DEBUG_EXTRAS = False
 DEBUG_METHODS_ARGS_RETURNS = True
-PRINT_INDEX = True
+PRINT_INDEX = False
 DEBUG_LOCK = False
 DEBUG_RESPONSES = False
 DEBUG_TURN_OFF_INDEX_REFETCH = True
@@ -310,8 +310,8 @@ class IMAP4_SSL(imaplib.IMAP4_SSL):
             print "saved salt and related information."
 
     def fetch_and_load_index(self, refetch_index=True):
-        if DEBUG_EXTRAS or DEBUG_METHODS_ARGS_RETURNS:
-            print "fetch_and_load_index"
+        # if DEBUG_EXTRAS or DEBUG_METHODS_ARGS_RETURNS:
+        #     print "fetch_and_load_index"
 
         if DEBUG_TURN_OFF_INDEX_REFETCH or not refetch_index:
             if self.mapping:

@@ -300,7 +300,7 @@ Rollback detection for individual messages relies on the rollback detection of t
 If a message has been received at the client from a secure source as in Section~\ref{mail-from-secure}, we would like to upload it to the IMAP server so that other \project clients can view it, and to achieve user-facing functionality backwards compatibility. Yet if we push a message to the server immediately upon its receipt, we are leaking the time of message receipt to the server. Thus, we need additional mechanisms for ensuring that a server that stores messages cannot determine when a message arrived.
 
 \subsection{Scheduler: Delivering from IMAP Client to IMAP Server}
-The primary mechanism for limiting the amount of data the server can determine regarding message arrive metadata is a scheduling module that determines when a message should be pushed up to or pulled down from the server.
+The primary mechanism for limiting the amount of data the server can determine regarding message arrival metadata is a scheduling module that determines when a message should be pushed up to or pulled down from the server.
 
   \begin{tikzpicture}[node distance=8cm]
   \node (\project) [box, minimum height=2cm] {\project};

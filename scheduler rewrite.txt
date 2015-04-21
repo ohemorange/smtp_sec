@@ -1,0 +1,43 @@
+The primary mechanism for limiting the amount of data the server can determine regarding message arrive metadata is a combination of periodically seeding the mailbox with fake messages, and scheduled message mixes.
+
+\includegraphics[width=0.5\textwidth]{scheduler}
+
+In the diagram above, a mix occurs at every event M. We 
+
+
+
+
+
+
+
+a combination of scheduled exchanges, mixing, and fake messages
+
+
+
+
+
+a separate scheduler module that releases UP, DOWN, or NONE tick every time t
+we feed it information about how many messages we're actually receiving, and it lets us know what the size of our mailbox should be, leaking only 1 trit of information to the server every time t.
+up : increase size of mailbox
+down: decrease
+none: same
+
+
+option 1: just have many extra pushes
+
+
+option 2: mixing, mailbox grows with messages received
+since we're always pushing on schedule, either deletes will leak which are fake, or we have to wait a long time before we catch a fake
+deletes won't leak which are fake if we have a large enough mix number, but that's infeasible.
+
+
+option 3: mixing, but there's a good amount of decoys. half would be super nice but we don't need that.
+conceptualize as two separate operations
+
+each mix, if we pulled down a fake, we can push up a real
+since we have many fakes, we have a pretty good chance of getting a fake so we can push up a real
+then we're not bayes theoreming/ monty halling it, there's no additional probability of a fake being pulled down and you can't at all tell the difference between a regular mix and a real-insert mix
+
+separately, we add fake messages in to replenish the fake messages relative to the size of the inbox. the server will know that 1 in mix number + 1 of these are fake, but they have just as high probability of being selected later. and if we have enough, then even if it's selected to come down, there won't necessarily be a real one in the replacements. ***do the numbers here.
+
+if we delete, we know that one of those mix num was fake, but we've been mixing a bunch so that should be fine. (as long as it's deleted after this many mixes, which works out to this much time)

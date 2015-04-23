@@ -16,10 +16,13 @@
 ## things to fix
 - actually fetch the message to be deleted on mix
 - do uploads before deletes
+- pad messages to a constant size
 
 ## include in paper
 - screenshots of the thing
-- mixing calculations
+- note that we need to switch to constant size messages to allow mixing
+  - but then this makes it hard to handle fetching? maybe buckets of sizes?
+- what if we just wait a random amount of time before uploading it to the server? (?)
 
 ## todo: probably
 - have a timed cache for some fetch_and_load_index calls (cache_ok flag)

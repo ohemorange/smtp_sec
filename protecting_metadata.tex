@@ -1,0 +1,29 @@
+\section{Protecting Metadata}
+Once a message has been received at the client, we would like to upload it to the IMAP server for storage. Yet while we can hide the FROM and TO headers easily, we do not want the server to gain timing information about the message. If we upload it immediately, then the server will know that we have received a message at that time. Even worse, modern clients often save sent messages to a Sent Messages folder. If the mail server of the sender and the receiver are colluding, as can easily be the case when both clients are using the same company to provide servers, then the server could easily execute timing attacks by observing two users suspecting to be communicating, and seeing if they upload a message at about the same time. So, we must include a mechanism for hiding this timing metadata from the IMAP server. The solution must not allow the server to recover the timing information, it must not take up extraneous amount of space in the mailbox, and it must allow sufficiently frequent and short exchanges with the server. Additionally, for any of these methods, the deletion of a message from the server must not reveal otherwise hidden information.
+
+\subsection{Mechanisms}
+While we can vary particular parameters and algorithms, most rely on two primary components, scheduling and mixing.
+
+  \begin{tikzpicture}[node distance=8cm]
+  \node (\project) [box, minimum height=2cm] {\project};
+
+  \node (scheduler) [box, minimum height=2cm, right of=\project] {Scheduler};
+
+  \draw [arrow] (\project.10) -- node [above] {State information} (scheduler.-190);
+  \draw [arrow] (scheduler.190) -- node [below] {Next action type} (\project.-10);
+ 
+  \end{tikzpicture}
+
+Fundamentally, scheduling means that \project performs an action at a predetermined time tick. To better reason about the leakage of information, \project contains a separate scheduler module (shown above) that is informed when a message arrives or is marked for deletion. It thus can reason about the expansion rate of the server. At the scheduled time tick, \project will ask the scheduler what its next action should be. This can be one of three types: UP, DOWN, or NONE. UP means that the server will grow in size by one message, DOWN means that it will shrink by one message, and NONE means that the total server size will remain constant. The trit that it outputs is based on its metadata protection policy, determined in conjunction with the \project module. We separate this functionality into the scheduler because it precisely mirrors the information that the server will receive: whether a message has been pushed up, pulled down, or neither. Thus, the server can gain no more than one trit of data on every time tick.
+
+To implement this one-trit leakage, \project must perform the determined action on each timer tick, whether or not it is has a message to deliver or a deletion scheduled. This condition is satisfied through artifically constructed messages. A constructed message with contents of a random size chosen from a distribution mirroring that of messages usually sent and received of the user is generated, encrypted and packaged as if it were a legitimate message, saved to a FAKE MESSAGES PSEUDO-mailbox, and sent to the server. On deletion, a message from FAKE MESSAGES is chosen at random and deleted in lieu of a legitimate message. Without taking into account any other information, these actions would appear identical to the server whether they were performed on real or fake messages, since the server will see only updates to the INDEX and the append or delete of a message with subject ENCRYPTED <UNIQUE SUBJECT> and encrypted contents. How they appear to the server in the context of all actions performed is the subject of Section~\ref{best-metadata}.
+
+\project also incorporates mixing to better hide metadata. In a single mixing step, 
+
+
+
+Which messages are selected to be a part of the mix depends on the metadata hiding strategy.
+
+
+\label{best-metadata}
+\subsection{Strategies}

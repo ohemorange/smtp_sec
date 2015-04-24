@@ -28,6 +28,11 @@
 \tableofcontents
 
 \begin{abstract}
+Statetheproblem2.Saywhyit’saninterestingproblem3.Saywhatyoursolutionachieves4.Saywhatfollowsfromyoursolutio
+
+Manypapersarebadlywrittenandhardtounderstand2.Thisisapity,becausetheirgoodideasmaygounappreciated3.Followingsimpleguidelinescandramaticallyimprovethequalityofyourpapers4.Yourworkwillbeusedmore,andthefeedbackyougetfromotherswillinturnimproveyourresearch
+
+
 Email, but metadata and content are E2E encrypted. No usability concessions. A non-technical user will have no more trouble using it than they would with https vs. http. Departure from classical message encryption usability theories in that it places no burden on the user.
 \end{abstract}
 
@@ -84,29 +89,25 @@ PGP is the classic example of an end-to-end email encryption tool, and also the 
 \subsubsection{Yahoo! E2E Extension}
 In the past year, major mail providers have begun to express public interest in providing E2E encryption for their users. In particular, Yahoo! recently released the source for a browser extension (based on one developed by Google) that modifies the Yahoo! webmail client to integrate E2E \cite{yahooe2e}. It handles key management automatically, decreasing the cognitive load on the user. Since it is developed in-house, it has both the design resources and engineering manpower of a modern large technology company.
 
-
 \subsubsection{Messaging Apps}
-Some of the most usable E2E solutions are not for email, but for mobile chat. Apple's iMessage application encrypts messages E2E, although their key management system is unknown and may therefore be invisibly compromised \cite{imessage}. Yet their messaging system is not only usable, it is a widely-adopted example of a smooth transition to an updated protocol without problematic updates to the user experience.
-
-
-Signal, WhatsApp, iMessage
-\subsection{Facebook Message Hannover Study}
-What I'm working on for email, but for Facebook. \cite{fahl}
+Some of the most usable and widespread E2E solutions are not for email, but for mobile chat. Apple's iMessage application encrypts messages E2E, although their key management system is unknown and may therefore be invisibly compromised \cite{imessage}. Yet their messaging system is not only usable, it is a widely-adopted example of a smooth transition to an updated protocol without problematic updates to the user experience. Signal and TextSecure, from Open Whisper Systems, provide a similar experience, but avoid iMessage's public key infrastructure dependency by using instead a modified version of Off-the-Record Messaging (OTR), which can use solutions to the socialist millionaires problem in place of relying on a previously known public key \cite{borisov2004off}. Crucially, they enable asynchronous messaging by preemptively generating and sending signed key exchange messages \cite{whisper}. They thereby also provide forward secrecy and deniability in an asynchronous setting. Their solution was implemented in the popular messaging application WhatsApp as well \cite{whatsapp}.
 
 
 \subsection{E2E Metadata Security for Transport}
-\subsubsection{Mailpile's SMTorP}
-Also their general ideas, storage solutions. \cite{mailpile}
-Explain Tor \cite{tor}, .onion Addresses \cite{smtorp}
-\subsubsection{Pond}
-Pond is a system for forward secure asynchronous messaging that does not leak traffic information ``except [to] a global passive attacker." \cite{pond}
-\subsubsection{Other}
-Tor Mail, OnionMail
+While messaging applications have largely saturated the space of ways to ensure authentication and confidentiality, transport anonymity solutions are more well-developed in the Internet space. Tor, a system for anonymizing Internet traffic, sees about 2.5 million users per day \cite{torusers}. Anonymous remailers use Tor-like forwarding, but have not seen as wide adoption. Pond, a non-email messaging application, provides forward secure asynchronous messaging that does not leak traffic information ``except [to] a global passive attacker." \cite{pond}. There also exist SMTP servers that run as Tor hidden services, essentially bootstrapping their mail anonymity off of Tor's anonymity \cite{onionmail}.
+
+
+\subsubsection{Mailpile and SMTorP}
+While anonymous servers abound, mail clients are generally left to the user's preference. Yet one mail client solution comes in to save the day! Mailpile, rescuing users from the humdrum toil of non-anonymous, unprotected existence \cite{mailpile}! Mailpile is The Usability Solution, making PGP as easy to use as the little lock icon in https. But that's not all! With this one neat experimental plugin trick (SMTorP), a Mailpile user can send their emails over Tor \cite{smtorp}! And it works just like a regular email, except that it's sent to a .onion address instead! Wow! A .onion address is a Tor hidden service, which they do admit is a security liability since it essentially forces any mail client who wants to receive SMTorP emails to run a Tor hidden service on their machine, opening them up to all sorts of fun weird incoming traffic! It uses hashcash to keep the spam (bulk commercial unsolicited email) out, and users could advertise their addresses in the headers of legacy emails that they send, as an upgrade rollout strategy!
+
 
 Through these tools, the transport mechanism becomes more secure. Yet for all of these, messages are assumed to be transient or remain only on the client device. This is unacceptable behavior to a typical modern user. Modern users expect their emails to be stored on a server and available to them from multiple clients -- from their computers, mobile devices, and on the Web. To ubiquitize secure email, we must develop a storage and synchronization solution that protects messages at rest without compromising the benefits of secure transport protocols.
 
 
 \section{Threat model}
+
+IMAP is a synchronization protocol that uses a central server to provide mail storage functionality to multiple clients. Popular mail providers such as Gmail, Yahoo! Mail, and Hotmail provide their users with both mail server and client functionality. \project assumes an untrusted network and an untrusted server, but a trusted client. The server does not guarantee availability, and may both passively analyze any data it is sent for timing or content information, and reply dishonestly to client requests. The IMAP servers of multiple users may collude. A network adversary, either passive or active, may collude with the adversary running the IMAP server. Either of these may themselves be users of \project, and attempt to gain information from communicating with a target user. All clients of the same account on a mail server have equivalent access privileges. These adversaries may attempt to determine the contents of a message, the communicants, and when a message was received (in order to determine the other two). We make the prior assumption that messages were initially sent to the client in a metadata-secure manner. A client should be able to identify and reject misinformation sent to it by the server.
+
 
 \label{targetuser}
 \section{Target user}

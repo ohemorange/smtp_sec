@@ -18,11 +18,13 @@
 - do uploads before deletes
 - pad messages to a constant size
 
-## include in paper
+## paper
 - screenshots of the thing
 - note that we need to switch to constant size messages to allow mixing
   - but then this makes it hard to handle fetching? maybe buckets of sizes?
 - what if we just wait a random amount of time before uploading it to the server? (?)
+- web/locally/maybe in a future works part of discussion/conclusion or something
+- rewrite mailpile section
 
 ## todo: probably
 - have a timed cache for some fetch_and_load_index calls (cache_ok flag)

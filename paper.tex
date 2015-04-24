@@ -112,7 +112,13 @@ IMAP is a synchronization protocol that uses a central server to provide mail st
 \label{targetuser}
 \section{Target user}
 
+Our target user is non-technical but experienced with modern email tools. Given a standard mail client, the user can easily send and receive emails, and handle advanced email features like folders and labels. They may need to send files as attachments over emails, and do not wish to receive spam. They access their email from a variety of devices, including their desktop, smartphone, and a web browser. The user must notice no difference between their legacy email experience and their metadata-protected email experience.
+
+
 \section{Design overview}
+
+
+
 encrypt, hiding sender information inside the contents, inside a special folder. index, lock messages to handle multiple clients. hide metadata by using a combination of scheduling, mixing, fake decoy messages, and possibly ORAM-like techniques. rollback detection for index and messages. key is passphrase/scrypt kdf with salt.
 
 \section{Email Usage Measurements}
@@ -436,8 +442,9 @@ TODO: deal with the problem of making a fetch-delete-append operation indistingu
 \subsubsection{Defense}
 When a new client signs up, either manually inspect the contents to ensure that they are in the expected state or display the current sequence number on both an existing client and the new client for a user to compare.
 
-\section{Dissemination Considerations}
-As discussed in Section~\ref{architecture}, every client of an IMAP server must upgrade to \project if any client does so. Therefore, for this technology to spread, \project must be available across platforms on initial release, as a standard modern user expects to be able to check his or her email across devices and email clients. 
+\section{Discussion}
+As discussed in Section~\ref{architecture}, every client of an IMAP server must upgrade to \project if any client does so. Therefore, for this technology to spread, \project must be available across platforms on initial release, as a standard modern user expects to be able to check his or her email across devices and email clients. One potentially opportune venue for this is in an enterprise setting. Many businesses require a particular software stack for their employees, often employing IT staff to manage the installation and upkeep on behalf of all workers. Additionally, a business stands to gain much from employing metadata protection. A company involved in manufacturing a product may wish to hide from which vendor it is buying its components before the product's release; disclosure of an email exchange with a particular vendor could compromise this secret. Today, these companies often run their own mail servers to manage such leakages, imposing extraneous time and technology costs on them. With \project, a company could instead either purchase or build only a mail client, lightening their IT burden.
+
 
 \section{Summary}
 

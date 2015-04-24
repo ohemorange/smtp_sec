@@ -33,3 +33,5 @@ arrow.get(just_date,"ddd, D MMM YYYY HH:mm:ss Z")
 
 
 # http://arrow.readthedocs.org/en/latest/
+
+# for inter, convert all to utc

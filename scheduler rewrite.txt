@@ -79,3 +79,9 @@ http://www.cs.ucla.edu/~rafail/PUBLIC/09JACM.pdf
 ``learning about a program from its execution"
 differences: we have FETCH, but no STORE --> you can only APPEND and later search
 memory access pattern --> fetches are actually probably fine, it's deletes and stores that we need to worry about
+
+
+
+
+
+what if we just wait a random amount of time before uploading it to the server?

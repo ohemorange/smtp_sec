@@ -56,22 +56,42 @@ Garfinkel et al. \cite{garfinkel} talk about ``How to make secure email easier t
 \section{Relevant technologies and related work}
 
 \subsection{Classical email}
+Modern email is composed of two distinct protocol stages: sending and transport, and storage and retrieval, shown below in a diagram from \cite{smtp_imap}.
+
+\begin{center}
+\includegraphics[width=0.6\textwidth]{smtp_imap}
+\end{center}
+
+To send an email, the sender's machine send a request to an SMTP server acting on its behalf, which relays it through other SMTP servers until it reaches the recipient's destination server. At that point, the recipient's machine retrieves the email from the server using either POP or IMAP.
+
 \subsubsection{Mail Sending and Transport}
-SMTP
+The standard sending and transport protocol is Simple Mail Transfer Protocol (SMTP), first defined in RFC 821 \cite{postel1982rfc} in 1982, and most recently updated in RFC 5321 \cite{klensin2008rfc}. SMTP is an application-layer Internet protocol. In SMTP, a user runs a mail client, or a mail user agent (MUA). This MUA submits mail to a mail server, or a mail submission agent (MSA) on either port 25, 587, or with SSL enabled on 465. The MSA passes the message to a mail transfer agent (MTA), which is often on the same machine as the MSA. The MTA then looks to transfer the message to the recipient's mail exchanger (MX). It does this by looking up the recipient's domain in the Domain name system (DNS). The MTA then sends the email over the Internet to the MX. The MX then sends the email to the recipient's mail delivery agent (MDA). The MDA will either store the message or continue to forward them to another MDA. Upon arriving at their final MDA, the SMTP portion of email delivery is complete.
+
+
 \label{legacyimap}
 \subsubsection{Mail Retrieval, Storage, and Synchronization}
-Modern: IMAP
-IMAP uses a command-response model. Commands are either tagged with OK, BAD, or NO, or untagged.
+Once a message has arrived at an MDA, the recipient's MUA must retrieve the message. For this, most MUAs use either POP or IMAP. Post Office Protocol (POP) is a simple protocol that enables downloads and deletions, and is most often used when a single client is interested in retrieving mail from an MDA \cite{reynolds1984post}, \cite{myers1996post}. The Internet Message Access Protocol is a more complex protocol that enables multiple clients to be connected to the same mailbox, and has come into more widespread use in recent years \cite{crispin2003internet}.
 
-\subsection{Non-metadata security}
-\subsubsection{PGP}
-\subsubsection{Yahoo! E2E}
+The current version of IMAP is IMAP 4 revision 1 (IMAP4rev1). An IMAP client connects to an IMAP server over port 143, or over 993 if using SSL. The protocol allows a rich set of commands and actions, enabling clients to create, delete, and rename mailboxes, check for new messages, permanently remove messages, set and clear flags that facilitate multi-client synchronization, and more. Communication is structured in a command-response model, where all messages sent from the server are direct responses to requests from the client. Commands can be tagged with various labels, including OK to indicate success and BAD to indicate a malformed command, or they can be untagged. Many modern languages, including Python, include a library for sending commands to an IMAP server.
+
+\subsection{Non-metadata End-To-End (E2E) Security}
+While the standard email protocols are not secure in and of themselves, there have been numerous attempts over the years to provide secure alternatives. Link encryption (sending over SSL/TLS) has been the most widely adopted, but suggestions for messaging with E2E security have been propsed to varying levels of adoption and with a diverse range of feature inclusion \cite{unger2015sok}. These features include synchronicity, deniability and forward/backward secrecy.
+
+
+\subsubsection{Pretty Good Privacy (PGP)}
+PGP is the classic example of an end-to-end email encryption tool, and also the classic example of a usability failure. Defined in RFC 4880 as the OpenPGP standard, it provides users the ability to sign, encrypt, and decrypt data using a combination of symmetric and public key cryptography \cite{callas2007openpgp}. Unfortunately, usability studies continue to find that users of the system are unable to use it properly, with errors ranging from key management issues to the inability to encrypt a message \cite{whitten1999johnny} \cite{sheng2006johnny}. Even for users for whom communication secrecy is vital to operational success, such as people working on sensitive projects at a non-violent, direct action organization, it is still easy to make errors that compromise the security of the emails \cite{gaw2006secrecy}.
+
+\subsubsection{Yahoo! E2E Extension}
+In the past year, major mail providers have begun to express public interest in providing E2E encryption for their users. In particular, Yahoo! recently released the source for a browser extension (based on one developed by Google) that modifies the Yahoo! webmail client to integrate E2E \cite{yahooe2e}. It handles key management automatically, decreasing the cognitive load on the user. Since it is developed in-house, it has both the design resources and engineering manpower of a modern large technology company.
+
+
 \subsubsection{Messaging Apps}
+Some of the most usable E2E solutions are not for email, but for mobile chat. Apple's iMessage application encrypts messages E2E, although their key management system is unknown and may therefore be invisibly compromised \cite{imessage}. Yet their messaging system is not only usable, it is a widely-adopted example of a smooth transition to an updated protocol without problematic updates to the user experience.
+
+
 Signal, WhatsApp, iMessage
 \subsection{Facebook Message Hannover Study}
 What I'm working on for email, but for Facebook. \cite{fahl}
-\subsubsection{Other}
-Many combinations of options exist \cite{spreadsheet}. (Figure out how to cite JB's Summary of Knowledge.)
 
 
 \subsection{E2E Metadata Security for Transport}
@@ -92,10 +112,10 @@ Through these tools, the transport mechanism becomes more secure. Yet for all of
 \section{Target user}
 
 \section{Design overview}
-encrypt, hiding sender information inside the contents, inside a special folder. index, lock messages to handle multiple clients. hide metadata by using a combination of scheduling and mixing, and possibly ORAM-like techniques. rollback detection for index and messages. key is passphrase/scrypt kdf with salt.
+encrypt, hiding sender information inside the contents, inside a special folder. index, lock messages to handle multiple clients. hide metadata by using a combination of scheduling, mixing, fake decoy messages, and possibly ORAM-like techniques. rollback detection for index and messages. key is passphrase/scrypt kdf with salt.
 
 \section{Email Usage Measurements}
-To determine various factors such as how often to update and how large a fake message should be, an implementation of \project should measure and dynamically learn these values for actual incoming messages for each particular user. The usage patterns of a typical American college student are as follows.
+To determine various factors such as how often to update and how large a fake message should be, an implementation of \project should measure and dynamically learn these values for actual incoming messages for each particular user. The usage patterns of the author, an American university student, are as follows.
 
 \subsection{Size}
 
@@ -104,6 +124,7 @@ Email sizes follow a ``long tail" logarithmic distribution. Sizes below are calc
 \includegraphics[width=\textwidth]{message-size-dist}
 
 \subsection{Timing}
+time of day / week data, distribution of interarrival times
 
 
 \label{architecture}
@@ -120,13 +141,13 @@ A permissible \project solution must be built to integrate with legacy systems. 
 
 The first is unacceptable, given the target user group described in Section~\ref{targetuser}, as this would violate user expectations. To implement the second, we would need to describe a server infrastructure for storing messages and synchronizing across multiple possible clients who have subscribed to updates on messages stored in the system -- which is to say, (a subset of) the functions that the IMAP server is designed to perform. This brings us to our final option, using a modified version of existing IMAP technology, which was described in Section~\ref{legacyimap}.
 
-In the \project protocol, a standard IMAP client library is wrapped with a \project module. An MUA then uses the \project module in lieu of a standard IMAP connection agent. This module will perform all necessary functions on behalf of the MUA, including encryption, UID translation, and metadata tracking.
+In the \project protocol, a standard IMAP client library is wrapped with a \project module. An MUA then uses the \project module in lieu of a standard IMAP connection agent. The \project module will perform all necessary functions on behalf of the MUA, including encryption, UID translation, and metadata tracking. The IMAP server is unmodified.
 % The \project protocol is 
 % The core elements of the \project protocol are 
 % \begin{enumerate*}[label=(\itshape\arabic*\upshape)]
 % \item an \project module used in lieu of a standard IMAP connection agent in an MUA, and
 % \item an index file that is stored as a regular message in a legacy IMAP server. \end{enumerate*}
-As further described in later sections, the module ensures that metadata is encrypted along with message contents for all messages to be stored on the IMAP server. It also handles the indexing functions, mapping mailboxes to the messages they complain. This is a significant departure from the legacy system, where mailbox names and contents were exposed to the IMAP server. As such, it shifts the burden of tracking, updating, and syncing changes to the INDEX from the server to the client. When one client updates the INDEX, the IMAP server will see that a message has changed, and inform its other clients in the standard method. 
+As further described in later sections, the module ensures that metadata is encrypted along with message contents for all messages to be stored on the IMAP server. It also handles the indexing functions, mapping mailboxes to the messages they contain. This is a significant departure from the legacy system, where mailbox names and contents were exposed to the IMAP server. As such, it shifts the burden of tracking, updating, and syncing changes to the INDEX from the server to the client. When one client updates the INDEX, the IMAP server will see that a message has changed, and inform its other clients in the standard method. 
 
 % Such updates may arise from moving messages between mailboxes as they appear to the client to exist, necessitating careful bookkeeping of the index file.
 
@@ -195,7 +216,8 @@ When an email is received through (legacy) SMTP, it is deleted from the server, 
   \end{tikzpicture}
 
   
-\section{Technical Details}
+\section{Implementation Details}
+
 
 \label{initialization}
 \subsection{Initialization}

@@ -3,6 +3,7 @@
 %replace XXX with the submission number you are given from the ISCA submission site.
 \newcommand{\IWreport}{2015}
 \newcommand{\project}{IMAPSec }
+\newcommand{\projectnospace}{IMAPSec}
 
 \usepackage[normalem]{ulem}
 \usepackage{listings}
@@ -28,6 +29,8 @@
 \tableofcontents
 
 \begin{abstract}
+TODO: write abstract.
+
 Statetheproblem2.Saywhyit’saninterestingproblem3.Saywhatyoursolutionachieves4.Saywhatfollowsfromyoursolutio
 
 Manypapersarebadlywrittenandhardtounderstand2.Thisisapity,becausetheirgoodideasmaygounappreciated3.Followingsimpleguidelinescandramaticallyimprovethequalityofyourpapers4.Yourworkwillbeusedmore,andthefeedbackyougetfromotherswillinturnimproveyourresearch
@@ -37,6 +40,8 @@ Email, but metadata and content are E2E encrypted. No usability concessions. A n
 \end{abstract}
 
 \section{Introduction}
+
+TODO: make this into full sentences and explain things and such.
 
 Communication is important.
 
@@ -75,7 +80,7 @@ The standard sending and transport protocol is Simple Mail Transfer Protocol (SM
 
 \label{legacyimap}
 \subsubsection{Mail Retrieval, Storage, and Synchronization}
-Once a message has arrived at an MDA, the recipient's MUA must retrieve the message. For this, most MUAs use either POP or IMAP. Post Office Protocol (POP) is a simple protocol that enables downloads and deletions, and is most often used when a single client is interested in retrieving mail from an MDA \cite{reynolds1984post}, \cite{myers1996post}. The Internet Message Access Protocol is a more complex protocol that enables multiple clients to be connected to the same mailbox, and has come into more widespread use in recent years \cite{crispin2003internet}.
+Once a message has arrived at an MDA, the recipient's MUA must retrieve the message. For this, most MUAs use either POP or IMAP. Post Office Protocol (POP) is a simple protocol that enables downloads and deletions, and is most often used when a single client is interested in retrieving mail from an MDA \cite{reynolds1984post}, \cite{myers1996post}. The Internet Message Access Protocol is a more complex protocol that enables multiple clients to be connected to the same mailbox, and has come into more widespread use in recent years \cite{rfc3501}.
 
 The current version of IMAP is IMAP 4 revision 1 (IMAP4rev1). An IMAP client connects to an IMAP server over port 143, or over 993 if using SSL. The protocol allows a rich set of commands and actions, enabling clients to create, delete, and rename mailboxes, check for new messages, permanently remove messages, set and clear flags that facilitate multi-client synchronization, and more. Communication is structured in a command-response model, where all messages sent from the server are direct responses to requests from the client. Commands can be tagged with various labels, including OK to indicate success and BAD to indicate a malformed command, or they can be untagged. Many modern languages, including Python, include a library for sending commands to an IMAP server.
 
@@ -98,7 +103,7 @@ While messaging applications have largely saturated the space of ways to ensure 
 
 
 \subsubsection{Mailpile and SMTorP}
-While anonymous servers abound, mail clients are generally left to the user's preference. Yet one mail client solution comes in to save the day! Mailpile, rescuing users from the humdrum toil of non-anonymous, unprotected existence \cite{mailpile}! Mailpile is The Usability Solution, making PGP as easy to use as the little lock icon in https. But that's not all! With this one neat experimental plugin trick (SMTorP), a Mailpile user can send their emails over Tor \cite{smtorp}! And it works just like a regular email, except that it's sent to a .onion address instead! Wow! A .onion address is a Tor hidden service, which they do admit is a security liability since it essentially forces any mail client who wants to receive SMTorP emails to run a Tor hidden service on their machine, opening them up to all sorts of fun weird incoming traffic! It uses hashcash to keep the spam (bulk commercial unsolicited email) out, and users could advertise their addresses in the headers of legacy emails that they send, as an upgrade rollout strategy!
+While anonymous servers abound, mail clients are generally left to the user's preference. Mailpile, though, is a mail client with a goal of integrating security features into the user experience \cite{mailpile}. It integrates key management into its main contact management system, and includes visual indicators (green locks) to denote secure messages in the style of https in browser URL bars. Furthermore, it contains an experimental plugin (SMTorP) that enables users to opportunistically communicate with other users of the plugin, over Tor \cite{smtorp}. SMTorP is semantically similar to SMTP, except that the receiving client runs an SMTP server on the same machine as the mail client, set up as a Tor hidden service. When used in this fashion, an email is sent to the recipient's .onion address instead of a human-chosen address. The authors note that running an SMTP server on a Tor hidden service might be a security liability, since this opens the client to potentially malicious traffic. To address the lack of human-readibility in addresses, the authors consider having users advertise their addresses in the headers of legacy emails that they send, as an invisible upgrade rollout strategy. The protocol also uses hashcash, a proof-of-work algorithm, to defend against spam (bulk commercial unsolicited email).
 
 
 Through these tools, the transport mechanism becomes more secure. Yet for all of these, messages are assumed to be transient or remain only on the client device. This is unacceptable behavior to a typical modern user. Modern users expect their emails to be stored on a server and available to them from multiple clients -- from their computers, mobile devices, and on the Web. To ubiquitize secure email, we must develop a storage and synchronization solution that protects messages at rest without compromising the benefits of secure transport protocols.
@@ -106,7 +111,7 @@ Through these tools, the transport mechanism becomes more secure. Yet for all of
 
 \section{Threat model}
 
-IMAP is a synchronization protocol that uses a central server to provide mail storage functionality to multiple clients. Popular mail providers such as Gmail, Yahoo! Mail, and Hotmail provide their users with both mail server and client functionality. \project assumes an untrusted network and an untrusted server, but a trusted client. The server does not guarantee availability, and may both passively analyze any data it is sent for timing or content information, and reply dishonestly to client requests. The IMAP servers of multiple users may collude. A network adversary, either passive or active, may collude with the adversary running the IMAP server. Either of these may themselves be users of \project, and attempt to gain information from communicating with a target user. All clients of the same account on a mail server have equivalent access privileges. These adversaries may attempt to determine the contents of a message, the communicants, and when a message was received (in order to determine the other two). We make the prior assumption that messages were initially sent to the client in a metadata-secure manner. A client should be able to identify and reject misinformation sent to it by the server.
+IMAP is a synchronization protocol that uses a central server to provide mail storage functionality to multiple clients. Popular mail providers such as Gmail, Yahoo! Mail, and Hotmail provide their users with both mail server and client functionality. \project assumes an untrusted network and an untrusted server, but a trusted client. The server does not guarantee availability, and may both passively analyze any data it is sent for timing or content information, and reply dishonestly to client requests. The IMAP servers of multiple users may collude. A network adversary, either passive or active, may collude with the adversary running the IMAP server. Either of these may themselves be users of \projectnospace, and attempt to gain information from communicating with a target user. All clients of the same account on a mail server have equivalent access privileges. These adversaries may attempt to determine the contents of a message, the communicants, and when a message was received (in order to determine the other two). We make the prior assumption that messages were initially sent to the client in a metadata-secure manner. A client should be able to identify and reject misinformation sent to it by the server.
 
 
 \label{targetuser}
@@ -116,7 +121,7 @@ Our target user is non-technical but experienced with modern email tools. Given 
 
 
 \section{Design overview}
-
+TODO: turn this into real words.
 
 
 encrypt, hiding sender information inside the contents, inside a special folder. index, lock messages to handle multiple clients. hide metadata by using a combination of scheduling, mixing, fake decoy messages, and possibly ORAM-like techniques. rollback detection for index and messages. key is passphrase/scrypt kdf with salt.
@@ -126,12 +131,21 @@ To determine various factors such as how often to update and how large a fake me
 
 \subsection{Size}
 
-Email sizes follow a ``long tail" logarithmic distribution. Sizes below are calculated on a mailbox with a total of 77002 messages.
+Email sizes roughly follow a ``long tail" distribution (where the integral of the graph of distribution of sizes is logarithmic). Sizes below are calculated on a mailbox with a total of 77002 messages, and cumulative number of messages below a particular size are graphed.
 
 \includegraphics[width=\textwidth]{message-size-dist}
 
 \subsection{Timing}
-time of day / week data, distribution of interarrival times
+
+The following graphic displays message timestamps per day of the week and hour of the day, in a Github-style ``punchcard" format \cite{punchcard}.
+
+\includegraphics[width=\textwidth]{punchcard}
+
+We can also see message interarrival times \--- that is, the distribution of the length of time between message arrivals and sends. Since this data was taken from the Gmail ``All Mail" folder, it includes both received and sent messages, as the set of all messages synchronized to an IMAP server would. Plotted on a linear scale, the ``long tail" distribution is once again evident; since it has an extremely high slope, we show it also on a logarithmic scale for clarity.
+
+\includegraphics[width=\textwidth]{intermessagelinear}
+
+\includegraphics[width=\textwidth]{intermessagelog}
 
 
 \label{architecture}
@@ -288,7 +302,7 @@ OK 129
 \end{lstlisting}
 
 
-\project, now knowing the actual UID, can then issue the following request to the server:
+\projectnospace, now knowing the actual UID, can then issue the following request to the server:
 
 \begin{lstlisting}
 UID FETCH 129 <REQUEST>
@@ -318,6 +332,15 @@ Various \project actions include deletion of a message from the CRYPTOBLOBS mail
 Deleting a message that has already been processed is simple; we may use UNIQUE SUBJECT as in Section~\ref{uid-translation} to find the message in any mailbox, including All Mail. For a message that has arrived in the INBOX though, we must be more careful. To delete such a message from All Mail, we must first search for it (by subject or otherwise), then test all resulting UIDs for exact message equivalence to the message that we intend to delete from the non-All Mail mailbox.
 
 \subsection{INDEX Caching}
+From the perspective of the \project module as a library, each individual command that requires access to the INDEX should re-fetch it before executing the command, in case the INDEX has since been changed by another client. (This is different from operations requiring the LOCK, which is used for making multiple calls atomic.) Yet from a practical perspective, this can slow down the program immensely, since certain calls are often executed in batches and are tightly coupled. For example our prototype client calls the RESPONSE command with an argument of FLAGS, RECENT, UIDVALIDITY, and EXISTS in quick succession. This is an artifact of the translation into a Python library, since these are sent by the server in response to a SELECT command, but their results (except for the count returned by EXISTS) are not included in the library command's return value. To handle this, it might be reasonable to alter the method signature of certain commands in the \project library to allow a flag indicating that it is acceptable to consult a cached version of the INDEX. For example, a client might choose to request an uncached INDEX for the first in a series of commands sent to check all mailboxes for new messages, but allow a cached INDEX for subsequent mailbox requests, and only begin requesting the INDEX again if there are in fact new messages available to fetch.
+
+\subsection{Prototype Client}
+In this implementation, we integrated \project with Mailpile, an open source mail client implemented in Python that includes an SMTorP plugin. Mailpile is a webmail client that is able to run either locally on a trustd server, where it can be accessed from any browser. Mailpile multiplexes all IMAP commands over a single open connection, and not all threads have access to the open connection. This means that calls to the \project module where connections will be made to the server must be called from the appropriate thread. For example, when sending a message that arrived over SMTorP, the message can be cached locally from any thread, but the thread that calls the timer tick method to send it on schedule must have previously opened a connection and logged in. Mailpile also requires the user to provide a passphrase to unlock the data stored locally. This passphrase could be forwarded to the \project module as the passphrase for encryption, or Mailpile could ask for a separate passphrase. While the current \project implementation takes a passphrase in the constructor, any key would technically work, if the client chose to derive a key from the passphrase and handle key management itself.
+
+In the course of this project, three bugs were found in the Mailpile implementation (for one of these, a pull request has been submitted and accepted), indicating that for full security assurance, a more developed client should likely be used.
+
+
+
 
 \section{Security}
 
@@ -423,11 +446,6 @@ Is applying an ORAM-like protocol feasible? To do this, larger messages must be 
 
 TODO: deal with the problem of making a fetch-delete-append operation indistinguishable from an append operation in the way that ORAM get and reads are indistinguishable.
 
-\section{Prototype Client}
-
-% \section{Performance}
-% \subsection{Scheduler}
-
 
 \section{Attacks and Countermeasures}
 \subsection{Multiple Client Signup INDEX Rollback}
@@ -443,10 +461,14 @@ TODO: deal with the problem of making a fetch-delete-append operation indistingu
 When a new client signs up, either manually inspect the contents to ensure that they are in the expected state or display the current sequence number on both an existing client and the new client for a user to compare.
 
 \section{Discussion}
-As discussed in Section~\ref{architecture}, every client of an IMAP server must upgrade to \project if any client does so. Therefore, for this technology to spread, \project must be available across platforms on initial release, as a standard modern user expects to be able to check his or her email across devices and email clients. One potentially opportune venue for this is in an enterprise setting. Many businesses require a particular software stack for their employees, often employing IT staff to manage the installation and upkeep on behalf of all workers. Additionally, a business stands to gain much from employing metadata protection. A company involved in manufacturing a product may wish to hide from which vendor it is buying its components before the product's release; disclosure of an email exchange with a particular vendor could compromise this secret. Today, these companies often run their own mail servers to manage such leakages, imposing extraneous time and technology costs on them. With \project, a company could instead either purchase or build only a mail client, lightening their IT burden.
+As discussed in Section~\ref{architecture}, every client of an IMAP server must upgrade to \project if any client does so. Therefore, for this technology to spread, \project must be available across platforms on initial release, as a standard modern user expects to be able to check his or her email across devices and email clients. One potentially opportune venue for this is in an enterprise setting. Many businesses require a particular software stack for their employees, often employing IT staff to manage the installation and upkeep on behalf of all workers. Additionally, a business stands to gain much from employing metadata protection. A company involved in manufacturing a product may wish to hide from which vendor it is buying its components before the product's release; disclosure of an email exchange with a particular vendor could compromise this secret. Today, these companies often run their own mail servers to manage such leakages, imposing extraneous time and technology costs on them. With \projectnospace, a company could instead either purchase or build only a mail client, lightening their IT burden.
 
+For rollback detection and caching, the client of \project must be run on a trusted host. In this implementation, the client is a webmail service. Theoretically, a mail provider could run a webmail client that uses \projectnospace, serving Javascript to visitors that enables in-browser encryption and decryption \cite{wagner}. Send queue and other caches could be saved in encrypted form on the webmail server, and only key and rollback prevention information stored in-browser. This could encourage more widespread usage by simplifying setup and reducing downloads, making the overall system more usable.
+
+TODO: more discussion.
 
 \section{Summary}
+TODO: write summary.
 
 \section{Honor Code}
 \label{honorcode}

@@ -15,7 +15,7 @@ new_uids = uids[18191:]
 
 dates = []
 for uid in new_uids:
-	typ,data = imap.uid("FETCH",str(i),"(BODY[HEADER.FIELDS (DATE)])")
+	typ,data = imap.uid("FETCH",str(uid),"(BODY[HEADER.FIELDS (DATE)])")
 	dateline = data[0][1].strip()
 	dates.append(dateline)
 

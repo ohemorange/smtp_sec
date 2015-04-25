@@ -11,7 +11,7 @@ import subprocess
 # defaults
 author = ''
 width = 1100
-output_file = 'output.png'
+output_file = 'output1.png'
 
 # if len(sys.argv) > 1:
 #     if sys.argv[1] == "--help" or sys.argv[1] == "-h":

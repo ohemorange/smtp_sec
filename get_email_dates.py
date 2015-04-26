@@ -19,4 +19,4 @@ for uid in new_uids:
 	dateline = data[0][1].strip()
 	dates.append(dateline)
 
-dates = all_datestrings
+all_datestrings = dates

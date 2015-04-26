@@ -19,10 +19,12 @@
 - pad messages to a constant size
 
 ## paper
-- screenshots of the thing
+- screenshots of the thing?
 - what if we just wait a random amount of time before uploading it to the server? (?)
 - go through notes
 - redo getting that last 50k of data...
+- mention that we have to use consistent encryption because multiple clients.
+- yan screenshot
 
 ## todo: probably
 - have a timed cache for some fetch_and_load_index calls (cache_ok flag)

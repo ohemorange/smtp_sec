@@ -1,0 +1,17 @@
+In the section that introduces IMAP, talk about IMAP's basic model of operation, in which state (mailbox contents, messages, etc.) is replicated across the server and one or more clients, and the replicas are kept in sync.
+
+At the beginning of section 2.3, talk a bit about the distinction between content security and metadata security, and why the E2E systems discussed so far don't protect metadata.
+
+I would put something in the introduction that is a brief summary of what you are trying to do.   Include the description of target user in that summary.
+
+In general, you want to include bits of text at the begnnings and/or ends of sections that tie the sections together and remind the reader where they are in the global roadmap.  As an example, just before section 7.1, put a short paragraph saying that you're going to talk about how incoming messages are received and inserted into IMAPSec; that how this is done depends on whether the message was received via normal SMTP or via an alternative metadata-secure transport; and that you will deal with those two cases in the next two subsections.
+
+It would be usefu to establish a clear terminology that distinguishes between the mailboxes that the legacy IMAP server knows about, versus those that exist at the IMAPSec level.  Without that, the discussion of mailboxes gets confusing.
+
+In the current text, it's not clear what your threat model is.  It seems like the main threats are (1) attacker snapshots the server, and (2) attacker controls the server.  You should do well against (1) and can probably provide only partial protection against (2).
+
+It seems like there is a race condition in re-creating a lost lock.   It a lock-holding client goes away, and there are two clients waiting for the lock, then the two waiting clients might both decide to take the lock themselves.  You can't eliminate this possibiity entirely, but you can make it less likely by (1) recreating the lock in a publicly visible way before claiming it for oneself, and (2) having each client generate a random waiting time after which they will recreate the lock, so that multiple waiting clients are less likely to do simultaneous re-creations.
+
+In the rollback section, start by describing rollback attacks and why they need to be defended against.
+
+Section 10.1 needs more explanation at the beginning.  Start by saying that the client interacts with the server at times determined by a (randomized) schedule. 

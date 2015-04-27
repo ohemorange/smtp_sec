@@ -62,30 +62,17 @@ Although communication metadata is known to be intrusive, most end-to-end encryp
 
 \section{Introduction}
 
+(TODO: formalize introduction)
 
-TODO: make this into full sentences and explain things and such.
+Everyone everywhere uses cloud email. Unfortunately, this means that everyone everywhere is leaking information about who they're talking to, when they're talking to them, and what they're saying to any company, government, or advertiser that wants to know. If your threat model includes the mail provider (which it should), then you really need end-to-end encryption to have any hope of privacy. But even that will just help you out with the contents, and not the metadata. Luckily, there are in fact ways to help you  send emails in a metadata-secure manner. What you can't do is store it anywhere.
 
-Communication is important.
+This is a serious problem because users should not be required to change their actions to gain security. My target user is someone who can use modern email clients, but has no security expertise or knowledge. Messaging apps like iMessage and WhatsApp do this right, silently adding E2E encryption in the background. We can do this for metadata. In this paper, I show how to do it for the storage part of messaging, because it is important that we don't give up the feature of being able to synchronize emails across multiple devices.
 
-Secure communication is important.
+My solution handles this. It's an upgraded IMAP protocol called \project that keeps everything you know and love about IMAP, but hides metadata from the IMAP server (all changes are to the client side).
 
-Metadata is important.
+Goals of my project were to create something that's backwards compatible from the perspective of both the client software and the user, support end-to-end metadata security at all stages, and allow multiple client synchronization.
 
-End to end is important.
-
-Current things are either not for email, not usable, don't handle metadata, or some combination of these.
-
-There are experimental transport protocols, but these are only interchangeable with smtp - need further support for storage, one way to do which is IMAP.
-
-
-Goals:
-backwards compatible from a user perspective
-end-to-end metadata security
-multi-client (because IMAP)
-
-solution: summary of what I'm trying to do, how it will appear to a target user who is (decsription of target user)
-
-Garfinkel et al. \cite{garfinkel} talk about ``How to make secure email easier to use,'' and Ruoti et al. talk about dangers in automatic encryption \cite{ruoti}.
+% Garfinkel et al. \cite{garfinkel} talk about ``How to make secure email easier to use,'' and Ruoti et al. talk about dangers in automatic encryption \cite{ruoti}.
 
 \section{Relevant technologies and related work}
 
@@ -187,7 +174,7 @@ A permissible \project solution must be built to integrate with legacy systems. 
     \item Use the infrastructure of existing IMAP servers.
 \end{enumerate}
 
-The first is unacceptable, given the target user group described in Section~\ref{targetuser}, as this would violate user expectations. To implement the second, we would need to describe a server infrastructure for storing messages and synchronizing across multiple possible clients who have subscribed to updates on messages stored in the system -- which is to say, (a subset of) the functions that the IMAP server is designed to perform. This brings us to our final option, using a modified version of existing IMAP technology, which was described in Section~\ref{legacyimap}.
+The first is unacceptable, given the target user group described in Section~\ref{targetuser}, as this would violate user expectations. Users expect to be able to access their content across all of their devices, and keeping all messages on the local machine only would thereby force them to adjust their usage patterns. To implement the second possibility, we would need to describe a server infrastructure for storing messages and synchronizing across multiple possible clients who have subscribed to updates on messages stored in the system -- which is to say, (a subset of) the functions that the IMAP server is designed to perform. This brings us to our final option, using a modified version of existing IMAP technology, which was described in Section~\ref{legacyimap}.
 
 In the \project protocol, a standard IMAP client library is wrapped with a \project module. An MUA then uses the \project module in lieu of a standard IMAP connection agent. The \project module will perform all necessary functions on behalf of the MUA, including encryption, UID translation, and metadata tracking. The IMAP server is unmodified.
 % The \project protocol is 
@@ -511,14 +498,8 @@ As discussed in Section~\ref{architecture}, every client of an IMAP server must 
 
 For rollback detection and caching, the client of \project must be run on a trusted host. In this implementation, the client is a webmail service. Theoretically, a mail provider could run a webmail client that uses \projectnospace, serving Javascript to visitors that enables in-browser encryption and decryption \cite{wagner}. Send queue and other caches could be saved in encrypted form on the webmail server, and only key and rollback prevention information stored in-browser. This could encourage more widespread usage by simplifying setup and reducing downloads, making the overall system more usable.
 
-TODO: more discussion.
-
 \section{Summary}
-TODO: write summary.
-
-\section{Honor Code}
-\label{honorcode}
-I pledge my honor that this thesis represents my own work in accordance with Princeton University regulations.
+With \projectnospace, we present a solution that efficiently upgrades the IMAP protocol to support the storage and synchronization of emails while preserving end-to-end metadata security in the presence of an adversarial server. \project can be invisibly rolled out to users, providing metadata security for an integral component of the email ecosystem.
 
 \pagebreak
 
@@ -527,10 +508,6 @@ I pledge my honor that this thesis represents my own work in accordance with Pri
 \bibliography{references}
 
 \end{document}
-
-
-
-
 
 
 

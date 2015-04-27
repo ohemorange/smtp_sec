@@ -17,6 +17,11 @@
 - actually fetch the message to be deleted on mix
 - do uploads before deletes
 - pad messages to a constant size
+- We could address this in various manners. \project could decouple LOCK acquisition and recovery mechanisms, or partially decouple them by recreating a lost LOCK, waiting, then acquiring it. Additionally, \project could mitigate simultaneity by waiting a randomized time selected from an exponential distribution before acquiring a lost LOCK, so that multiple waiting clients are less likely to do simultaneous re-creations.
+- better worst case scenario for defending against rollback
+- put into something with a grammar checker
+- when reading through, find this
+  - In general, you want to include bits of text at the begnnings and/or ends of sections that tie the sections together and remind the reader where they are in the global roadmap.
 
 ## paper
 - screenshots of the thing?
@@ -25,6 +30,8 @@
 - redo getting that last 50k of data...
 - mention that we have to use consistent encryption because multiple clients.
 - yan screenshot
+- as previous studies have taught us, Tor users...
+- search blank
 
 ## todo: probably
 - have a timed cache for some fetch_and_load_index calls (cache_ok flag)

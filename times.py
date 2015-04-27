@@ -49,19 +49,27 @@ def is_utc(arrow):
 		return True
 	return arrow.tzinfo.utcoffset(arrow) == datetime.timedelta(0)
 
+all_datestrings = [a.replace("GMT", "+0000") for a in all_datestrings]
+all_datestrings = [a.replace("EDT", "-0400") for a in all_datestrings]
+all_datestrings = [a.replace("EST", "-0500") for a in all_datestrings]
+all_datestrings = [a.replace("UTC", "+0000") for a in all_datestrings]
+all_datestrings = [a.replace("UT", "+0000") for a in all_datestrings]
+all_datestrings = [a.replace("PST", "-0800") for a in all_datestrings]
+all_datestrings = [a.replace("Mon Jun 28", "Mon 28 Jun") for a in all_datestrings]
+all_datestrings = [a.replace("Mon 28 Jun 20:02:07 2010", "Mon 28 Jun 2010 20:02:07") for a in all_datestrings]
+all_datestrings = [a.replace("Mon 28 Jun 2010 20:02:07", "Mon 28 Jun 2010 20:02:07 +0000") for a in all_datestrings]
+all_datestrings = [a.replace('Wed, 3 Nov 2010  7:37:43 -0600 (MDT)', 'Wed, 3 Nov 2010 7:37:43 -0600 (MDT)') for a in all_datestrings]
+all_datestrings = [a.replace("Thursday ", "Thu") for a in all_datestrings]
+all_datestrings = [a.replace('Thu, 16 Apr 2015 17:15:04, -0800', 'Thu, 16 Apr 2015 17:15:04 -0800') for a in all_datestrings]
+all_datestrings = all_datestrings[:37346] + all_datestrings[37348:]
+all_datestrings = filter(lambda a: a != '', all_datestrings)
+
 all_tuples_dict = {}
 all_days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
 for day in all_days:
 	for hour_num in range(0,24):
 		hour_str = str(hour_num)
 		all_tuples_dict[(day, hour_str)] = 0
-
-all_datestrings = [a.replace("GMT", "+0000") for a in all_datestrings]
-all_datestrings = [a.replace("EDT", "-0400") for a in all_datestrings]
-all_datestrings = [a.replace("EST", "-0500") for a in all_datestrings]
-all_datestrings = [a.replace("UTC", "+0000") for a in all_datestrings]
-all_datestrings = [a.replace("UT", "+0000") for a in all_datestrings]
-all_datestrings = filter(lambda a: a != '', all_datestrings)
 
 converted_arrows = []
 

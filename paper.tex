@@ -22,24 +22,46 @@
 \author{Erica Portnoy}
 
 \date{}
-\maketitle
+
+
+\begin{titlepage}
+\begin{center}
+
+{ \huge \bfseries Making (Secure) FETCH Happen \\[0.5cm] }
+
+{\LARGE End-to-End Metadata Security for IMAP}\\[1.5cm]
+
+{\large Erica Portnoy\\
+2015\\
+Advised by Prof. Edward Felten and Dr. Joseph Bonneau\\
+Submitted to: Princeton University\\
+Department of Computer Science}\\[1.5cm]
+
+{\large This Thesis represents my own work in accordance with University Regulations.}\\[6cm]
+
+{\large Date of Submission: April 30, 2015}
+
+
+\end{center}
+\end{titlepage}
+
 
 \thispagestyle{empty}
 
-\tableofcontents
+\vspace*{2 cm}
 
 \begin{abstract}
-TODO: write abstract.
-
-Statetheproblem2.Saywhyit’saninterestingproblem3.Saywhatyoursolutionachieves4.Saywhatfollowsfromyoursolutio
-
-Manypapersarebadlywrittenandhardtounderstand2.Thisisapity,becausetheirgoodideasmaygounappreciated3.Followingsimpleguidelinescandramaticallyimprovethequalityofyourpapers4.Yourworkwillbeusedmore,andthefeedbackyougetfromotherswillinturnimproveyourresearch
-
-
-Email, but metadata and content are E2E encrypted. No usability concessions. A non-technical user will have no more trouble using it than they would with https vs. http. Departure from classical message encryption usability theories in that it places no burden on the user.
+Although communication metadata is known to be intrusive, most end-to-end encryption solutions focus only on hiding the contents of messages. Yet who a user is talking to and when is information as sensitive as the contents of the message. While end-to-end metadata security solutions exist for message transport, existing solutions lack the multi-device synchronization that IMAP provides. Without providing full feature parity with legacy email technologies, a metadata-secure protocol cannot hope to achieve ubiquity. To that end, we present \projectnospace, a client-side extension of the IMAP protocol held to rigorous standards of feature parity without sacrificing on security. With \projectnospace, existing IMAP clients can be invisibly upgraded to provide metadata security for email storage and synchronization.
 \end{abstract}
 
+\newpage
+
+\tableofcontents
+
+\newpage
+
 \section{Introduction}
+
 
 TODO: make this into full sentences and explain things and such.
 

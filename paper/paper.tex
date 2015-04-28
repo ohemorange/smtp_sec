@@ -63,15 +63,19 @@ Although communication metadata is known to be intrusive, most end-to-end encryp
 
 \section{Introduction}
 
-(TODO: formalize introduction)
+Today, most email is hosted by cloud providers. Unfortunately for users, this means that information about who they're talking to, when they're talking to them, and what they're saying is readily available to any interested company, government, or advertiser. Given that a modern threat model must account for the mail provider as an adversary, then only an end-to-end (E2E) solution will provide adequate security. Furthermore, even encrypting the contents of the email will protect only a small portion of the full breadth of sensitive information: the metadata of who is communicating and when is equally important to protect. Fortunately, recent projects have emerged to add protections for metadata into the communication security toolkit. Yet these projects lack a key feature to achieve full feature parity with insecure messaging solutions: support for multi-client synchronization and storage across all of a user's devices.
 
-Everyone everywhere uses cloud email. Unfortunately, this means that everyone everywhere is leaking information about who they're talking to, when they're talking to them, and what they're saying to any company, government, or advertiser that wants to know. If your threat model includes the mail provider (which it should), then you really need end-to-end encryption to have any hope of privacy. But even that will just help you out with the contents, and not the metadata. Luckily, there are in fact ways to help you  send emails in a metadata-secure manner. What you can't do is store it anywhere.
+Full feature parity is not merely a luxury. To achieve ubiquitous end-to-end metadata security, we cannot place any burden on users to alter their present actions or expectations of available functionality. Our target user is familiar with modern email and its usage, but cannot be expected to have any security expertise or specialized knowledge. A parallel model in the instant messaging space is present in applications such as iMessage and WhatsApp, both of which provide E2E encryption to their users, but incur no visible differences in functionality or usability. With this project, we enable this manner of full feature parity for a messaging system that is metadata-secure.
 
-This is a serious problem because users should not be required to change their actions to gain security. My target user is someone who can use modern email clients, but has no security expertise or knowledge. Messaging apps like iMessage and WhatsApp do this right, silently adding E2E encryption in the background. We can do this for metadata. In this paper, I show how to do it for the storage part of messaging, because it is important that we don't give up the feature of being able to synchronize emails across multiple devices.
+\project is a solution that allows users to access their messages across their devices in a way indistinguishable to the user from current IMAP, but without revealing email content or metadata to the IMAP server. Requiring only modifications on the client machine, it maintains the IMAP interface presented to a mail application. Thus, it achieves the following properties:
 
-My solution handles this. It's an upgraded IMAP protocol called \project that keeps everything you know and love about IMAP, but hides metadata from the IMAP server (all changes are to the client side).
+\begin{itemize}
+  \item Backwards compatibility from the perspective of both the client software and the user
+  \item Protection of end-to-end metadata security, including from the IMAP server
+  \item Support for the synchronization of multiple clients with the server
+\end{itemize}
 
-Goals of my project were to create something that's backwards compatible from the perspective of both the client software and the user, support end-to-end metadata security at all stages, and allow multiple client synchronization.
+Furthermore, it does so in a way largely consistent with current expectations for time and space requirements. With these features combined, \project enables the silent upgrade of modern email systems to include metadata security.
 
 % Garfinkel et al. \cite{garfinkel} talk about ``How to make secure email easier to use,'' and Ruoti et al. talk about dangers in automatic encryption \cite{ruoti}.
 
@@ -528,6 +532,10 @@ For rollback detection and caching, the client of \project must be run on a trus
 
 \section{Summary}
 With \projectnospace, we present a solution that efficiently upgrades the IMAP protocol to support the storage and synchronization of emails while preserving end-to-end metadata security in the presence of an adversarial server. \project can be invisibly rolled out to users, providing metadata security for an integral component of the email ecosystem.
+
+\pagebreak
+
+\section*{Acknowledgements}
 
 \pagebreak
 

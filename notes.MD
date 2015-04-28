@@ -23,15 +23,17 @@
 - when reading through, find this
   - In general, you want to include bits of text at the begnnings and/or ends of sections that tie the sections together and remind the reader where they are in the global roadmap.
 
-## paper
-- screenshots of the thing?
-- what if we just wait a random amount of time before uploading it to the server? (?)
-- go through notes
-- mention that we have to use consistent encryption because multiple clients.
-- yan screenshot
+## paper definitely
+- acknowledgements
 - as previous studies have taught us, Tor users...
 - search blank
-- figure out how to cite punchcard generator code, and if that needs to be in the paper
+
+## paper maybe
+- go through notes
+- screenshots of the thing?
+- what if we just wait a random amount of time before uploading it to the server? (?)
+- mention that we have to use consistent encryption because multiple clients.
+- yan screenshot
 - illustrate threat model
 - maybe change red to black?
 - pictures for mechanisms section (outputting trits on schedule, replacing fake messages)

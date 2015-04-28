@@ -32,6 +32,9 @@
 - as previous studies have taught us, Tor users...
 - search blank
 - figure out how to cite punchcard generator code, and if that needs to be in the paper
+- illustrate threat model
+- maybe change red to black?
+- pictures for mechanisms section (outputting trits on schedule, replacing fake messages)
 
 ## todo: probably
 - have a timed cache for some fetch_and_load_index calls (cache_ok flag)

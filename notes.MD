@@ -29,6 +29,7 @@
 - search blank
 
 ## paper maybe
+- find a number for "most" in introduction
 - go through notes
 - screenshots of the thing?
 - what if we just wait a random amount of time before uploading it to the server? (?)

@@ -1,3 +1,0 @@
-Comments:
-- note that for mixing, we have to reencrypt + save nonce (in the section on encryption)
-- Is the section on mailboxes clearer? It's currently 8.2 on page 17 but that might change.

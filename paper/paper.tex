@@ -10,6 +10,14 @@
 \lstset{language=Python}
 \usepackage{multirow}
 
+\usetikzlibrary{matrix,shapes.multipart,shapes.geometric,fit,scopes}
+\tikzset{
+  >= latex,
+  el/.style={ellipse, draw, text width=8em, align=center},
+  rs/.style={rectangle split, draw, rectangle split parts=#1},
+  ou/.style={draw, inner xsep=1em, inner ysep=1ex, fit=#1}
+}
+
 \begin{document}
 
 
@@ -182,7 +190,14 @@ A permissible \project solution must be built to integrate with legacy systems. 
     \item Use the infrastructure of existing IMAP servers.
 \end{enumerate}
 
-The first is unacceptable, given the target user group described in Section~\ref{targetuser}, as this would violate user expectations. Users expect to be able to access their content across all of their devices, and keeping all messages on the local machine only would thereby force them to adjust their usage patterns. To implement the second possibility, we would need to describe a server infrastructure for storing messages and synchronizing across multiple possible clients who have subscribed to updates on messages stored in the system -- which is to say, (a subset of) the functions that the IMAP server is designed to perform. This brings us to our final option: using a modified version of existing IMAP technology, as we have described.
+The first is unacceptable, given the target user group described in Section~\ref{targetuser}, as this would violate user expectations. Users expect to be able to access their content across all of their devices, and keeping all messages on the local machine only would thereby force them to adjust their usage patterns. To implement the second possibility, we would need to describe a server infrastructure for storing messages and synchronizing across multiple possible clients who have subscribed to updates on messages stored in the system -- which is to say, (a subset of) the functions that the IMAP server is designed to perform. This brings us to our final option: using a modified version of existing IMAP technology, as illustrated in the figure below.
+
+\begin{center}
+
+\includegraphics[width=0.6\textwidth]{server_client_boxes}
+
+\end{center}
+
 
 In the \project protocol, a standard IMAP client library is wrapped with an \project module. A client then uses the \project module in lieu of a standard IMAP connection agent. The \project module will perform all necessary functions on behalf of the client, including encryption, message ID translation, and metadata tracking. The IMAP server is unmodified.
 % The \project protocol is 
@@ -203,6 +218,9 @@ These changes permit the combination of metadata-secure messages and non-metadat
 
 When email is received from a metadata-free source (SMTorP, DIME, Pond, etc.), it is stored in a ``CRYPTOBLOBS'' mailbox on the IMAP server that the client's \project module has set up. This change is then marked in the INDEX, which is correspondingly updated.
 
+\medskip
+
+\begin{center}
   \begin{tikzpicture}[node distance=2.5cm]
   \node (alice) [box] {Alice};
   \node (smtpa) [box, above of=alice] {Alice's metadata-\\ secure server};
@@ -227,13 +245,16 @@ When email is received from a metadata-free source (SMTorP, DIME, Pond, etc.), i
   \draw [arrow] (bob) -| (bobimap);
 
   \end{tikzpicture}
-
+\end{center}
 
 \subsection{Mail From an Insecure Source}
 \label{mail-from-insecure}
 
 When an email is received through (legacy) SMTP, it is deleted from the server, its contents and metadata encrypted, and reuploaded to the IMAP server in the same way as an email that was received from a secure source.
 
+\medskip
+
+\begin{center}
   \begin{tikzpicture}[node distance=2.5cm]
   \node (alice) [box] {Alice};
   \node (smtpa) [box, above of=alice] {Alice's legacy \\ SMTP server};
@@ -259,6 +280,7 @@ When an email is received through (legacy) SMTP, it is deleted from the server, 
   \draw [arrow] (bob.74) -- (imapb.280);
 
   \end{tikzpicture}
+ \end{center}
   
 \section{Implementation Details}
 
@@ -272,10 +294,11 @@ All modified commands rely on the metadata INDEX, the store for all cross-client
 Upon logging into an IMAP server, \project attempts to select the CRYPTOBLOBS mailbox. If it succeeds, it assumes that this server has been previously initialized by itself or another client. If there is no CRYPTOBLOBS mailbox, it creates one. It then generates a random salt, appends an initial INDEX with SEQUENCE NUMBER 1 and the salt in the subject line of the INDEX, appends a LOCK, and fetches and loads the INDEX.
 
 \subsection{Command Translations}
-In the IMAP server/client model, the client sends commands to the server, and the server responds based on its state and contents. These commands are the primary form of synchronizing data between the server and its clients. The \project module sits between the client and the legacy IMAP module. It translates arguments, processes data, and returns results that give the client a pseudo-view of the contents of the IMAP server informed by the contents of the metadata INDEX.
+In the IMAP server/client model, the client sends commands to the server, and the server responds based on its state and contents. These commands are the primary form of synchronizing data between the server and its clients. The \project module sits between the client and the legacy IMAP module. It translates arguments, processes data, and returns results that give the client a pseudo-view of the contents of the IMAP server informed by the contents of the INDEX metadata store.
 
-We can classify mailboxes by two features: their visibility to the server, and their visibility to the client. When the client's view of the mailbox is used, it is referred to as a pseudo-mailbox. There are four possible mailbox classifications, as illustrated in the table below. The classification determines the actions that the module takes in response to each command. A PSEUDO mailbox is not mirrored in the IMAP server; it exists only in the INDEX and is thus only known to clients following the \project protocol. SMTorP is an example of a PSEUDO mailbox. A HYBRID mailbox exists both in the IMAP server and in the INDEX. This is a mailbox such as INBOX, which must also be known to the IMAP server as a location for the delivery of incoming messages. A PSEUDO/HIDDEN pseudo-mailbox neither exists in the IMAP server nor is known to the client. It is only for the internal use of the \project module. The FAKE\_MESSAGES pseudo-mailbox used by the scheduler is an example of this type of pseudo-mailbox. An ACTUAL/HIDDEN mailbox is known to the IMAP server but not to the \project client. The CRYPTOBLOBS mailbox, the mailbox in which all encrypted messages are stored on the IMAP server, is an example of this type of mailbox. These classifications are shown in this table.
+We can classify mailboxes by two features: their visibility to the IMAP server, and their visibility to the client of the \project module (``the client''). All mailboxes are visible internally to \projectnospace. ``Mailbox'' is a general term referring to any combination of visibility options. When referring to \projectnospace's internal representation of a mailbox, we will specifically refer to it as a pseudo-mailbox (using lowercase type). For example, a message can appear to the client to be in the pseudo-mailbox INBOX, while the server is in reality storing that particular message in its CRYPTOBLOBS mailbox. The following table gives examples of particular mailboxes for each of the possible combinations of client-server visibilities, followed by further explanation of its contents.
 
+\begin{center}
 \begin{tabular}{ rr|c|c| }
 
  &\multicolumn{1}{r}{} & \multicolumn{2}{c}{Visible to Client?} \\
@@ -289,6 +312,21 @@ We can classify mailboxes by two features: their visibility to the server, and t
 & No & SMTorP & FAKE\_MESSAGES \\
 \cline{3-4}
 \end{tabular}
+\end{center}
+
+\medskip
+
+As the table shows, there are four possible mailbox classifications. The classification determines the actions that the module takes in response to each command. We name each of these, for ease of future identification:
+
+\begin{itemize}
+
+\item \textbf{PSEUDO}: A PSEUDO mailbox is not mirrored in the IMAP server; it exists only in the INDEX and is thus only known to clients following the \project protocol. SMTorP is an example of a PSEUDO mailbox.
+\item \textbf{HYBRID}: A HYBRID mailbox exists both in the IMAP server and in the INDEX. This is a mailbox such as INBOX, which must also be known to the IMAP server as a location for the delivery of incoming messages.
+\item \textbf{PSEUDO/HIDDEN}: A PSEUDO/HIDDEN pseudo-mailbox neither exists in the IMAP server nor is known to the client. It is only for the internal use of the \project module. The FAKE\_MESSAGES pseudo-mailbox used by the scheduler is an example of this type of pseudo-mailbox.
+\item \textbf{ACTUAL/HIDDEN}: An ACTUAL/HIDDEN mailbox is known to the IMAP server but not to the \project client. The CRYPTOBLOBS mailbox, the mailbox in which all encrypted messages are stored on the IMAP server, is an example of this type of mailbox.
+
+\end{itemize}
+
 
 \subsubsection{SELECT}
 \label{select}
@@ -434,6 +472,9 @@ Yet even under these constraints, it must allow sufficiently frequent and short 
 
 While we can vary particular parameters and algorithms, most potential solutions discussed in this section rely on two primary components, scheduling and mixing. By scheduling, we mean that the client will exchange data with the server on a set or randomized schedule. By mixing, we mean that in an exchange with the server, multiple messages will be deleted, and multiple messages uploaded in their place, with only the client being aware of the correlations between messages deleted and uploaded.
 
+\medskip
+
+\begin{center}
   \begin{tikzpicture}[node distance=8cm]
   \node (\project) [box, minimum height=2cm] {\project};
 
@@ -443,6 +484,7 @@ While we can vary particular parameters and algorithms, most potential solutions
   \draw [arrow] (scheduler.190) -- node [below] {Next action type} (\project.-10);
  
   \end{tikzpicture}
+\end{center}
 
 Fundamentally, scheduling means that \project performs an action at a predetermined time tick. To better reason about the leakage of information, \project contains a separate scheduler module (shown above) that is informed when a message arrives or is marked for deletion. This scheduler can thus reason about the expansion rate of the server. At the scheduled time tick, \project will ask the scheduler what its next action should be. This can be one of three types: UP, DOWN, or NONE. UP means that the server will grow in size by one message, DOWN means that it will shrink by one message, and NONE means that the total server size will remain constant. The ternary digit (trit) that it outputs is based on its metadata protection policy, determined in conjunction with the \project module. We separate this functionality into the scheduler because it precisely mirrors the information that the server will receive: whether a message has been pushed up, pulled down, or neither. Thus, the server can gain no more than one trit of data on every time tick.
 

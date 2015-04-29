@@ -24,9 +24,6 @@
   - In general, you want to include bits of text at the begnnings and/or ends of sections that tie the sections together and remind the reader where they are in the global roadmap.
 
 ## paper definitely
-- acknowledgements
-- as previous studies have taught us, Tor users...
-- search blank
 
 ## paper maybe
 - find a number for "most" in introduction

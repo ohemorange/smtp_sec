@@ -1,0 +1,18 @@
+In describing the socialist millionaires protocol, say that the protocol requires users to exchange or compare information via an out-of-band channel, such as a phone call.  And that in practice that will only work if the users already know each other (otherwise an impostor can MITM them).
+
+
+The sections vary drastically in length.  Can you refactor or relabel to reduce the disparity?
+
+The initial discussion of IMAPSec on p. 15 would benefit from a diagram, showing the client and server, with software layers on each side.  Client:  mail client, on top of IMAPSec, on top of IMAP client --- which communicates across a wire to IMAP server, on top of file system.  Actually, it's probably better with two clients and one server.
+
+I find the paragraph spanning pp. 17-18 very confusing.  I'm not sure which things are referring to the IMAPSec client versus the IMAP client versus the IMAP server.  Also, I'm not certain that you're consistently distinguishing between mailboxes and pseudo-mailboes.
+
+
+
+
+
+
+
+
+Updates:
+- note that for mixing, we have to reencrypt + save nonce (in the section on encryption)

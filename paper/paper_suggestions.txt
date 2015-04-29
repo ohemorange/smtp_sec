@@ -1,12 +1,3 @@
-In describing the socialist millionaires protocol, say that the protocol requires users to exchange or compare information via an out-of-band channel, such as a phone call.  And that in practice that will only work if the users already know each other (otherwise an impostor can MITM them).
-
-
-The sections vary drastically in length.  Can you refactor or relabel to reduce the disparity?
-
-
-
-
-
 Comments:
 - note that for mixing, we have to reencrypt + save nonce (in the section on encryption)
 - Is the section on mailboxes clearer? It's currently 8.2 on page 17 but that might change.

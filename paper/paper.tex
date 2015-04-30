@@ -291,17 +291,18 @@ We can also find message interarrival times \---- that is, the distribution of t
 
 Here we present the details of the system as it is currently implemented. While it currently implements only a subset of RFC 3501-specified functionality, it satisfies all requirements of Mailpile, its functioning client for prototyping purposes.
 
-All modified commands rely on the metadata INDEX, the store for all cross-client data. The INDEX is a dictionary that is serialized as a string, encrypted, and saved as a message on the IMAP server. All \project clients can access the INDEX; it is their primary medium for synchronizing changes. The INDEX contains a wealth of information. First, its subject line includes the salt associated with the user's account that all clients will require (in conjunction with a passphrase) to decrypt any data stored in the server. Second, it contains a SEQUENCE NUMBER used to detect rollback. Third, for each mailbox known to the client or only internally to the \project module, it contains a dictionary mapping the message ID as it is appears to the client to the UNIQUE SUBJECT number used by \project to locate the message, along with a hash of the message contents. Fourth, for each folder known to the client but not to the server, it contains a NEXT UID field that stores the next client-facing message ID to be assigned.
+\subsection{Data Representation and Storage}
 
-\subsection{Initialization}
-\label{initialization}
+All metadata used across \project clients is stored in the INDEX, a dictionary that is serialized as a string, encrypted, and saved as a message on the IMAP server. All \project clients can access the INDEX; it is their primary medium for synchronizing changes. The INDEX contains a wealth of information. First, its subject line includes the salt associated with the user's account that all clients will require (in conjunction with a passphrase) to decrypt any data stored in the server. Second, it contains a SEQUENCE NUMBER used to detect rollback. Third, for each mailbox known to the client or only internally to the \project module, it contains a dictionary mapping the message ID as it is appears to the client to the UNIQUE SUBJECT number used by \project to locate the message, along with a hash of the message contents. Fourth, for each folder known to the client but not to the server, it contains a NEXT UID field that stores the next client-facing message ID to be assigned.
 
-Upon logging into an IMAP server, \project attempts to select the CRYPTOBLOBS mailbox. If it succeeds, it assumes that this server has been previously initialized by itself or another client. If there is no CRYPTOBLOBS mailbox, it creates one. It then generates a random salt, appends an initial INDEX with SEQUENCE NUMBER 1 and the salt in the subject line of the INDEX, appends a LOCK, and fetches and loads the INDEX.
+In an IMAP-like protocol, messages are grouped into mailboxes. To implement \projectnospace's metadata-hiding functionality, \project must track and internally represent mailboxes in order to present all parties (mail clients and the IMAP server) with the appropriate view of the world. We can classify mailboxes by two features: their visibility to the IMAP server, and their visibility to the client of the \project module (``the client''). All mailboxes are visible internally to \projectnospace. ``Mailbox'' is a general term referring to any combination of visibility options. When referring to \projectnospace's internal representation of a mailbox, we will specifically refer to it as a pseudo-mailbox (using lowercase type). For example, a message can appear to the client to be in the pseudo-mailbox INBOX, while the server is in reality storing that particular message in its CRYPTOBLOBS mailbox. To illustrate this, the following image shows the contents of the CRYPTOBLOBS mailbox as they appear to the server.
 
-\subsection{Command Translations}
-In the IMAP server/client model, the client sends commands to the server, and the server responds based on its state and contents. These commands are the primary form of synchronizing data between the server and its clients. The \project module sits between the client and the legacy IMAP module. It translates arguments, processes data, and returns results that give the client a pseudo-view of the contents of the IMAP server informed by the contents of the INDEX metadata store.
+\medskip
 
-We can classify mailboxes by two features: their visibility to the IMAP server, and their visibility to the client of the \project module (``the client''). All mailboxes are visible internally to \projectnospace. ``Mailbox'' is a general term referring to any combination of visibility options. When referring to \projectnospace's internal representation of a mailbox, we will specifically refer to it as a pseudo-mailbox (using lowercase type). For example, a message can appear to the client to be in the pseudo-mailbox INBOX, while the server is in reality storing that particular message in its CRYPTOBLOBS mailbox. The following table gives examples of particular mailboxes for each of the possible combinations of client-server visibilities, followed by further explanation of its contents.
+\includegraphics[width=\textwidth]{server_view}
+
+
+On the server, all messages are saved in this CRYPTOBLOBS mailbox post-processing. On top of these, \project builds its own pseudo-mailboxes, some of which are shown to the client and some of which are used for internal bookkeeping. The following table shows the names and gives examples of particular mailboxes for each of the possible combinations of client-server visibilities, followed by further explanation for each.
 
 \begin{center}
 \begin{tabular}{ rr|c|c| }
@@ -312,9 +313,9 @@ We can classify mailboxes by two features: their visibility to the IMAP server, 
  &  \multicolumn{1}{c}{Yes}
  & \multicolumn{1}{c}{No} \\
 \cline{3-4}
-\multirow{2}{*}{Visible to Server?} & Yes & INBOX & CRYPTOBLOBS \\
+\multirow{2}{*}{Visible to Server?} & Yes & \shortstack[c]{\smallskip \\ \smallskip HYBRID,\\ e.g. INBOX} & \shortstack[c]{\smallskip \\ \smallskip ACTUAL/HIDDEN, \\e.g. CRYPTOBLOBS} \\
 \cline{3-4}
-& No & SMTorP & FAKE\_MESSAGES \\
+& No & \shortstack[c]{\smallskip \\ \smallskip PSEUDO,\\ e.g. SMTorP} & \shortstack[c]{\smallskip \\ \smallskip  PSEUDO/HIDDEN,\\e.g. FAKE\_MESSAGES} \\
 \cline{3-4}
 \end{tabular}
 \end{center}
@@ -332,6 +333,14 @@ As the table shows, there are four possible mailbox classifications. The classif
 
 \end{itemize}
 
+
+\subsection{Initialization}
+\label{initialization}
+
+Upon logging into an IMAP server, \project attempts to select the CRYPTOBLOBS mailbox. If it succeeds, it assumes that this server has been previously initialized by itself or another client. If there is no CRYPTOBLOBS mailbox, it creates one. It then generates a random salt, appends an initial INDEX with SEQUENCE NUMBER 1 and the salt in the subject line of the INDEX, appends a LOCK, and fetches and loads the INDEX.
+
+\subsection{Command Translations}
+In the IMAP server/client model, the client sends commands to the server, and the server responds based on its state and contents. These commands are the primary form of synchronizing data between the server and its clients. The \project module sits between the client and the legacy IMAP module. It translates arguments, processes data, and returns results that give the client a pseudo-view of the contents of the IMAP server informed by the contents of the INDEX metadata store.
 
 \subsubsection{SELECT}
 \label{select}
@@ -589,7 +598,7 @@ Even with all precautions previously described put into place, there are still p
 
 \subsubsection{Multiple Client Signup INDEX Rollback Attack}
 
-Given the current SEQUENCE NUMBER mechanism, a server can force a new client to accept a previous version of the system, and use this acceptable to roll back existing clients as well. The following steps constitute this attack:
+Given the current SEQUENCE NUMBER mechanism, a server can force a new client to accept a previous version of the system, and use this acceptance to roll back existing clients as well. The following steps constitute this attack:
 
 \begin{enumerate}
 \item Client A signs up and makes changes, incrementing the SEQUENCE NUMBER is 10.
@@ -616,6 +625,22 @@ With \projectnospace, we present a solution that efficiently upgrades the IMAP p
 \pagebreak
 
 \section*{Acknowledgements}
+
+Are technical theses even supposed to include an acknowledgements page? I have no idea, but I saw some social science friends post theirs on Facebook, and so I wanted one, too. Anyway, here we go.
+
+First and foremost, I would like to thank my advisors, Professor Edward Felten and Dr. Joseph Bonneau. Someone told me that the three most important things in doing research are “advisor, advisor, and advisor,” and I certainly lucked out on all three counts.
+
+To everyone I worked on my thesis near, thank you for being absolutely silent when I needed it. This includes Eli, Alex, and that random kid who kept going to office hours while I was working at CITP. And to Prof. Jamison and Miles, for letting me put aside other things so I could get this done. To Bonnie and Anna, thanks for letting me rant at you even though you’re not even here.
+
+Thank you to all the fairies, from those who danced in tutus to those who brought me a dog to a pet to those whose offer I could totally have taken up but didn’t actually, including Liam, Danny, Dodam, Miriam, Katie, and Rachel.
+
+Valya, thanks for telling me exactly which ways my presenting and writing styles are weird. Oh, and all those hundreds of other times where I just talked at you. Thanks for tolerating me. Sammy, thanks for letting me co-opt dinner to discuss metadata index structure, and for getting cupcakes. My thesis and I needed those cupcakes. Silken, thanks for stressing in parallel with me. Katie, I’m assuming that was you who’s been writing encouraging notes on my whiteboard? Thanks for the encouragement regardless, and for keeping me sane.
+
+To the inanimate objects: Mucinex, caffeine, Sufjan Stevens’ new album, and those uncomfortable chairs in the Stewart room that are just painful enough to keep you awake and focused.
+
+Inasmuch as this thesis is the culmination of all Princeton work, here’s a general shoutout to everyone who was there along the way.
+
+And to my parents: thanks for putting up with me for almost 22 years.
 
 \pagebreak
 
